@@ -1,5 +1,7 @@
 # Huroner Survivor
 
+**Jugar / Play:** https://joseortegaa.github.io/ai-web-games-automata/huroner-survivor/
+
 Survivor web vertical en español e inglés. Un hurón con espada sobrevive a conejos, liebres, codornices y pollos mutantes, recoge experiencia y elige una de tres mejoras aleatorias al subir de nivel. El jefe aparece a los **10 minutos de juego activo**: hay que derrotarlo para ganar.
 
 - **Móvil:** toca y arrastra en la arena para mover el joystick flotante. Ataques automáticos.

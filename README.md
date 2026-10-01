@@ -2,11 +2,13 @@
 
 Juegos web creados íntegramente por IA siguiendo las indicaciones de Jose, sin programación manual. Cada juego vive en su propia carpeta y se publica en GitHub Pages para jugar directamente desde el navegador.
 
+**Catálogo:** https://joseortegaa.github.io/ai-web-games-automata/
+
 ## Juegos
 
 | Juego | Carpeta | Descripción |
 | --- | --- | --- |
-| [Huroner Survivor](./huroner-survivor/) | `huroner-survivor/` | Un hurón con espada contra hordas de animales mutantes. Vertical, controles táctiles, ES/EN y jefe a los 10 minutos. |
+| [Huroner Survivor](https://joseortegaa.github.io/ai-web-games-automata/huroner-survivor/) | `huroner-survivor/` | Un hurón con espada contra hordas de animales mutantes. Vertical, controles táctiles, ES/EN y jefe a los 10 minutos. |
 
 El archivo `index.html` es el catálogo. Los futuros juegos se añadirán en carpetas independientes.
 
