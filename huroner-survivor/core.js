@@ -98,6 +98,10 @@ export class Game {
     if(this.rank('twin')){this.attack(angle-.18);this.attack(angle+.18);}
     else this.attack(angle);
   }
+  automaticAttack() {
+    if(this.rank('twin')){this.attack();this.attack();}
+    else this.attack();
+  }
   hurt(amount) {
     const p=this.player;if(p.invuln>0||this.state!=='playing')return;
     // Armor has diminishing returns; damage always remains meaningful.
