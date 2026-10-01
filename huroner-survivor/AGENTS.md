@@ -22,3 +22,4 @@ npm test
 ```
 
 No añadas dependencias salvo necesidad explícita.
+Prohibido el zoom del navegador durante la partida.
