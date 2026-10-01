@@ -14,18 +14,25 @@
 </section>
 <div id="toast" role="status"></div>
 <div id="joystick" aria-hidden="true"><div id="stick"></div></div>
-<div id="touch-hint" hidden data-i18n="drag">ARRASTRA PARA MOVERTE · TOCA PARA ATACAR</div>
+<div id="touch-hint" hidden>ARRASTRA PARA MOVERTE</div>
+<button id="attack-button" hidden aria-label="Atacar">⚔</button>
 <section id="home" class="screen">
- <header class="menu-top"><a href="../" class="studio">AUTOMATA<span>GAME LAB / 001</span></a><div class="settings"><button id="language" class="pill" aria-label="Change language">EN</button><button id="sound" class="pill" aria-label="Sonido">♫</button></div></header>
+ <header class="menu-top"><a href="../" class="studio">AUTOMATA<span>GAME LAB / 001</span></a><div class="settings"><button id="config" class="pill" aria-label="Configuración">⚙</button><button id="language" class="pill" aria-label="Change language">EN</button><button id="sound" class="pill" aria-label="Sonido">♫</button></div></header>
  <div class="home-content"><p class="eyebrow" data-i18n="genre">PEQUEÑO HÉROE. GRAN MASACRE.</p><h1>HURONER<span>SURVIVOR</span></h1><div class="edition"><i></i><span data-i18n="edition">LA PRADERA MALDITA</span><i></i></div>
  <canvas id="hero-art" width="600" height="390" aria-label="Un hurón guerrero con espada entre animales mutantes"></canvas>
  <div class="intro"><h2 data-i18n="tagline">Adorable. Hasta que saca la espada.</h2><p data-i18n="intro">La pradera ha mutado. Sobrevive a la horda,<br>evoluciona tu arsenal y derrota al rey del corral.</p></div>
  <div class="feature-row"><span><b>10</b><small data-i18n="minutes">MINUTOS</small></span><span><b>∞</b><small data-i18n="combos">COMBINACIONES</small></span><span><b>1</b><small data-i18n="ferret">HURÓN</small></span></div>
  <button id="start" class="primary"><span data-i18n="start">INICIAR PARTIDA</span><b>↗</b></button>
- <p class="control-note" data-i18n="controls">Arrastra para moverte · Toca para atacar</p>
+ <p class="control-note" data-i18n="controls">Joystick · Ataque configurable en ⚙</p>
  <div class="record"><span data-i18n="best">TU MEJOR CACERÍA</span><b id="best">—</b></div></div>
  <footer><span data-i18n="footer">HECHO CON IA · JUGADO POR TI</span><span>v1.0</span></footer>
 </section>
+<section id="settings-screen" class="screen modal-screen" hidden><div class="modal compact settings-modal">
+ <p class="eyebrow" data-i18n="settingsTitle">CONFIGURACIÓN</p><h2 data-i18n="combatControls">CONTROLES DE COMBATE</h2>
+ <div class="setting-block"><strong data-i18n="attackType">TIPO DE ATAQUE</strong><div class="setting-options"><button id="attack-auto" data-i18n="automatic">AUTOMÁTICO</button><button id="attack-manual" data-i18n="attackButtonMode">BOTÓN</button></div></div>
+ <div id="attack-side-group" class="setting-block"><strong data-i18n="attackSide">LADO DEL BOTÓN</strong><div class="setting-options"><button id="attack-left" data-i18n="left">IZQUIERDA</button><button id="attack-right" data-i18n="right">DERECHA</button></div></div>
+ <button id="settings-done" class="primary" data-i18n="done">LISTO</button>
+</div></section>
 <section id="level-screen" class="screen modal-screen" hidden><div class="modal"><p class="eyebrow" data-i18n="stronger">CADA VEZ MÁS SALVAJE</p><h2 data-i18n="levelup">¡NIVEL SUPERADO!</h2><p id="level-summary"></p><div id="choices"></div><p class="muted" data-i18n="choose">Elige una mejora para continuar.</p></div></section>
 <section id="pause-screen" class="screen modal-screen" hidden><div class="modal compact"><p class="eyebrow">HURONER SURVIVOR</p><h2 data-i18n="paused">UN RESPIRO</h2><p data-i18n="pauseText">La horda puede esperar.</p><button id="resume" class="primary" data-i18n="resume">CONTINUAR</button><button id="pause-sound" class="secondary" data-i18n="toggleSound">ACTIVAR / SILENCIAR SONIDO</button><button id="quit" class="secondary" data-i18n="quit">VOLVER AL INICIO</button></div></section>
 <section id="end-screen" class="screen modal-screen" hidden><div class="modal compact"><p class="eyebrow" id="end-kicker"></p><h2 id="end-title"></h2><p id="end-copy"></p><div id="end-stats" class="end-stats"></div><button id="retry" class="primary" data-i18n="retry">OTRA CACERÍA</button><button id="back" class="secondary" data-i18n="menu">MENÚ PRINCIPAL</button></div></section>
