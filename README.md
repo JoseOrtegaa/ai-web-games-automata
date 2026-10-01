@@ -1,2 +1,17 @@
-# ai-web-games-automata
-Juegos web creados íntegramente por IA siguiendo las indicaciones de Jose, sin programación manual, con publicación prevista en GitHub Pages para probarlos desde el navegador.
+# AI Web Games Automata
+
+Juegos web creados íntegramente por IA siguiendo las indicaciones de Jose, sin programación manual. Cada juego vive en su propia carpeta y se publica en GitHub Pages para jugar directamente desde el navegador.
+
+## Juegos
+
+| Juego | Carpeta | Descripción |
+| --- | --- | --- |
+| [Huroner Survivor](./huroner-survivor/) | `huroner-survivor/` | Un hurón con espada contra hordas de animales mutantes. Vertical, controles táctiles, ES/EN y jefe a los 10 minutos. |
+
+El archivo `index.html` es el catálogo. Los futuros juegos se añadirán en carpetas independientes.
+
+## Publicación y desarrollo
+
+GitHub Pages sirve la raíz de la rama `main`; cada carpeta con `index.html` tiene su propia ruta. No requiere servicios externos ni claves de API.
+
+Para probar en local: `python3 -m http.server 8000` y abrir `http://localhost:8000/`.
