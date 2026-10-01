@@ -15,12 +15,12 @@ test('ground pickups heal and apply timed salmon-oil speed and fire damage buffs
 test('attacks only happen when triggered, manual follows facing and automatic aims at nearest foe',()=>{const g=new Game(rng());g.pickupTimer=999;const right=nearby(g,'rabbit',40,0);right.maxHp=right.hp=300;g.step(.02,{x:-1,y:0});assert.equal(g.effects.filter(e=>e.type==='slash').length,0);g.manualAttack();let slash=g.effects.find(e=>e.type==='slash');assert.ok(Math.abs(Math.abs(slash.angle)-Math.PI)<1e-8);assert.equal(right.hp,right.maxHp);g.effects=[];g.automaticAttack();slash=g.effects.find(e=>e.type==='slash');assert.ok(Math.abs(slash.angle)<1e-8);assert.ok(right.hp<right.maxHp);for(let i=0;i<10;i++)g.step(.05);g.effects=[];g.upgrades.twin=1;g.player.face=0;const before=right.hp;g.manualAttack();assert.equal(g.effects.filter(e=>e.type==='slash').length,2);assert.ok(right.hp<before);assert.equal(UPGRADES.find(u=>u.id==='twin').max,1);});
 test('ten-minute stress simulation maintains bounded entities and finite state',()=>{const g=new Game(rng());g.upgrades={power:5,twin:1,armor:4,reach:3,orbit:3,lightning:3,frost:3,regen:3};for(let i=0;i<12005;i++){g.player.hp=100;g.player.invuln=1;if(g.state==='levelup')g.choose(g.choices[0].id);g.step(.05,{x:Math.cos(i/140),y:Math.sin(i/140)});g.events=[];assert.ok(Number.isFinite(g.player.x)&&Number.isFinite(g.player.hp));assert.ok(g.enemies.length<=171);assert.ok(g.particles.length<=200);assert.ok(g.shots.length<=150);if(g.state==='won')break;}assert.ok(g.time>=600);assert.ok(g.bossSpawned);});
 
-test('manual attack rejects rapid taps until 450ms, including twin slashes, and resets for a new run',()=>{
+test('manual attack rejects rapid taps until 250ms, including twin slashes, and resets for a new run',()=>{
   const g=new Game(rng());g.spawnTimer=999;g.player.face=0;g.upgrades.twin=1;
   const e=nearby(g);e.hp=e.maxHp=1000;e.speed=0;
   g.manualAttack();assert.equal(e.hp,960);
   for(let i=0;i<20;i++)g.manualAttack();assert.equal(e.hp,960);
-  for(let i=0;i<8;i++)g.step(.05);g.step(.049);
+  for(let i=0;i<4;i++)g.step(.05);g.step(.049);
   g.manualAttack();assert.equal(e.hp,960);
   g.step(.002);g.manualAttack();assert.equal(e.hp,920);
   g.reset();g.manualAttack();assert.equal(g.effects.filter(e=>e.type==='slash').length,1);

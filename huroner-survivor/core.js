@@ -1,5 +1,6 @@
 // Deterministic, rendering-independent simulation. All time is active play time.
 export const BOSS_TIME = 600;
+export const ATTACK_COOLDOWN = .25;
 export const UPGRADES = [
   {id:'power', icon:'⚔', name:['Filo salvaje','Wild edge'], desc:['+22% de daño en todos los ataques.','+22% damage to all attacks.'], max:8},
   {id:'twin', icon:'⚔', name:['Colmillo gemelo','Twin fang'], desc:['Cada toque lanza dos espadazos.','Each tap unleashes two sword slashes.'], max:1},
@@ -96,7 +97,7 @@ export class Game {
   }
   manualAttack() {
     if(this.state!=='playing'||this.manualAttackCooldown>0)return;
-    this.manualAttackCooldown=.45;
+    this.manualAttackCooldown=ATTACK_COOLDOWN;
     const angle=this.player.face;
     if(this.rank('twin')){this.attack(angle-.18);this.attack(angle+.18);}
     else this.attack(angle);

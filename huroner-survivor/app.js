@@ -1,4 +1,4 @@
-import {Game,UPGRADES,xpNeeded} from './core.js';
+import {Game,UPGRADES,xpNeeded,ATTACK_COOLDOWN} from './core.js';
 const $=id=>document.getElementById(id);
 const strings={
  genre:['PEQUEÑO HÉROE. GRAN MASACRE.','TINY HERO. BIG BLOODBATH.'],edition:['LA PRADERA MALDITA','THE CURSED MEADOW'],
@@ -83,8 +83,8 @@ shell.addEventListener('pointermove',e=>{if(e.pointerId!==pointer)return;const r
 for(const ev of ['pointerup','pointercancel','lostpointercapture'])shell.addEventListener(ev,e=>{if(e.pointerId===pointer)resetInput();});
 window.addEventListener('keydown',e=>{if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key))e.preventDefault();keys.add(e.key.toLowerCase());if(e.key==='Escape'){if(mode==='playing'&&game.state==='playing')pause();else if(mode==='paused')resume();}});window.addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));
 function show(id){for(const name of ['home','settings-screen','level-screen','pause-screen','end-screen'])$(name).hidden=name!==id;}
-let autoAttackTimer=.35;
-function start(){unlock();game.reset();mode='playing';musicTimer=0;musicStep=0;autoAttackTimer=.35;resetInput();show(null);$('hud').hidden=false;$('touch-hint').hidden=false;$('boss-hud').hidden=true;setTouchHint();syncAttackButton();toast(t('La cacería comienza','The hunt begins'));}
+let autoAttackTimer=0;
+function start(){unlock();game.reset();mode='playing';musicTimer=0;musicStep=0;autoAttackTimer=0;resetInput();show(null);$('hud').hidden=false;$('touch-hint').hidden=false;$('boss-hud').hidden=true;setTouchHint();syncAttackButton();toast(t('La cacería comienza','The hunt begins'));}
 function pause(){if(mode!=='playing'||game.state!=='playing')return;mode='paused';resetInput();show('pause-screen');}
 function resume(){if(mode!=='paused')return;mode='playing';show(null);unlock();}
 function home(){keepRecord(false);mode='home';resetInput();show('home');$('hud').hidden=true;$('touch-hint').hidden=true;translate();}
@@ -133,7 +133,7 @@ let last=performance.now(),hudTimer=0;
 function frame(now){let dt=Math.min((now-last)/1000,.05);last=now;
  if(mode==='playing'&&game.state==='playing'){
   if(pointer===null){input.x=Number(keys.has('d')||keys.has('arrowright'))-Number(keys.has('a')||keys.has('arrowleft'));input.y=Number(keys.has('s')||keys.has('arrowdown'))-Number(keys.has('w')||keys.has('arrowup'));}
-  game.step(dt,input);if(attackMode==='auto'){autoAttackTimer-=dt;if(autoAttackTimer<=0){autoAttackTimer=.9;game.automaticAttack();}}musicTimer-=dt;if(musicTimer<=0){musicTimer=.38;let notes=[146.83,0,220,174.61,0,196,130.81,0,146.83,220,0,261.63,196,0,174.61,130.81];let n=notes[musicStep++%notes.length];if(n)tone(n,.28,.018,'triangle');}
+  game.step(dt,input);if(attackMode==='auto'){autoAttackTimer-=dt;if(autoAttackTimer<=0){autoAttackTimer=ATTACK_COOLDOWN;game.automaticAttack();}}musicTimer-=dt;if(musicTimer<=0){musicTimer=.38;let notes=[146.83,0,220,174.61,0,196,130.81,0,146.83,220,0,261.63,196,0,174.61,130.81];let n=notes[musicStep++%notes.length];if(n)tone(n,.28,.018,'triangle');}
  }
  let picked=false;for(const e of game.events){if(e.type==='slash')tone(170,.09,.023,'triangle',55);if(e.type==='hurt')tone(90,.15,.065,'sawtooth',35);if(e.type==='pickup'&&!picked){tone(850,.06,.013);picked=true;}if(e.type==='level'){tone(523,.25,.05);tone(784,.4,.035);levelMenu();}if(e.type==='mutation')toast(t('MUTACIÓN ','MUTATION ')+['I','II','III','IV'][e.tier]+t(' · La horda evoluciona',' · The horde evolves'));if(e.type==='item'){if(e.kind==='meat')toast(t('+3 VIDA · Pedacito de carne','+3 HP · Meat snack'));if(e.kind==='oil')toast(t('+10% VELOCIDAD · Aceite de salmón · 20s','+10% SPEED · Salmon oil · 20s'));if(e.kind==='fire')toast(t('+35% DAÑO · Fuego · 15s','+35% DAMAGE · Fire · 15s'));tone(740,.09,.025);}if(e.type==='boss'){toast(e.final?t('¡EL REY DEL CORRAL HA LLEGADO!','THE BARNYARD KING HAS ARRIVED!'):`${t('¡JEFE NIVEL','LEVEL BOSS')} ${e.level}!`);tone(65,.9,.08,'sawtooth');}if(e.type==='storm')tone(260,.18,.04,'sawtooth',40);if(e.type==='dead')end(false);if(e.type==='won')end(true);}game.events=[];
  if(toastTimer>0){toastTimer-=dt;if(toastTimer<=0)$('toast').classList.remove('show');}
