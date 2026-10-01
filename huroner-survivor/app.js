@@ -112,10 +112,20 @@ function draw(){const p=game.player;const active=mode!=='home';const zoom=Math.m
  for(const e of game.effects){if(e.type==='blood'){ctx.globalAlpha=Math.min(.42,e.life/4);ellipse(ctx,e.x,e.y,e.r*1.3,e.r*.8,'#812e39');ctx.globalAlpha=1;}}
  for(const g of game.gems){if(Math.abs(g.x-cx)>viewW||Math.abs(g.y-cy)>viewH)continue;ctx.save();ctx.translate(g.x,g.y);if(g.heal){ellipse(ctx,0,0,6,6,'#e9917f');line(ctx,[[-3,0],[3,0]],'#ffe6bc',2);line(ctx,[[0,-3],[0,3]],'#ffe6bc',2);}else{ctx.rotate(Math.PI/4);ctx.fillStyle=g.value>4?'#e7be71':'#a8c98b';ctx.fillRect(-3.5,-3.5,7,7);ctx.fillStyle='#e6f1be';ctx.fillRect(-3,-3,2,2);}ctx.restore();}
  if(game.rank('frost')){const r=65+game.rank('frost')*15;ellipse(ctx,p.x,p.y,r,r,'#87d8d610');ctx.strokeStyle='#b1e8e44a';ctx.lineWidth=1;ctx.beginPath();ctx.arc(p.x,p.y,r,0,6.28);ctx.stroke();}
+ for(const e of game.enemies){const a=e.specialAttack;if(!a)continue;
+  ctx.save();ctx.lineWidth=2;ctx.strokeStyle='#ffd18b';
+  if(a.kind==='quail'){
+   ctx.setLineDash([5,5]);for(let i=0;i<a.count;i++){const angle=a.angle+(i-(a.count-1)/2)*.3;line(ctx,[[a.x,a.y],[a.x+Math.cos(angle)*150,a.y+Math.sin(angle)*150]],'#ffd18baa',2);}
+  }else{
+   ellipse(ctx,a.x,a.y,a.radius,a.radius,'#e66d4938');ctx.setLineDash([5,4]);ctx.beginPath();ctx.arc(a.x,a.y,a.radius,0,Math.PI*2);ctx.stroke();
+   line(ctx,[[a.x-7,a.y],[a.x+7,a.y]],'#ffe4ad',2);line(ctx,[[a.x,a.y-7],[a.x,a.y+7]],'#ffe4ad',2);
+  }ctx.restore();
+ }
+ for(const e of game.effects){if(e.type==='enemy-impact'){ctx.save();ctx.globalAlpha=e.life/e.max;ellipse(ctx,e.x,e.y,e.r,e.r,'#f49c5555','#ffd18b');ctx.restore();}}
  const entities=[...game.enemies,{player:true,y:p.y}].sort((a,b)=>a.y-b.y);
- for(const e of entities){if(e.player){ctx.globalAlpha=p.invuln>0?.5+Math.sin(game.time*45)*.3:1;ferret(ctx,p.x,p.y,1,Math.cos(p.face)<-.05?-1:1,game.time*(Math.hypot(input.x,input.y)>.1?14:3),game.rank('armor'));ctx.globalAlpha=1;}else{if(Math.abs(e.x-cx)>viewW/2+80||Math.abs(e.y-cy)>viewH*.6+80)continue;if((e.kind==='hare'&&e.tier>=1||e.boss&&e.special==='charge')&&e.ability<.65){ctx.setLineDash([4,6]);line(ctx,[[e.x,e.y],[p.x,p.y]],'#e9ae7a65',2);ctx.setLineDash([]);}animal(ctx,e,e.x,e.y,e.boss?2.7:1+e.tier*.1,game.time);if(e.hp<e.maxHp&&!e.boss){ctx.fillStyle='#071410';ctx.fillRect(e.x-13,e.y-40,26,3);ctx.fillStyle='#dba77a';ctx.fillRect(e.x-13,e.y-40,26*e.hp/e.maxHp,3);}}}
+ for(const e of entities){if(e.player){ctx.globalAlpha=p.invuln>0?.5+Math.sin(game.time*45)*.3:1;ferret(ctx,p.x,p.y,1,Math.cos(p.face)<-.05?-1:1,game.time*(Math.hypot(input.x,input.y)>.1?14:3),game.rank('armor'));ctx.globalAlpha=1;}else{if(Math.abs(e.x-cx)>viewW/2+80||Math.abs(e.y-cy)>viewH*.6+80)continue;if((e.kind==='hare'&&e.tier>=1||e.boss&&e.special==='charge')&&e.ability<.65){ctx.setLineDash([4,6]);line(ctx,[[e.x,e.y],[p.x,p.y]],'#e9ae7a65',2);ctx.setLineDash([]);}const jump=e.specialAttack?.phase==='jump'?Math.sin(Math.PI*(1-e.specialAttack.time/e.specialAttack.duration))*32:0;animal(ctx,e,e.x,e.y-jump,e.boss?2.7:1+e.tier*.1,game.time);if(e.hp<e.maxHp&&!e.boss){ctx.fillStyle='#071410';ctx.fillRect(e.x-13,e.y-40,26,3);ctx.fillStyle='#dba77a';ctx.fillRect(e.x-13,e.y-40,26*e.hp/e.maxHp,3);}}}
  for(let i=0;i<game.rank('orbit');i++){let a=game.time*2.5+i/game.rank('orbit')*Math.PI*2;sword(ctx,p.x+Math.cos(a)*72,p.y+Math.sin(a)*72,a,.65);}
- for(const s of game.shots){ellipse(ctx,s.x,s.y,4,7,'#e8a070');ellipse(ctx,s.x,s.y,2,3,'#f8e2b2');}
+ for(const s of game.shots){if(s.kind==='feather'){ctx.save();ctx.translate(s.x,s.y);ctx.rotate(Math.atan2(s.vy,s.vx));ellipse(ctx,0,0,9,3,'#ead8ac','#a97550');line(ctx,[[-7,0],[8,0]],'#fff2cf',1);ctx.restore();}else{ellipse(ctx,s.x,s.y,4,7,'#e8a070');ellipse(ctx,s.x,s.y,2,3,'#f8e2b2');}}
  for(const e of game.effects){let life=e.life/e.max;if(e.type==='slash'){ctx.save();ctx.translate(e.x,e.y);ctx.globalAlpha=life;ctx.beginPath();ctx.arc(0,0,e.r,e.angle-e.half,e.angle+e.half);ctx.strokeStyle=e.fire?'#e56f36b5':'#dcecc873';ctx.lineWidth=19;ctx.stroke();ctx.beginPath();ctx.arc(0,0,e.r+8,e.angle-e.half,e.angle+e.half);ctx.strokeStyle=e.fire?'#ffd36f':'#fff5c3';ctx.lineWidth=3;ctx.stroke();ctx.restore();}if(e.type==='bolt'){ctx.globalAlpha=life;line(ctx,[[e.x+15,e.y-200],[e.x-12,e.y-90],[e.x+15,e.y-95],[e.x,e.y]],'#d6edff',4);ellipse(ctx,e.x,e.y,17,8,'#c8e5ef80');ctx.globalAlpha=1;}}
  for(const q of game.particles){ctx.globalAlpha=Math.min(1,q.life*2);ellipse(ctx,q.x,q.y,q.size,q.size*.7,'#ba4e59');}ctx.globalAlpha=1;
  }ctx.restore();}

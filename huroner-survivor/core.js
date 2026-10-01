@@ -47,7 +47,7 @@ export class Game {
       hp:maxHp,maxHp,r:boss?43:kind==='quail'?12:17,tier,boss,bossLevel:boss?bossLevel:0,finalBoss,
       speed:boss?34+Math.min(10,bossLevel*.35):speedBase[kind]*(1+tier*.14),
       damage:boss?(finalBoss?Math.max(26,16+bossLevel):14+bossLevel*1.15):9+tier*3+this.time/120,
-      flash:0,slow:0,orbitCD:0,ability:2+this.random()*3,charge:0,vx:0,vy:0,
+      flash:0,slow:0,orbitCD:0,ability:2+this.random()*3,charge:0,vx:0,vy:0,specialAttack:null,
       special:boss?['charge','ring','burst'][Math.floor(this.random()*3)]:null};
     this.enemies.push(e);
     if(boss){
@@ -105,6 +105,46 @@ export class Game {
     if(this.rank('twin')){this.attack();this.attack();}
     else this.attack();
   }
+  stepEnemySpecial(e,dt,distance) {
+    const p=this.player;
+    if(!e.specialAttack){
+      e.ability=Math.max(0,e.ability-dt);
+      const radius=e.kind==='chicken'?65*(e.tier>=2?1.15:1):30;
+      const range=e.kind==='chicken'?radius+35:e.kind==='rabbit'?220:280;
+      if(e.tier<1||e.ability>0||distance>range)return false;
+      // Lock the target when the warning starts; moving away always works.
+      e.specialAttack={kind:e.kind,phase:'warning',time:e.kind==='chicken'?.8:.75,
+        x:e.kind==='rabbit'?p.x:e.x,y:e.kind==='rabbit'?p.y:e.y,radius,
+        angle:Math.atan2(p.y-e.y,p.x-e.x),count:e.tier>=2?5:3,
+        duration:e.tier>=2?.34:.45};
+      return true;
+    }
+    const a=e.specialAttack;
+    a.time=Math.max(0,a.time-dt);
+    if(a.phase==='jump'){
+      const progress=1-a.time/a.duration;
+      e.x=a.fromX+(a.x-a.fromX)*progress;e.y=a.fromY+(a.y-a.fromY)*progress;
+      if(a.time>0)return true;
+    }else{
+      if(a.time>0)return true;
+      if(a.kind==='rabbit'){
+        a.phase='jump';a.time=a.duration;a.fromX=e.x;a.fromY=e.y;
+        return true;
+      }
+    }
+    if(a.kind==='quail'){
+      for(let i=0;i<a.count&&this.shots.length<150;i++){
+        const angle=a.angle+(i-(a.count-1)/2)*.3;
+        this.shots.push({kind:'feather',x:a.x,y:a.y,vx:Math.cos(angle)*120,vy:Math.sin(angle)*120,life:3,damage:e.damage});
+      }
+    }else{
+      if(Math.hypot(p.x-a.x,p.y-a.y)<a.radius+13)this.hurt(e.damage);
+      this.addEffect({type:'enemy-impact',x:a.x,y:a.y,r:a.radius,life:.25,max:.25});
+    }
+    e.specialAttack=null;
+    e.ability=(5+this.random()*2)/(e.tier>=3?1.15:1);
+    return true;
+  }
   hurt(amount) {
     const p=this.player;if(p.invuln>0||this.state!=='playing')return;
     // Armor has diminishing returns; damage always remains meaningful.
@@ -152,25 +192,29 @@ export class Game {
       if(e.hp<=0)continue;
       e.flash=Math.max(0,e.flash-dt);e.orbitCD=Math.max(0,e.orbitCD-dt);e.slow=Math.max(0,e.slow-dt);
       const dx=p.x-e.x,dy=p.y-e.y,d=Math.hypot(dx,dy)||1;let speed=e.speed*(e.slow>0?.48:1);
-      e.ability-=dt;
-      if(((e.boss&&e.special==='charge')||(!e.boss&&e.kind==='hare'&&e.tier>=1))&&e.ability<.65&&e.charge<=0)speed=0;
-      if(e.ability<=0){
-        if(e.boss){
-          const special=e.special;e.ability=e.finalBoss?3.1:3.8;
-          if(special==='charge'){e.charge=.65;e.vx=dx/d*(230+Math.min(70,e.bossLevel*3));e.vy=dy/d*(230+Math.min(70,e.bossLevel*3));}
-          else if(special==='ring'){const n=Math.min(16,8+Math.floor(e.bossLevel/5));for(let i=0;i<n;i++){const a=i/n*Math.PI*2;this.shots.push({x:e.x,y:e.y,vx:Math.cos(a)*115,vy:Math.sin(a)*115,life:5,damage:Math.max(14,e.damage*.65)});}}
-          else{const base=Math.atan2(dy,dx);for(let i=-2;i<=2;i++){const a=base+i*.16;this.shots.push({x:e.x,y:e.y,vx:Math.cos(a)*145,vy:Math.sin(a)*145,life:4,damage:Math.max(14,e.damage*.72)});}}
-          e.special=['charge','ring','burst'][Math.floor(this.random()*3)];
-        }else{
-          e.ability=4.5+this.random()*2;
-          if(e.kind==='hare'&&e.tier>=1){e.charge=.65;e.vx=dx/d*230;e.vy=dy/d*230;}
-          if(e.kind==='chicken'&&e.tier>=2){const a=Math.atan2(dy,dx);this.shots.push({x:e.x,y:e.y,vx:Math.cos(a)*105,vy:Math.sin(a)*105,life:5,damage:14});}
+      const usesSpecial=!e.boss&&e.kind!=='hare';
+      const busy=usesSpecial&&this.stepEnemySpecial(e,dt,d);
+      if(busy)speed=0;
+      if(!usesSpecial){
+        e.ability-=dt;
+        if(((e.boss&&e.special==='charge')||(!e.boss&&e.kind==='hare'&&e.tier>=1))&&e.ability<.65&&e.charge<=0)speed=0;
+        if(e.ability<=0){
+          if(e.boss){
+            const special=e.special;e.ability=e.finalBoss?3.1:3.8;
+            if(special==='charge'){e.charge=.65;e.vx=dx/d*(230+Math.min(70,e.bossLevel*3));e.vy=dy/d*(230+Math.min(70,e.bossLevel*3));}
+            else if(special==='ring'){const n=Math.min(16,8+Math.floor(e.bossLevel/5));for(let i=0;i<n;i++){const a=i/n*Math.PI*2;this.shots.push({x:e.x,y:e.y,vx:Math.cos(a)*115,vy:Math.sin(a)*115,life:5,damage:Math.max(14,e.damage*.65)});}}
+            else{const base=Math.atan2(dy,dx);for(let i=-2;i<=2;i++){const a=base+i*.16;this.shots.push({x:e.x,y:e.y,vx:Math.cos(a)*145,vy:Math.sin(a)*145,life:4,damage:Math.max(14,e.damage*.72)});}}
+            e.special=['charge','ring','burst'][Math.floor(this.random()*3)];
+          }else{
+            e.ability=4.5+this.random()*2;
+            if(e.kind==='hare'&&e.tier>=1){e.charge=.65;e.vx=dx/d*230;e.vy=dy/d*230;}
+          }
         }
       }
       if(e.charge>0){e.charge-=dt;e.x+=e.vx*dt;e.y+=e.vy*dt;}
       else{e.x+=dx/d*speed*dt;e.y+=dy/d*speed*dt;}
       if(d>800&&!e.boss){const a=this.random()*Math.PI*2;e.x=p.x+Math.cos(a)*480;e.y=p.y+Math.sin(a)*480;}
-      if(d<e.r+13)this.hurt(e.damage);
+      if(!busy&&d<e.r+13)this.hurt(e.damage);
       if(this.rank('orbit')&&e.orbitCD<=0){for(let i=0;i<this.rank('orbit');i++){const a=this.time*2.5+i/this.rank('orbit')*Math.PI*2;const ox=p.x+Math.cos(a)*72,oy=p.y+Math.sin(a)*72;if(Math.hypot(e.x-ox,e.y-oy)<e.r+17){this.hit(e,this.damage*.65);e.orbitCD=.35;break;}}}
     }
     // A sparse spatial grid keeps crowd separation approximately linear.
