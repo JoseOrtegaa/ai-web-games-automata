@@ -96,6 +96,7 @@ $('attack-manual').onclick=()=>{attackMode='button';save('huroner-attack-mode',a
 $('attack-left').onclick=()=>{attackSide='left';save('huroner-attack-side',attackSide);renderAttackSettings();};
 $('attack-right').onclick=()=>{attackSide='right';save('huroner-attack-side',attackSide);renderAttackSettings();};
 $('attack-button').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();if(mode==='playing'&&game.state==='playing'&&attackMode==='button'){unlock();game.manualAttack();}});
+for(const ev of ['gesturestart','gesturechange'])document.addEventListener(ev,e=>{if(mode==='playing')e.preventDefault();},{passive:false});
 document.addEventListener('visibilitychange',()=>{if(document.hidden){pause();if(audio)audio.suspend();}else if(audio&&mode==='playing')audio.resume().catch(()=>{});});window.addEventListener('blur',()=>{resetInput();pause();});
 let toastTimer=0;
 function toast(text){$('toast').textContent=text;$('toast').classList.add('show');toastTimer=3;}
