@@ -22,33 +22,45 @@ export class Game {
   reset() {
     this.state='playing'; this.time=0; this.level=1; this.xp=0; this.kills=0;
     this.player={x:0,y:0,hp:100,maxHp:100,face:-Math.PI/2,invuln:0};
-    this.upgrades={}; this.enemies=[]; this.gems=[]; this.particles=[]; this.shots=[]; this.effects=[];
-    this.cooldown=.35; this.spawnTimer=.5; this.stormTimer=2; this.auraTimer=0;
-    this.mutation=0; this.bossSpawned=false; this.boss=null; this.choices=[];
-    this.events=[]; this.nextId=1; this.shake=0;
+    this.upgrades={}; this.enemies=[]; this.gems=[]; this.pickups=[]; this.particles=[]; this.shots=[]; this.effects=[];
+    this.cooldown=.35; this.spawnTimer=.5; this.pickupTimer=5; this.stormTimer=2; this.auraTimer=0;
+    this.mutation=0; this.bossSpawned=false; this.boss=null; this.lastLevelBoss=0; this.choices=[];
+    this.speedBoostTimer=0; this.fireTimer=0; this.events=[]; this.nextId=1; this.shake=0;
   }
   rank(id) {return this.upgrades[id]||0;}
-  get damage() {return 20*(1+.22*this.rank('power'));}
+  get damage() {return 20*(1+.22*this.rank('power'))*(this.fireTimer>0?1.35:1);}
   get reach() {return 98*(1+.18*this.rank('reach'));}
-  get speed() {return 124*(1+.12*this.rank('speed'));}
+  get speed() {return 124*(1+.12*this.rank('speed'))*(this.speedBoostTimer>0?1.1:1);}
   get pickup() {return 43*(1+.45*this.rank('magnet'));}
   emit(type,data={}) {this.events.push({type,...data});}
   addEffect(effect) {if(this.effects.length<140)this.effects.push(effect);}
-  spawn(kind,boss=false) {
+  spawn(kind,boss=false,bossLevel=this.level,finalBoss=false) {
     const a=this.random()*Math.PI*2, d=430+this.random()*90;
     const types=['rabbit','hare','quail','chicken'];
     kind=kind||types[Math.floor(this.random()*types.length)];
     const hpBase={rabbit:23,hare:18,quail:14,chicken:35};
     const speedBase={rabbit:29,hare:43,quail:37,chicken:24};
     const tier=this.mutation, growth=1+this.time/340;
-    const maxHp=boss?3200:hpBase[kind]*growth*(1+tier*.52);
+    const maxHp=boss?(finalBoss?Math.max(3200,1400+bossLevel*95):520+bossLevel*105):hpBase[kind]*growth*(1+tier*.52);
     const e={id:this.nextId++,kind,x:this.player.x+Math.cos(a)*d,y:this.player.y+Math.sin(a)*d,
-      hp:maxHp,maxHp,r:boss?43:kind==='quail'?12:17,tier,boss,
-      speed:boss?36:speedBase[kind]*(1+tier*.14),damage:boss?26:9+tier*3+this.time/120,
-      flash:0,slow:0,orbitCD:0,ability:2+this.random()*4,charge:0,vx:0,vy:0};
+      hp:maxHp,maxHp,r:boss?43:kind==='quail'?12:17,tier,boss,bossLevel:boss?bossLevel:0,finalBoss,
+      speed:boss?34+Math.min(10,bossLevel*.35):speedBase[kind]*(1+tier*.14),
+      damage:boss?(finalBoss?Math.max(26,16+bossLevel):14+bossLevel*1.15):9+tier*3+this.time/120,
+      flash:0,slow:0,orbitCD:0,ability:2+this.random()*3,charge:0,vx:0,vy:0,
+      special:boss?['charge','ring','burst'][Math.floor(this.random()*3)]:null};
     this.enemies.push(e);
-    if(boss){this.boss=e;this.bossSpawned=true;this.emit('boss');}
+    if(boss){
+      this.boss=e;
+      if(finalBoss)this.bossSpawned=true;
+      this.emit('boss',{level:bossLevel,final:finalBoss});
+    }
     return e;
+  }
+  spawnPickup(type) {
+    const types=['meat','oil','fire'];type=type||types[Math.floor(this.random()*types.length)];
+    const a=this.random()*Math.PI*2,d=100+this.random()*180;
+    const item={id:this.nextId++,type,x:this.player.x+Math.cos(a)*d,y:this.player.y+Math.sin(a)*d,taken:false};
+    this.pickups.push(item);return item;
   }
   mutate() {
     const tier=mutationFor(this.level);
@@ -62,21 +74,22 @@ export class Game {
     e.hp-=damage;e.flash=.13;e.x+=kx;e.y+=ky;
     if(e.hp>0)return;
     this.kills++;this.emit('kill');
-    const value=e.boss?100:e.kind==='chicken'?3:2;
+    const value=e.finalBoss?100:e.boss?20:e.kind==='chicken'?3:2;
     if(this.gems.length<350)this.gems.push({x:e.x,y:e.y,value,heal:false});
     else {let g=this.gems[0];g.value+=value;}
     if(this.random()<.035)this.gems.push({x:e.x+7,y:e.y+5,value:15,heal:true});
     if(this.rank('leech')&&this.random()<.2)this.player.hp=Math.min(this.player.maxHp,this.player.hp+2*this.rank('leech'));
     for(let i=0;i<8;i++){if(this.particles.length>=200)break;let a=this.random()*6.28;this.particles.push({x:e.x,y:e.y,vx:Math.cos(a)*(15+this.random()*65),vy:Math.sin(a)*(15+this.random()*65),life:.6+this.random()*.5,max:1.1,size:2+this.random()*4});}
     this.addEffect({type:'blood',x:e.x,y:e.y,r:e.r,life:5,max:5});
-    if(e.boss){this.state='won';this.emit('won');}
+    if(e.finalBoss){this.state='won';this.emit('won');}
+    else if(e.boss&&this.boss===e)this.boss=null;
   }
-  attack() {
+  attack(aimAngle=null) {
     const p=this.player;let target=null,best=Infinity;
     for(const e of this.enemies){if(e.hp<=0)continue;let d=Math.hypot(e.x-p.x,e.y-p.y);if(d<best){best=d;target=e;}}
-    const angle=target?Math.atan2(target.y-p.y,target.x-p.x):p.face;
+    const angle=aimAngle??(target?Math.atan2(target.y-p.y,target.x-p.x):p.face);
     const half=Math.min(2.5,1.35+this.rank('reach')*.13);
-    this.addEffect({type:'slash',x:p.x,y:p.y,angle,half,r:this.reach,life:.23,max:.23});
+    this.addEffect({type:'slash',x:p.x,y:p.y,angle,half,r:this.reach,life:.23,max:.23,fire:this.fireTimer>0});
     this.emit('slash');
     for(const e of this.enemies){const dx=e.x-p.x,dy=e.y-p.y,d=Math.hypot(dx,dy);const a=Math.atan2(Math.sin(Math.atan2(dy,dx)-angle),Math.cos(Math.atan2(dy,dx)-angle));if(d<this.reach+e.r&&Math.abs(a)<half+.15)this.hit(e,this.damage,dx/(d||1)*10,dy/(d||1)*10);}
   }
@@ -94,7 +107,11 @@ export class Game {
     this.emit('level');
   }
   checkLevel() {
-    if(this.xp>=xpNeeded(this.level)){this.xp-=xpNeeded(this.level);this.level++;this.mutate();this.offer();}
+    if(this.xp>=xpNeeded(this.level)){
+      this.xp-=xpNeeded(this.level);this.level++;this.mutate();
+      if(this.level%5===0&&this.level>this.lastLevelBoss){this.lastLevelBoss=this.level;this.spawn(null,true,this.level,false);}
+      this.offer();
+    }
   }
   choose(id) {
     if(this.state!=='levelup'||!this.choices.some(u=>u.id===id))return false;
@@ -106,28 +123,36 @@ export class Game {
     if(this.state!=='playing')return;
     dt=clamp(dt,0,.05);this.time+=dt;const p=this.player;
     p.invuln=Math.max(0,p.invuln-dt);this.shake=Math.max(0,this.shake-dt*20);
+    this.speedBoostTimer=Math.max(0,this.speedBoostTimer-dt);this.fireTimer=Math.max(0,this.fireTimer-dt);
     p.hp=Math.min(p.maxHp,p.hp+this.rank('regen')*.7*dt);
     let l=Math.hypot(input.x,input.y),nx=input.x/Math.max(1,l),ny=input.y/Math.max(1,l);
     p.x+=nx*this.speed*dt;p.y+=ny*this.speed*dt;if(l>.08)p.face=Math.atan2(ny,nx);
-    if(this.time>=BOSS_TIME&&!this.bossSpawned)this.spawn('chicken',true);
+    this.pickupTimer-=dt;if(this.pickupTimer<=0){this.pickupTimer=8+this.random()*5;if(this.pickups.length<8)this.spawnPickup();}
+    if(this.time>=BOSS_TIME&&!this.bossSpawned)this.spawn('chicken',true,this.level,true);
     this.spawnTimer-=dt;
     if(this.spawnTimer<=0){
       this.spawnTimer=Math.max(.24,1.35-this.time*.0018);
       const count=1+Math.floor(this.time/150);
       for(let i=0;i<count&&this.enemies.length<170;i++)this.spawn();
     }
-    this.cooldown-=dt;if(this.cooldown<=0){this.cooldown=.9*Math.pow(.88,this.rank('haste'));this.attack();}
+    this.cooldown-=dt;if(this.cooldown<=0){this.cooldown=.9*Math.pow(.88,this.rank('haste'));this.attack(l>.08?p.face:null);}
     for(const e of this.enemies){
       if(e.hp<=0)continue;
       e.flash=Math.max(0,e.flash-dt);e.orbitCD=Math.max(0,e.orbitCD-dt);e.slow=Math.max(0,e.slow-dt);
       const dx=p.x-e.x,dy=p.y-e.y,d=Math.hypot(dx,dy)||1;let speed=e.speed*(e.slow>0?.48:1);
       e.ability-=dt;
-      if((e.boss||e.kind==='hare'&&e.tier>=1)&&e.ability<.65&&e.charge<=0)speed=0;
+      if(((e.boss&&e.special==='charge')||(!e.boss&&e.kind==='hare'&&e.tier>=1))&&e.ability<.65&&e.charge<=0)speed=0;
       if(e.ability<=0){
-        e.ability=e.boss?3.6:4.5+this.random()*2;
-        if(e.boss||e.kind==='hare'&&e.tier>=1){e.charge=.65;e.vx=dx/d*230;e.vy=dy/d*230;}
-        if(e.boss||e.kind==='chicken'&&e.tier>=2){
-          const n=e.boss?10:1;for(let i=0;i<n;i++){const a=e.boss?i/n*Math.PI*2:Math.atan2(dy,dx);this.shots.push({x:e.x,y:e.y,vx:Math.cos(a)*105,vy:Math.sin(a)*105,life:5});}
+        if(e.boss){
+          const special=e.special;e.ability=e.finalBoss?3.1:3.8;
+          if(special==='charge'){e.charge=.65;e.vx=dx/d*(230+Math.min(70,e.bossLevel*3));e.vy=dy/d*(230+Math.min(70,e.bossLevel*3));}
+          else if(special==='ring'){const n=Math.min(16,8+Math.floor(e.bossLevel/5));for(let i=0;i<n;i++){const a=i/n*Math.PI*2;this.shots.push({x:e.x,y:e.y,vx:Math.cos(a)*115,vy:Math.sin(a)*115,life:5,damage:Math.max(14,e.damage*.65)});}}
+          else{const base=Math.atan2(dy,dx);for(let i=-2;i<=2;i++){const a=base+i*.16;this.shots.push({x:e.x,y:e.y,vx:Math.cos(a)*145,vy:Math.sin(a)*145,life:4,damage:Math.max(14,e.damage*.72)});}}
+          e.special=['charge','ring','burst'][Math.floor(this.random()*3)];
+        }else{
+          e.ability=4.5+this.random()*2;
+          if(e.kind==='hare'&&e.tier>=1){e.charge=.65;e.vx=dx/d*230;e.vy=dy/d*230;}
+          if(e.kind==='chicken'&&e.tier>=2){const a=Math.atan2(dy,dx);this.shots.push({x:e.x,y:e.y,vx:Math.cos(a)*105,vy:Math.sin(a)*105,life:5,damage:14});}
         }
       }
       if(e.charge>0){e.charge-=dt;e.x+=e.vx*dt;e.y+=e.vy*dt;}
@@ -140,8 +165,10 @@ export class Game {
     const grid=new Map();for(const e of this.enemies){if(e.hp<=0)continue;const gx=Math.floor(e.x/48),gy=Math.floor(e.y/48);for(let x=gx-1;x<=gx+1;x++)for(let y=gy-1;y<=gy+1;y++)for(const o of grid.get(x+','+y)||[]){let dx=e.x-o.x,dy=e.y-o.y,d=Math.hypot(dx,dy),min=(e.r+o.r)*.7;if(d>0&&d<min){let f=(min-d)*.2;e.x+=dx/d*f;e.y+=dy/d*f;o.x-=dx/d*f;o.y-=dy/d*f;}}let key=gx+','+gy;if(!grid.has(key))grid.set(key,[]);grid.get(key).push(e);}
     this.stormTimer-=dt;if(this.rank('lightning')&&this.stormTimer<=0){this.stormTimer=2.8;let targets=this.enemies.filter(e=>e.hp>0&&Math.hypot(e.x-p.x,e.y-p.y)<350).sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y)).slice(0,this.rank('lightning')+1);for(const e of targets){this.addEffect({type:'bolt',x:e.x,y:e.y,life:.3,max:.3});this.hit(e,this.damage*2.1);}if(targets.length)this.emit('storm');}
     this.auraTimer-=dt;if(this.rank('frost')&&this.auraTimer<=0){this.auraTimer=.6;let radius=65+this.rank('frost')*15;for(const e of this.enemies)if(Math.hypot(e.x-p.x,e.y-p.y)<radius){e.slow=1;this.hit(e,this.damage*.25*this.rank('frost'));}}
-    for(const s of this.shots){s.life-=dt;s.x+=s.vx*dt;s.y+=s.vy*dt;if(Math.hypot(s.x-p.x,s.y-p.y)<17){this.hurt(14);s.life=0;}}
+    for(const s of this.shots){s.life-=dt;s.x+=s.vx*dt;s.y+=s.vy*dt;if(Math.hypot(s.x-p.x,s.y-p.y)<17){this.hurt(s.damage||14);s.life=0;}}
     this.shots=this.shots.filter(s=>s.life>0).slice(-150);
+    for(const item of this.pickups){if(item.taken)continue;const d=Math.hypot(item.x-p.x,item.y-p.y);if(d<18){if(item.type==='meat')p.hp=Math.min(p.maxHp,p.hp+3);if(item.type==='oil')this.speedBoostTimer=Math.max(this.speedBoostTimer,20);if(item.type==='fire')this.fireTimer=Math.max(this.fireTimer,15);item.taken=true;this.emit('item',{kind:item.type});}}
+    this.pickups=this.pickups.filter(item=>!item.taken);
     for(const g of this.gems){let dx=p.x-g.x,dy=p.y-g.y,d=Math.hypot(dx,dy);if(d<this.pickup||g.attract){g.attract=true;g.x+=dx/(d||1)*Math.min(d,300*dt);g.y+=dy/(d||1)*Math.min(d,300*dt);if(d<16){if(g.heal)p.hp=Math.min(p.maxHp,p.hp+g.value);else this.xp+=g.value;g.taken=true;this.emit('pickup');}}}
     this.gems=this.gems.filter(g=>!g.taken);this.enemies=this.enemies.filter(e=>e.hp>0);
     for(const e of this.effects)e.life-=dt;this.effects=this.effects.filter(e=>e.life>0);
