@@ -111,11 +111,15 @@ function draw(){const p=game.player;const active=mode!=='home';const zoom=Math.m
  for(const item of game.pickups){if(Math.abs(item.x-cx)>viewW||Math.abs(item.y-cy)>viewH)continue;ctx.save();ctx.translate(item.x,item.y);if(item.type==='meat'){ellipse(ctx,0,1,9,6,'#b95a55','#f0c9a1');line(ctx,[[-7,-2],[7,3]],'#f4e2be',3);ellipse(ctx,-8,-3,2.5,2.5,'#f4e2be');ellipse(ctx,8,4,2.5,2.5,'#f4e2be');}else if(item.type==='oil'){ellipse(ctx,0,0,7,10,'#d6a94e','#f0d681');ellipse(ctx,-2,-3,2,4,'#fff1b180');}else{ellipse(ctx,0,2,8,11,'#dc6737','#f2ad52');ellipse(ctx,0,4,4,7,'#ffd36a');}ctx.restore();}
  for(const e of game.effects){if(e.type==='blood'){ctx.globalAlpha=Math.min(.42,e.life/4);ellipse(ctx,e.x,e.y,e.r*1.3,e.r*.8,'#812e39');ctx.globalAlpha=1;}}
  for(const g of game.gems){if(Math.abs(g.x-cx)>viewW||Math.abs(g.y-cy)>viewH)continue;ctx.save();ctx.translate(g.x,g.y);if(g.heal){ellipse(ctx,0,0,6,6,'#e9917f');line(ctx,[[-3,0],[3,0]],'#ffe6bc',2);line(ctx,[[0,-3],[0,3]],'#ffe6bc',2);}else{
-  const pulse=.5+.5*Math.sin(game.time*2.4+g.x*.13+g.y*.17),color=g.value>4?'#e7be71':'#a8c98b';
+  const pulse=.5+.5*Math.sin(game.time*3.2+g.x*.13+g.y*.17),sparkle=Math.max(0,(pulse-.72)/.28),color=g.value>4?'#e7be71':'#a8c98b';
   ctx.rotate(Math.PI/4);ctx.fillStyle=color;ctx.fillRect(-3.5,-3.5,7,7);
-  // Light up the gem itself, keeping the shimmer inside its diamond silhouette.
-  ctx.globalAlpha=.08+Math.pow(pulse,3)*.55;ctx.fillStyle='#fffbe5';ctx.fillRect(-3.5,-3.5,7,7);
+  ctx.globalAlpha=.08+sparkle*.85;ctx.fillStyle='#fffef0';ctx.fillRect(-3.5,-3.5,7,7);
   ctx.globalAlpha=1;ctx.fillStyle='#fff6d5';ctx.fillRect(-3,-3,2,2);
+  // A brief four-point glint makes the gem visibly shine without a ground halo.
+  if(sparkle>0){
+   ctx.rotate(-Math.PI/4);ctx.globalAlpha=sparkle;ctx.fillStyle='#fffef0';
+   const tip=5+sparkle*3;ctx.beginPath();ctx.moveTo(0,-tip);ctx.lineTo(1.2,-1.2);ctx.lineTo(tip,0);ctx.lineTo(1.2,1.2);ctx.lineTo(0,tip);ctx.lineTo(-1.2,1.2);ctx.lineTo(-tip,0);ctx.lineTo(-1.2,-1.2);ctx.closePath();ctx.fill();
+  }
  }ctx.restore();}
  if(game.rank('frost')){const r=65+game.rank('frost')*15;ellipse(ctx,p.x,p.y,r,r,'#87d8d610');ctx.strokeStyle='#b1e8e44a';ctx.lineWidth=1;ctx.beginPath();ctx.arc(p.x,p.y,r,0,6.28);ctx.stroke();}
  for(const e of game.enemies){const a=e.specialAttack;if(!a)continue;
