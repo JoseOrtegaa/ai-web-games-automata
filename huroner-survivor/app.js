@@ -3,15 +3,17 @@ const $=id=>document.getElementById(id);
 const strings={
  genre:['PEQUEÑO HÉROE. GRAN MASACRE.','TINY HERO. BIG BLOODBATH.'],edition:['LA PRADERA MALDITA','THE CURSED MEADOW'],
  tagline:['Adorable. Hasta que saca la espada.','Adorable. Until the sword comes out.'],intro:['La pradera ha mutado. Sobrevive a la horda,<br>evoluciona tu arsenal y derrota al rey del corral.','The meadow has mutated. Survive the horde,<br>evolve your arsenal and defeat the barnyard king.'],
- minutes:['MINUTOS','MINUTES'],combos:['COMBINACIONES','COMBINATIONS'],ferret:['HURÓN','FERRET'],start:['INICIAR PARTIDA','START RUN'],controls:['Arrastra para moverte · Toca para atacar','Drag to move · Tap to attack'],best:['TU MEJOR CACERÍA','YOUR BEST HUNT'],footer:['HECHO CON IA · JUGADO POR TI','MADE WITH AI · PLAYED BY YOU'],level:['NIVEL','LEVEL'],drag:['ARRASTRA PARA MOVERTE · TOCA PARA ATACAR','DRAG TO MOVE · TAP TO ATTACK'],stronger:['CADA VEZ MÁS SALVAJE','WILDER WITH EVERY LEVEL'],levelup:['¡NIVEL SUPERADO!','LEVEL UP!'],choose:['Elige una mejora para continuar.','Choose an upgrade to continue.'],paused:['UN RESPIRO','TAKE A BREATHER'],pauseText:['La horda puede esperar.','The horde can wait.'],resume:['CONTINUAR','RESUME'],toggleSound:['ACTIVAR / SILENCIAR SONIDO','TOGGLE SOUND'],quit:['VOLVER AL INICIO','RETURN TO TITLE'],retry:['OTRA CACERÍA','ANOTHER HUNT'],menu:['MENÚ PRINCIPAL','MAIN MENU']
+ minutes:['MINUTOS','MINUTES'],combos:['COMBINACIONES','COMBINATIONS'],ferret:['HURÓN','FERRET'],start:['INICIAR PARTIDA','START RUN'],controls:['Joystick · Ataque configurable en ⚙','Joystick · Configure attack in ⚙'],best:['TU MEJOR CACERÍA','YOUR BEST HUNT'],footer:['HECHO CON IA · JUGADO POR TI','MADE WITH AI · PLAYED BY YOU'],level:['NIVEL','LEVEL'],drag:['ARRASTRA PARA MOVERTE','DRAG TO MOVE'],settingsTitle:['CONFIGURACIÓN','SETTINGS'],combatControls:['CONTROLES DE COMBATE','COMBAT CONTROLS'],attackType:['TIPO DE ATAQUE','ATTACK TYPE'],automatic:['AUTOMÁTICO','AUTOMATIC'],attackButtonMode:['BOTÓN','BUTTON'],attackSide:['LADO DEL BOTÓN','BUTTON SIDE'],left:['IZQUIERDA','LEFT'],right:['DERECHA','RIGHT'],done:['LISTO','DONE'],stronger:['CADA VEZ MÁS SALVAJE','WILDER WITH EVERY LEVEL'],levelup:['¡NIVEL SUPERADO!','LEVEL UP!'],choose:['Elige una mejora para continuar.','Choose an upgrade to continue.'],paused:['UN RESPIRO','TAKE A BREATHER'],pauseText:['La horda puede esperar.','The horde can wait.'],resume:['CONTINUAR','RESUME'],toggleSound:['ACTIVAR / SILENCIAR SONIDO','TOGGLE SOUND'],quit:['VOLVER AL INICIO','RETURN TO TITLE'],retry:['OTRA CACERÍA','ANOTHER HUNT'],menu:['MENÚ PRINCIPAL','MAIN MENU']
 };
 function read(key,fallback){try{return JSON.parse(localStorage.getItem(key))??fallback;}catch{return fallback;}}
 function save(key,value){try{localStorage.setItem(key,JSON.stringify(value));}catch{/* Play remains available in privacy mode. */}}
 let lang=read('huroner-language',navigator.language.startsWith('es')?'es':'en');if(!['es','en'].includes(lang))lang='es';
 let muted=read('huroner-muted',false),record=read('huroner-record',null),mode='home';
+let attackMode=read('huroner-attack-mode','button');if(!['button','auto'].includes(attackMode))attackMode='button';
+let attackSide=read('huroner-attack-side','right');if(!['left','right'].includes(attackSide))attackSide='right';
 const t=(es,en)=>lang==='es'?es:en;
 function formatTime(s){s=Math.floor(s);return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');}
-function translate(){document.documentElement.lang=lang;document.querySelectorAll('[data-i18n]').forEach(el=>el.innerHTML=strings[el.dataset.i18n][lang==='es'?0:1]);$('language').textContent=lang==='es'?'EN':'ES';$('sound').setAttribute('aria-label',t('Activar o silenciar sonido','Toggle sound'));$('pause').setAttribute('aria-label',t('Pausar','Pause'));$('world').setAttribute('aria-label',t('Arena de Huroner Survivor','Huroner Survivor arena'));$('best').textContent=record?`${record.won?'★ ':''}${formatTime(record.time)} · ${record.kills} ${t('bajas','kills')}`:'—';}
+function translate(){document.documentElement.lang=lang;document.querySelectorAll('[data-i18n]').forEach(el=>el.innerHTML=strings[el.dataset.i18n][lang==='es'?0:1]);$('language').textContent=lang==='es'?'EN':'ES';$('sound').setAttribute('aria-label',t('Activar o silenciar sonido','Toggle sound'));$('pause').setAttribute('aria-label',t('Pausar','Pause'));$('config').setAttribute('aria-label',t('Configuración','Settings'));$('attack-button').setAttribute('aria-label',t('Atacar','Attack'));$('world').setAttribute('aria-label',t('Arena de Huroner Survivor','Huroner Survivor arena'));$('best').textContent=record?`${record.won?'★ ':''}${formatTime(record.time)} · ${record.kills} ${t('bajas','kills')}`:'—';renderAttackSettings();}
 $('language').onclick=()=>{lang=lang==='es'?'en':'es';save('huroner-language',lang);translate();};
 let audio=null,musicTimer=0,musicStep=0;
 function unlock(){try{audio??=new (window.AudioContext||window.webkitAudioContext)();audio.resume().catch(()=>{});}catch{}}
@@ -60,19 +62,40 @@ function paintHero(){const c=$('hero-art').getContext('2d');c.clearRect(0,0,600,
  c.beginPath();c.arc(305,206,121,-1.1,.6);c.strokeStyle='#dec68728';c.lineWidth=24;c.stroke();c.beginPath();c.arc(305,206,127,-1.1,.6);c.strokeStyle='#e5be70aa';c.lineWidth=2;c.stroke();
  ferret(c,292,213,3.5,1,0,1);for(let i=0;i<16;i++){const x=140+hash(i,12)*330,y=65+hash(i,9)*255;ellipse(c,x,y,1.2,1.2,'#e2bd6580');}
 }
+function renderAttackSettings(){
+ const manual=attackMode==='button';
+ $('attack-auto').classList.toggle('selected',!manual);$('attack-manual').classList.toggle('selected',manual);
+ $('attack-left').classList.toggle('selected',attackSide==='left');$('attack-right').classList.toggle('selected',attackSide==='right');
+ $('attack-side-group').hidden=!manual;
+}
+function syncAttackButton(){
+ const b=$('attack-button'),show=mode==='playing'&&game.state==='playing'&&attackMode==='button';
+ b.hidden=!show;b.classList.toggle('left',attackSide==='left');b.classList.toggle('right',attackSide==='right');
+}
+function setTouchHint(){
+ $('touch-hint').textContent=attackMode==='auto'?t('ARRASTRA PARA MOVERTE · ATAQUE AUTOMÁTICO','DRAG TO MOVE · AUTOMATIC ATTACK'):t('ARRASTRA PARA MOVERTE · USA ⚔ PARA ATACAR','DRAG TO MOVE · USE ⚔ TO ATTACK');
+}
 paintHero();translate();soundState();
 const input={x:0,y:0},keys=new Set();let pointer=null,origin={x:0,y:0};
 function resetInput(){pointer=null;input.x=input.y=0;keys.clear();$('joystick').style.display='none';$('stick').style.transform='';}
-const shell=$('game-shell');shell.addEventListener('pointerdown',e=>{if(mode!=='playing'||game.state!=='playing'||e.target.closest('button')||pointer!==null)return;game.manualAttack();pointer=e.pointerId;shell.setPointerCapture(e.pointerId);const r=shell.getBoundingClientRect();origin={x:e.clientX-r.left,y:e.clientY-r.top};$('joystick').style.cssText=`display:block;left:${origin.x}px;top:${origin.y}px`;$('touch-hint').hidden=true;unlock();});
+const shell=$('game-shell');shell.addEventListener('pointerdown',e=>{if(mode!=='playing'||game.state!=='playing'||e.target.closest('button')||pointer!==null)return;pointer=e.pointerId;shell.setPointerCapture(e.pointerId);const r=shell.getBoundingClientRect();origin={x:e.clientX-r.left,y:e.clientY-r.top};$('joystick').style.cssText=`display:block;left:${origin.x}px;top:${origin.y}px`;$('touch-hint').hidden=true;unlock();});
 shell.addEventListener('pointermove',e=>{if(e.pointerId!==pointer)return;const r=shell.getBoundingClientRect(),dx=e.clientX-r.left-origin.x,dy=e.clientY-r.top-origin.y,d=Math.hypot(dx,dy),f=Math.min(1,40/(d||1));input.x=dx*f/40;input.y=dy*f/40;$('stick').style.transform=`translate(${dx*f}px,${dy*f}px)`;});
 for(const ev of ['pointerup','pointercancel','lostpointercapture'])shell.addEventListener(ev,e=>{if(e.pointerId===pointer)resetInput();});
 window.addEventListener('keydown',e=>{if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key))e.preventDefault();keys.add(e.key.toLowerCase());if(e.key==='Escape'){if(mode==='playing'&&game.state==='playing')pause();else if(mode==='paused')resume();}});window.addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));
-function show(id){for(const name of ['home','level-screen','pause-screen','end-screen'])$(name).hidden=name!==id;}
-function start(){unlock();game.reset();mode='playing';musicTimer=0;musicStep=0;resetInput();show(null);$('hud').hidden=false;$('touch-hint').hidden=false;$('boss-hud').hidden=true;toast(t('La cacería comienza','The hunt begins'));}
+function show(id){for(const name of ['home','settings-screen','level-screen','pause-screen','end-screen'])$(name).hidden=name!==id;}
+let autoAttackTimer=.35;
+function start(){unlock();game.reset();mode='playing';musicTimer=0;musicStep=0;autoAttackTimer=.35;resetInput();show(null);$('hud').hidden=false;$('touch-hint').hidden=false;$('boss-hud').hidden=true;setTouchHint();syncAttackButton();toast(t('La cacería comienza','The hunt begins'));}
 function pause(){if(mode!=='playing'||game.state!=='playing')return;mode='paused';resetInput();show('pause-screen');}
 function resume(){if(mode!=='paused')return;mode='playing';show(null);unlock();}
 function home(){keepRecord(false);mode='home';resetInput();show('home');$('hud').hidden=true;$('touch-hint').hidden=true;translate();}
 $('start').onclick=start;$('retry').onclick=start;$('pause').onclick=pause;$('resume').onclick=resume;$('quit').onclick=home;$('back').onclick=home;
+$('config').onclick=()=>{renderAttackSettings();show('settings-screen');};
+$('settings-done').onclick=()=>{show('home');};
+$('attack-auto').onclick=()=>{attackMode='auto';save('huroner-attack-mode',attackMode);renderAttackSettings();};
+$('attack-manual').onclick=()=>{attackMode='button';save('huroner-attack-mode',attackMode);renderAttackSettings();};
+$('attack-left').onclick=()=>{attackSide='left';save('huroner-attack-side',attackSide);renderAttackSettings();};
+$('attack-right').onclick=()=>{attackSide='right';save('huroner-attack-side',attackSide);renderAttackSettings();};
+$('attack-button').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();if(mode==='playing'&&game.state==='playing'&&attackMode==='button'){unlock();game.manualAttack();}});
 document.addEventListener('visibilitychange',()=>{if(document.hidden){pause();if(audio)audio.suspend();}else if(audio&&mode==='playing')audio.resume().catch(()=>{});});window.addEventListener('blur',()=>{resetInput();pause();});
 let toastTimer=0;
 function toast(text){$('toast').textContent=text;$('toast').classList.add('show');toastTimer=3;}
@@ -99,10 +122,10 @@ let last=performance.now(),hudTimer=0;
 function frame(now){let dt=Math.min((now-last)/1000,.05);last=now;
  if(mode==='playing'&&game.state==='playing'){
   if(pointer===null){input.x=Number(keys.has('d')||keys.has('arrowright'))-Number(keys.has('a')||keys.has('arrowleft'));input.y=Number(keys.has('s')||keys.has('arrowdown'))-Number(keys.has('w')||keys.has('arrowup'));}
-  game.step(dt,input);musicTimer-=dt;if(musicTimer<=0){musicTimer=.38;let notes=[146.83,0,220,174.61,0,196,130.81,0,146.83,220,0,261.63,196,0,174.61,130.81];let n=notes[musicStep++%notes.length];if(n)tone(n,.28,.018,'triangle');}
+  game.step(dt,input);if(attackMode==='auto'){autoAttackTimer-=dt;if(autoAttackTimer<=0){autoAttackTimer=.9;game.automaticAttack();}}musicTimer-=dt;if(musicTimer<=0){musicTimer=.38;let notes=[146.83,0,220,174.61,0,196,130.81,0,146.83,220,0,261.63,196,0,174.61,130.81];let n=notes[musicStep++%notes.length];if(n)tone(n,.28,.018,'triangle');}
  }
  let picked=false;for(const e of game.events){if(e.type==='slash')tone(170,.09,.023,'triangle',55);if(e.type==='hurt')tone(90,.15,.065,'sawtooth',35);if(e.type==='pickup'&&!picked){tone(850,.06,.013);picked=true;}if(e.type==='level'){tone(523,.25,.05);tone(784,.4,.035);levelMenu();}if(e.type==='mutation')toast(t('MUTACIÓN ','MUTATION ')+['I','II','III','IV'][e.tier]+t(' · La horda evoluciona',' · The horde evolves'));if(e.type==='item'){if(e.kind==='meat')toast(t('+3 VIDA · Pedacito de carne','+3 HP · Meat snack'));if(e.kind==='oil')toast(t('+10% VELOCIDAD · Aceite de salmón · 20s','+10% SPEED · Salmon oil · 20s'));if(e.kind==='fire')toast(t('+35% DAÑO · Fuego · 15s','+35% DAMAGE · Fire · 15s'));tone(740,.09,.025);}if(e.type==='boss'){toast(e.final?t('¡EL REY DEL CORRAL HA LLEGADO!','THE BARNYARD KING HAS ARRIVED!'):`${t('¡JEFE NIVEL','LEVEL BOSS')} ${e.level}!`);tone(65,.9,.08,'sawtooth');}if(e.type==='storm')tone(260,.18,.04,'sawtooth',40);if(e.type==='dead')end(false);if(e.type==='won')end(true);}game.events=[];
  if(toastTimer>0){toastTimer-=dt;if(toastTimer<=0)$('toast').classList.remove('show');}
- hudTimer-=dt;if(hudTimer<=0&&mode!=='home'){hudTimer=.08;hud();}draw();requestAnimationFrame(frame);
+ syncAttackButton();hudTimer-=dt;if(hudTimer<=0&&mode!=='home'){hudTimer=.08;hud();}draw();requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
