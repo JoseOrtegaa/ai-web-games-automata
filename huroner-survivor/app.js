@@ -1,4 +1,4 @@
-import {Game,UPGRADES,xpNeeded,ATTACK_COOLDOWN} from './core.js';
+import {Game,UPGRADES,xpNeeded,ATTACK_COOLDOWN} from './core.js?v=nearest-enemy-1';
 const $=id=>document.getElementById(id);
 const strings={
  genre:['PEQUEÑO HÉROE. GRAN MASACRE.','TINY HERO. BIG BLOODBATH.'],edition:['LA PRADERA MALDITA','THE CURSED MEADOW'],

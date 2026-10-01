@@ -98,9 +98,7 @@ export class Game {
   manualAttack() {
     if(this.state!=='playing'||this.manualAttackCooldown>0)return;
     this.manualAttackCooldown=ATTACK_COOLDOWN;
-    const angle=this.player.face;
-    if(this.rank('twin')){this.attack(angle-.18);this.attack(angle+.18);}
-    else this.attack(angle);
+    this.automaticAttack();
   }
   automaticAttack() {
     if(this.rank('twin')){this.attack();this.attack();}

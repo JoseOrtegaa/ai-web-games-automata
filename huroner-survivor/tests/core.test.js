@@ -12,7 +12,21 @@ test('new weapons damage foes; vitality heals and upgrades stop at caps',()=>{co
 test('boss appears only at ten active minutes, once, and must be killed',()=>{const g=new Game(rng());g.time=BOSS_TIME-.03;g.step(.02);assert.equal(g.bossSpawned,false);g.step(.02);assert.equal(g.bossSpawned,true);assert.equal(g.state,'playing');const id=g.boss.id;g.step(.02);assert.equal(g.boss.id,id);g.hit(g.boss,10000);assert.equal(g.state,'won');const time=g.time;g.step(.05);assert.equal(g.time,time);g.reset();assert.equal(g.time,0);assert.equal(g.level,1);assert.deepEqual(g.upgrades,{});assert.equal(g.boss,null);});
 test('level bosses appear every five levels, scale, use specials and do not end the run',()=>{const g=new Game(rng());g.level=4;g.xp=xpNeeded(4);g.checkLevel();assert.equal(g.level,5);assert.ok(g.boss&&g.boss.bossLevel===5&&!g.boss.finalBoss);const hp5=g.boss.maxHp,damage5=g.boss.damage;g.hit(g.boss,1e6);assert.equal(g.state,'levelup');g.state='playing';g.level=9;g.xp=xpNeeded(9);g.checkLevel();assert.ok(g.boss.maxHp>hp5&&g.boss.damage>damage5);g.state='playing';g.boss.special='ring';g.boss.ability=0;g.step(.02);assert.ok(g.shots.length>=8);g.shots=[];g.boss.special='burst';g.boss.ability=0;g.step(.02);assert.equal(g.shots.length,5);g.boss.special='charge';g.boss.ability=0;g.step(.02);assert.ok(g.boss.charge>0);});
 test('ground pickups heal and apply timed salmon-oil speed and fire damage buffs',()=>{const g=new Game(rng());g.pickupTimer=999;g.player.hp=50;let item=g.spawnPickup('meat');Object.assign(item,{x:0,y:0});g.step(.02);assert.equal(g.player.hp,53);const normalSpeed=124;item=g.spawnPickup('oil');Object.assign(item,{x:g.player.x,y:g.player.y});g.step(.02);assert.ok(g.speedBoostTimer>19);assert.ok(Math.abs(g.speed-normalSpeed*1.1)<1e-8);const normalDamage=20;item=g.spawnPickup('fire');Object.assign(item,{x:g.player.x,y:g.player.y});g.step(.02);assert.ok(g.fireTimer>14);assert.ok(Math.abs(g.damage-normalDamage*1.35)<1e-8);});
-test('attacks only happen when triggered, manual follows facing and automatic aims at nearest foe',()=>{const g=new Game(rng());g.pickupTimer=999;const right=nearby(g,'rabbit',40,0);right.maxHp=right.hp=300;g.step(.02,{x:-1,y:0});assert.equal(g.effects.filter(e=>e.type==='slash').length,0);g.manualAttack();let slash=g.effects.find(e=>e.type==='slash');assert.ok(Math.abs(Math.abs(slash.angle)-Math.PI)<1e-8);assert.equal(right.hp,right.maxHp);g.effects=[];g.automaticAttack();slash=g.effects.find(e=>e.type==='slash');assert.ok(Math.abs(slash.angle)<1e-8);assert.ok(right.hp<right.maxHp);for(let i=0;i<10;i++)g.step(.05);g.effects=[];g.upgrades.twin=1;g.player.face=0;const before=right.hp;g.manualAttack();assert.equal(g.effects.filter(e=>e.type==='slash').length,2);assert.ok(right.hp<before);assert.equal(UPGRADES.find(u=>u.id==='twin').max,1);});
+test('manual and automatic attacks target the nearest living enemy regardless of movement',()=>{
+  for(const attack of ['manualAttack','automaticAttack']){
+    const g=new Game(rng());g.spawnTimer=g.pickupTimer=999;
+    const far=nearby(g,'rabbit',-90,0),near=nearby(g,'rabbit',40,0),dead=nearby(g,'rabbit',0,-20);
+    far.hp=far.maxHp=near.hp=near.maxHp=300;dead.hp=0;
+    g.step(.02,{x:-1,y:0});assert.equal(g.effects.filter(e=>e.type==='slash').length,0);
+    g[attack]();assert.ok(Math.abs(g.effects.find(e=>e.type==='slash').angle)<1e-8);
+    assert.equal(near.hp,280);assert.equal(far.hp,300);
+    for(let i=0;i<6;i++)g.step(.05);
+    g.effects=[];g.upgrades.twin=1;g.player.face=Math.PI;
+    const before=near.hp;g[attack]();assert.equal(g.effects.filter(e=>e.type==='slash').length,2);assert.equal(near.hp,before-40);
+    g.reset();g.player.face=1.2;g[attack]();assert.equal(g.effects.find(e=>e.type==='slash').angle,1.2);
+  }
+  assert.equal(UPGRADES.find(u=>u.id==='twin').max,1);
+});
 test('ten-minute stress simulation maintains bounded entities and finite state',()=>{const g=new Game(rng());g.upgrades={power:5,twin:1,armor:4,reach:3,orbit:3,lightning:3,frost:3,regen:3};for(let i=0;i<12005;i++){g.player.hp=100;g.player.invuln=1;if(g.state==='levelup')g.choose(g.choices[0].id);g.step(.05,{x:Math.cos(i/140),y:Math.sin(i/140)});g.events=[];assert.ok(Number.isFinite(g.player.x)&&Number.isFinite(g.player.hp));assert.ok(g.enemies.length<=171);assert.ok(g.particles.length<=200);assert.ok(g.shots.length<=150);if(g.state==='won')break;}assert.ok(g.time>=600);assert.ok(g.bossSpawned);});
 
 test('manual attack rejects rapid taps until 250ms, including twin slashes, and resets for a new run',()=>{
