@@ -110,7 +110,14 @@ function draw(){const p=game.player;const active=mode!=='home';const zoom=Math.m
  if(active){
  for(const item of game.pickups){if(Math.abs(item.x-cx)>viewW||Math.abs(item.y-cy)>viewH)continue;ctx.save();ctx.translate(item.x,item.y);if(item.type==='meat'){ellipse(ctx,0,1,9,6,'#b95a55','#f0c9a1');line(ctx,[[-7,-2],[7,3]],'#f4e2be',3);ellipse(ctx,-8,-3,2.5,2.5,'#f4e2be');ellipse(ctx,8,4,2.5,2.5,'#f4e2be');}else if(item.type==='oil'){ellipse(ctx,0,0,7,10,'#d6a94e','#f0d681');ellipse(ctx,-2,-3,2,4,'#fff1b180');}else{ellipse(ctx,0,2,8,11,'#dc6737','#f2ad52');ellipse(ctx,0,4,4,7,'#ffd36a');}ctx.restore();}
  for(const e of game.effects){if(e.type==='blood'){ctx.globalAlpha=Math.min(.42,e.life/4);ellipse(ctx,e.x,e.y,e.r*1.3,e.r*.8,'#812e39');ctx.globalAlpha=1;}}
- for(const g of game.gems){if(Math.abs(g.x-cx)>viewW||Math.abs(g.y-cy)>viewH)continue;ctx.save();ctx.translate(g.x,g.y);if(g.heal){ellipse(ctx,0,0,6,6,'#e9917f');line(ctx,[[-3,0],[3,0]],'#ffe6bc',2);line(ctx,[[0,-3],[0,3]],'#ffe6bc',2);}else{ctx.rotate(Math.PI/4);ctx.fillStyle=g.value>4?'#e7be71':'#a8c98b';ctx.fillRect(-3.5,-3.5,7,7);ctx.fillStyle='#e6f1be';ctx.fillRect(-3,-3,2,2);}ctx.restore();}
+ for(const g of game.gems){if(Math.abs(g.x-cx)>viewW||Math.abs(g.y-cy)>viewH)continue;ctx.save();ctx.translate(g.x,g.y);if(g.heal){ellipse(ctx,0,0,6,6,'#e9917f');line(ctx,[[-3,0],[3,0]],'#ffe6bc',2);line(ctx,[[0,-3],[0,3]],'#ffe6bc',2);}else{
+  const pulse=.5+.5*Math.sin(game.time*2.4+g.x*.13+g.y*.17),color=g.value>4?'#e7be71':'#a8c98b';
+  ctx.globalAlpha=.04+pulse*.04;ellipse(ctx,0,0,9,9,color);
+  ctx.globalAlpha=.08+pulse*.06;ellipse(ctx,0,0,6,6,color);ctx.globalAlpha=1;
+  ctx.rotate(Math.PI/4);ctx.fillStyle=color;ctx.fillRect(-3.5,-3.5,7,7);ctx.fillStyle='#e6f1be';ctx.fillRect(-3,-3,2,2);
+  ctx.rotate(-Math.PI/4);ctx.globalAlpha=Math.pow(pulse,6)*.45;
+  line(ctx,[[-4,-3],[1,-3]],'#fff3cd',1);line(ctx,[[-1.5,-5.5],[-1.5,-.5]],'#fff3cd',1);
+ }ctx.restore();}
  if(game.rank('frost')){const r=65+game.rank('frost')*15;ellipse(ctx,p.x,p.y,r,r,'#87d8d610');ctx.strokeStyle='#b1e8e44a';ctx.lineWidth=1;ctx.beginPath();ctx.arc(p.x,p.y,r,0,6.28);ctx.stroke();}
  for(const e of game.enemies){const a=e.specialAttack;if(!a)continue;
   ctx.save();ctx.lineWidth=2;ctx.strokeStyle='#ffd18b';
