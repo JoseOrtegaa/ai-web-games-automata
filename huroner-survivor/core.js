@@ -23,6 +23,7 @@ export class Game {
     this.state='playing'; this.time=0; this.level=1; this.xp=0; this.kills=0;
     this.player={x:0,y:0,hp:100,maxHp:100,face:-Math.PI/2,invuln:0};
     this.upgrades={}; this.enemies=[]; this.gems=[]; this.pickups=[]; this.particles=[]; this.shots=[]; this.effects=[];
+    this.manualAttackCooldown=0;
     this.spawnTimer=.5; this.pickupTimer=5; this.stormTimer=2; this.auraTimer=0;
     this.mutation=0; this.bossSpawned=false; this.boss=null; this.lastLevelBoss=0; this.choices=[];
     this.speedBoostTimer=0; this.fireTimer=0; this.events=[]; this.nextId=1; this.shake=0;
@@ -94,6 +95,8 @@ export class Game {
     for(const e of this.enemies){const dx=e.x-p.x,dy=e.y-p.y,d=Math.hypot(dx,dy);const a=Math.atan2(Math.sin(Math.atan2(dy,dx)-angle),Math.cos(Math.atan2(dy,dx)-angle));if(d<this.reach+e.r&&Math.abs(a)<half+.15)this.hit(e,this.damage,dx/(d||1)*10,dy/(d||1)*10);}
   }
   manualAttack() {
+    if(this.state!=='playing'||this.manualAttackCooldown>0)return;
+    this.manualAttackCooldown=.45;
     const angle=this.player.face;
     if(this.rank('twin')){this.attack(angle-.18);this.attack(angle+.18);}
     else this.attack(angle);
@@ -131,6 +134,7 @@ export class Game {
   step(dt,input={x:0,y:0}) {
     if(this.state!=='playing')return;
     dt=clamp(dt,0,.05);this.time+=dt;const p=this.player;
+    this.manualAttackCooldown=Math.max(0,this.manualAttackCooldown-dt);
     p.invuln=Math.max(0,p.invuln-dt);this.shake=Math.max(0,this.shake-dt*20);
     this.speedBoostTimer=Math.max(0,this.speedBoostTimer-dt);this.fireTimer=Math.max(0,this.fireTimer-dt);
     p.hp=Math.min(p.maxHp,p.hp+this.rank('regen')*.7*dt);
