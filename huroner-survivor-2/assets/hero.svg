@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 610" fill="none">
+  <defs>
+    <linearGradient id="moon" x1="388" y1="40" x2="388" y2="465" gradientUnits="userSpaceOnUse"><stop stop-color="#eadebf"/><stop offset="1" stop-color="#768f84"/></linearGradient>
+    <linearGradient id="fur" x1="378" y1="189" x2="397" y2="415" gradientUnits="userSpaceOnUse"><stop stop-color="#fff0cf"/><stop offset="1" stop-color="#b7a286"/></linearGradient>
+    <linearGradient id="blade" x1="489" y1="217" x2="517" y2="415" gradientUnits="userSpaceOnUse"><stop stop-color="#fbf5db"/><stop offset="1" stop-color="#76999a"/></linearGradient>
+    <linearGradient id="rock" x1="370" y1="452" x2="370" y2="572" gradientUnits="userSpaceOnUse"><stop stop-color="#3b5553"/><stop offset="1" stop-color="#152b31"/></linearGradient>
+    <pattern id="engraving" width="13" height="13" patternUnits="userSpaceOnUse" patternTransform="rotate(28)"><path d="M0 0V13" stroke="#152f35" stroke-opacity=".18" stroke-width="2"/></pattern>
+    <g id="leaf"><path d="M0 0Q-21-1-22-17Q-4-16 0 0Z" fill="#8e7959"/><path d="M0 0L-18-13" stroke="#c2a277" stroke-width="1.2"/></g>
+    <g id="grass" stroke="#7b8c77" stroke-width="2" stroke-linecap="round"><path d="M0 0Q-8-26-23-33M0 0Q6-37 24-42M0 0Q-3-33-1-48"/><path d="M-13-20L-20-18M-16-24L-24-23M12-26L21-28M14-30L23-33"/></g>
+    <g id="moth" fill="#d5d5b0"><path d="M0 0Q-13-14-16-4Q-15 6-1 4Q12 11 14 2Q13-9 0 0Z"/><path d="M-1-2L1 8" stroke="#2c484a" stroke-width="2"/></g>
+  </defs>
+  <!-- A cut-paper moon and engraved silhouettes form a single illustrated world. -->
+  <path d="M371 44C478 37 574 118 580 225C586 336 493 423 386 428C277 433 186 359 178 249C170 142 262 53 371 44Z" fill="url(#moon)"/>
+  <path d="M371 44C478 37 574 118 580 225C586 336 493 423 386 428C277 433 186 359 178 249C170 142 262 53 371 44Z" fill="url(#engraving)"/>
+  <path d="M202 167Q279 105 310 88M455 72Q512 95 545 142M222 303Q239 358 296 385" stroke="#efe3c6" stroke-opacity=".36" stroke-width="2"/>
+  <g stroke="#53756e" stroke-width="3" opacity=".35"><path d="M326 161L342 157M487 178L505 171M228 238L241 238M460 338L482 332M309 105L330 99"/></g>
+  <!-- Distant leaning stone shrines and seed-heavy meadow. -->
+  <path d="M141 431L203 301L221 288L252 316L271 433Z" fill="#365753"/>
+  <path d="M188 410L210 320L225 316L234 407Z" fill="#233f42"/>
+  <path d="M229 305L242 320L246 398L234 406Z" fill="#627c69"/>
+  <path d="M503 424L520 330L546 305L566 313L589 441Z" fill="#355653"/>
+  <path d="M521 345L540 328L548 410L525 419Z" fill="#203c42"/>
+  <path d="M140 460Q168 409 205 404Q229 362 260 402Q293 378 315 416Q375 402 412 427Q470 390 496 418Q524 384 561 415Q599 407 642 465Z" fill="#24464a"/>
+  <g stroke="#476b60" stroke-width="2"><path d="M192 415Q188 354 175 332M185 374L164 359M184 368L202 340M551 424Q565 380 557 349M561 380L581 364M559 367L540 352M264 417L257 363M253 380L240 365"/></g>
+  <!-- A watcher in the meadow: tiny, asymmetrical, never confused with the hero. -->
+  <g transform="translate(606 426) rotate(8)"><path d="M-24 17Q-33-18-10-23L-19-62Q-8-74 2-25L11-62Q25-71 14-20Q39-1 20 22Z" fill="#29464a" stroke="#122c33" stroke-width="3"/><path d="M-18-5L-8-3M7-4L17-8" stroke="#cf7a63" stroke-width="3"/></g>
+  <!-- Hero's windward scarf and long tail establish the triangular composition. -->
+  <path d="M357 332C327 360 272 379 258 338C249 315 264 291 260 277C230 302 220 351 254 382C283 409 326 390 360 365Z" fill="#b8a383" stroke="#183036" stroke-width="6"/>
+  <path d="M260 277C230 302 220 351 254 382L273 361C251 344 251 315 260 277Z" fill="#43514b"/>
+  <path d="M242 322L246 310M241 336L247 323M250 352L251 341M262 367L268 361" stroke="#758071" stroke-width="2"/>
+  <path d="M334 251C291 231 271 220 220 251L235 268L207 290C263 289 298 282 338 271Z" fill="#a64138" stroke="#283738" stroke-width="4"/>
+  <path d="M225 251Q276 235 321 259L224 281Q275 265 311 265" fill="#ce6851"/>
+  <path d="M225 274L272 263M244 253L276 251M285 272L311 267" stroke="#ec9269" stroke-width="1.5"/>
+  <!-- Boots and body. -->
+  <path d="M339 367L328 416L306 438Q310 456 355 444L374 400L386 377Z" fill="#364b49" stroke="#162d33" stroke-width="5"/>
+  <path d="M389 369L400 424L390 440Q406 458 445 441L432 424L430 369Z" fill="#2a4245" stroke="#162d33" stroke-width="5"/>
+  <path d="M323 436L345 436M406 439L431 438" stroke="#839080" stroke-width="2"/>
+  <path d="M343 251C321 273 320 335 334 367C351 395 404 399 432 367C451 330 437 271 415 252Z" fill="url(#fur)" stroke="#183036" stroke-width="6"/>
+  <path d="M368 267C350 303 352 349 369 371Q395 382 414 359Q425 308 400 270Z" fill="#f0dfba"/>
+  <path d="M336 318L345 336M332 328L341 344M335 345L347 360M341 359L351 372" stroke="#8e8d76" stroke-width="2"/>
+  <path d="M334 322Q379 344 439 318L439 335Q387 357 336 341Z" fill="#5b6251" stroke="#1a3438" stroke-width="3"/>
+  <path d="M380 337L397 335L399 347L382 349Z" fill="#b79861" stroke="#223a3c" stroke-width="2"/>
+  <!-- Moon blade: the diagonal cuts clear of both ears and face. -->
+  <path d="M465 359L518 173L540 147L541 184L484 365Z" fill="url(#blade)" stroke="#25494e" stroke-width="4"/>
+  <path d="M477 353L531 170L527 194L486 344Z" fill="#fff8d9"/>
+  <path d="M511 243L519 218M502 273L506 261" stroke="#688f91" stroke-width="2"/>
+  <path d="M455 352L496 364L494 375L449 363Z" fill="#bd965d" stroke="#183239" stroke-width="4"/>
+  <path d="M470 367L459 402" stroke="#152e33" stroke-width="13" stroke-linecap="round"/>
+  <path d="M470 368L460 400" stroke="#80644e" stroke-width="8" stroke-linecap="round"/>
+  <path d="M463 380L470 383M461 390L467 393" stroke="#c8a276" stroke-width="2"/>
+  <path d="M427 281C452 282 455 303 452 332L471 343Q483 355 467 368Q449 372 435 352C414 335 413 303 427 281Z" fill="url(#fur)" stroke="#183036" stroke-width="5"/>
+  <path d="M451 342L447 352M457 348L453 358" stroke="#948575" stroke-width="2"/>
+  <!-- Head: round ears, black mask, long cream muzzle, calm forward gaze. -->
+  <path d="M333 186C308 184 305 158 322 148C338 138 353 153 353 170Z" fill="#c2b091" stroke="#183036" stroke-width="5"/>
+  <path d="M327 174C315 171 319 155 328 155Q341 157 340 173Z" fill="#a37e6d"/>
+  <path d="M402 162C405 139 430 140 440 156C447 171 434 185 419 184Z" fill="#d3c1a2" stroke="#183036" stroke-width="5"/>
+  <path d="M414 169C413 153 427 151 431 161Q435 174 423 176Z" fill="#b28c79"/>
+  <path d="M327 186C333 154 382 147 411 161C439 171 443 202 435 220L454 235L435 258C410 274 360 263 340 242C321 224 319 205 327 186Z" fill="url(#fur)" stroke="#183036" stroke-width="6"/>
+  <path d="M326 193C344 177 359 186 373 195Q397 180 430 191L438 215C417 232 394 220 379 226C358 238 335 225 326 213Z" fill="#42524c"/>
+  <path d="M376 211Q405 196 429 218L454 234L434 252Q401 265 371 241Q364 224 376 211Z" fill="#f4e8c7"/>
+  <path d="M365 164L375 160L384 165M378 168L389 163L399 168" stroke="#fff3d5" stroke-width="2"/>
+  <path d="M342 198Q351 190 359 200L357 215Q347 218 343 210Z" fill="#112b32"/>
+  <path d="M404 195Q414 191 420 202L418 214Q407 217 404 208Z" fill="#112b32"/>
+  <path d="M348 198L352 198L351 205L348 204ZM411 197L415 200L414 205L410 203Z" fill="#f9f0d0"/>
+  <path d="M432 229Q446 221 453 234L443 244L433 238Z" fill="#5b5d50"/>
+  <path d="M442 242L436 251L427 248" stroke="#927e68" stroke-width="2" stroke-linecap="round"/>
+  <path d="M390 228L362 222M392 238L361 240M394 245L374 254" stroke="#7f8570" stroke-width="1.5" stroke-linecap="round"/>
+  <!-- Scarf collar with a hand-cut gilt edge. -->
+  <path d="M335 243Q375 270 431 251L435 273Q379 295 334 265Z" fill="#bc5343" stroke="#243437" stroke-width="4"/>
+  <path d="M341 260Q379 278 426 263" stroke="#e39566" stroke-width="2"/>
+  <path d="M350 269L362 300L374 290L379 304L386 278Z" fill="#a3463e" stroke="#243437" stroke-width="3"/>
+  <!-- Rock plinth and foreground engraving. -->
+  <path d="M277 456L310 439L343 446L370 435L401 446L430 442L456 454L478 486L461 512L505 540L256 546L246 509L264 482Z" fill="url(#rock)" stroke="#173238" stroke-width="4"/>
+  <path d="M277 457L310 448L342 455L370 445L401 456L431 451L455 462L424 471L376 465L342 469L304 463Z" fill="#78917c"/>
+  <path d="M274 481L309 465L303 487L284 501M376 468L356 491L369 503L349 531M430 474L415 491L437 501L450 524M311 511L320 508M315 517L325 514M383 479L393 482M381 484L390 487" stroke="#688071" stroke-width="2"/>
+  <path d="M105 534C136 508 188 526 231 510Q259 495 279 516Q338 536 379 526Q425 515 469 524Q508 496 553 516Q614 513 661 545L625 579Q532 595 392 588Q250 596 135 577Z" fill="#132d34"/>
+  <g stroke="#8c805f" stroke-linecap="round"><path d="M175 543Q153 478 162 421M159 487L135 462M159 474L183 446M573 543Q608 471 599 416M602 477L630 450M604 461L584 439" stroke-width="3"/><path d="M122 551Q119 519 105 503M643 552Q652 519 675 503" stroke-width="2"/></g>
+  <use href="#leaf" transform="translate(157 478) rotate(14)"/><use href="#leaf" transform="translate(160 454) rotate(110)"/><use href="#leaf" transform="translate(162 430) rotate(21) scale(.75)"/>
+  <use href="#leaf" transform="translate(604 463) rotate(100)"/><use href="#leaf" transform="translate(602 438) rotate(28) scale(.8)"/><use href="#leaf" transform="translate(598 503) rotate(136) scale(1.2)"/>
+  <use href="#grass" transform="translate(229 542) rotate(-15)"/><use href="#grass" transform="translate(519 547) rotate(12)"/><use href="#grass" transform="translate(282 553) scale(.7)"/><use href="#grass" transform="translate(454 562) scale(.7)"/>
+  <g stroke="#b99b6b" stroke-width="2" stroke-linecap="round"><path d="M198 548L192 497M194 517L187 510M193 509L201 500M556 543L565 492M561 514L575 504"/></g>
+  <g fill="#b49669"><path d="M187 506Q179 496 183 491Q192 496 187 506ZM192 494Q186 482 193 479Q200 487 192 494ZM201 500Q199 487 206 486Q211 494 201 500ZM566 495Q563 482 570 478Q576 489 566 495ZM575 504Q576 490 585 488Q588 498 575 504Z"/></g>
+  <g fill="#718b7b"><path d="M216 559L236 551L244 557L230 564ZM475 553L489 547L500 555L485 560ZM302 565L315 559L327 566L313 571Z"/></g>
+  <use href="#moth" transform="translate(292 151) rotate(-18) scale(.8)"/><use href="#moth" transform="translate(566 280) rotate(20) scale(.5)"/>
+  <g fill="#e2c990"><circle cx="234" cy="323" r="2"/><circle cx="501" cy="374" r="2"/><circle cx="305" cy="225" r="1.5"/><circle cx="543" cy="316" r="1.5"/><circle cx="282" cy="411" r="1.7"/></g>
+</svg>

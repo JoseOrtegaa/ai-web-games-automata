@@ -1,0 +1,37 @@
+# Huroner Survivor 2 — QA
+
+## Veredicto local
+Matriz funcional PASS: 45 comprobaciones en cuatro perfiles, recuperadas de la ejecución independiente anterior. Revisión: V2 añadida sobre base 40dbf924; integración sobre main b32337f6. Arquitectura y dirección visual completadas. Último defecto corregido: panel de ajustes recortado en horizontal. Retest PASS en ambos navegadores a 844×390, 320×568 y 390×844; cabecera accesible y botón alcanzable mediante scroll, pausa/reanudación intactas. Publicación todavía pendiente.
+
+## Criterios y evidencia
+| Criterio | Resultado observado |
+| --- | --- |
+| A1 Reglas | 18 casos heredados y 9 regresiones nuevas de terminal/almacenamiento/recarga pasan; contenido y balance preservados. |
+| A2 Presentación | Inspección de portada, arena poblada, elección, pausa y terminales. Arte propio coherente; corregidos suelo con costuras y pasada duplicada de gemas. |
+| A3 Controles | Ataque cercano, auto/manual, recarga compartida, teclado, drag, cancelación, pausa y elección PASS. Dos contactos simultáneos mediante CDP Chromium PASS; touch-action none durante combate. |
+| A4 Adaptación | Chromium 134.0.6998.35 y WebKit 18.4, 390×844 DPR3 y 1440×1000 DPR1. Comprobaciones adicionales 320×568 y 844×390; panel horizontal corregido y retest PASS. |
+| A5 Estructura | Revisión arquitectónica PASS: simulación, render, input, audio y persistencia separados; imports locales; sin dependencias runtime. |
+| A6 Aislamiento | Claves de V2 independientes; preferencias ES/EN, sonido y lado persistidas. V1 sin cambios; catálogo añade enlace propio. |
+| A7 Carga | Cero errores bloqueantes de consola/red en los cuatro perfiles locales. Humo público pendiente. |
+
+Identidad de archivos: [tested-files.json](tested-files.json), SHA-256 de código/recursos. Retest localizado: [layout-results.json](layout-results.json).
+
+Resultados medidos: [browser-results.json](browser-results.json). Fixture de navegador: [browser-qa.cjs](../tests/browser-qa.cjs); intercepta app.js solo en pruebas para acceder a Game, sin hooks en producción. Victoria y escenas pobladas se preparan con fixture; no equivalen a jugar diez minutos manualmente.
+
+Reproducción: `npm test`; servir la raíz por HTTP y ejecutar `node tests/browser-qa.cjs` con Playwright 1.51.1 y Chromium/WebKit instalados en el entorno de QA. Admite `QA_BASE_URL`, `QA_OUTPUT` y `CHROMIUM_EXECUTABLE`. Playwright es herramienta externa de QA, no dependencia del juego.
+
+## Limitaciones materiales
+No se probaron teléfonos físicos ni audio percibido. WebKit Linux no demuestra compatibilidad íntegra con Safari iPhone. El zoom se comprueba por política de entrada y gestos automatizados, pendiente confirmación física.
+
+Carga sintética extrema, 170 enemigos visibles y 350 gemas durante ~3 s:
+| Perfil | Media ms/frame | p95 ms/frame |
+| --- | ---: | ---: |
+| Chromium móvil | 36,2 | 50,0 |
+| Chromium escritorio | 29,4 | 33,4 |
+| WebKit móvil | 99,1 | 154,0 |
+| WebKit escritorio | 74,5 | 88,0 |
+
+Entidades acotadas y ejecución estable; no se alcanzan 60 fps en esta carga headless. El PASS funcional no es un PASS de rendimiento ni una medida de un teléfono real. Mejorar rendimiento con cargas densas queda como limitación conocida, sin alterar balance para ocultarla.
+
+## Publicación
+Pendiente integrar y verificar https://joseortegaa.github.io/ai-web-games-automata/huroner-survivor-2/.

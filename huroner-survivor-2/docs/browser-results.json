@@ -1,0 +1,254 @@
+[
+  {
+    "name": "chromium-mobile",
+    "browser": "134.0.6998.35",
+    "viewport": "390x844 DPR3 (canvas capped2)",
+    "checks": [
+      {
+        "label": "boot, Spanish menu, artwork, controls ≥44px",
+        "result": "PASS"
+      },
+      {
+        "label": "ES/EN and independent persisted preferences",
+        "result": "PASS"
+      },
+      {
+        "label": "manual nearest attack and keyboard movement",
+        "result": "PASS"
+      },
+      {
+        "label": "pause freezes time buffs cooldown; resume resets held keyboard",
+        "result": "PASS"
+      },
+      {
+        "label": "real Chromium two-touch move+attack and touchCancel reset",
+        "result": "PASS"
+      },
+      {
+        "label": "captured drag release and lostpointercapture reset",
+        "result": "PASS"
+      },
+      {
+        "label": "level-up freezes, carries XP, rejects stale/double choice",
+        "result": "PASS"
+      },
+      {
+        "label": "populated arena, species, warnings, pickups, boss IDs",
+        "result": "PASS"
+      },
+      {
+        "label": "death, retry clean state, victory final boss, record",
+        "result": "PASS"
+      },
+      {
+        "label": "auto mode attacks through shared gate; sound toggle and resize",
+        "result": "PASS"
+      },
+      {
+        "label": "loaded-frame performance and bounded entities",
+        "result": "PASS"
+      },
+      {
+        "label": "no blocking console/network errors",
+        "result": "PASS"
+      }
+    ],
+    "errors": [],
+    "failed": [],
+    "performance": {
+      "durationMs": 3002.4000000000233,
+      "frames": 83,
+      "meanMs": 36.17349397590391,
+      "p95Ms": 50,
+      "enemies": 170,
+      "gems": 350,
+      "dpr": 3
+    }
+  },
+  {
+    "name": "chromium-desktop",
+    "browser": "134.0.6998.35",
+    "viewport": "1440x1000 DPR1",
+    "checks": [
+      {
+        "label": "boot, Spanish menu, artwork, controls ≥44px",
+        "result": "PASS"
+      },
+      {
+        "label": "ES/EN and independent persisted preferences",
+        "result": "PASS"
+      },
+      {
+        "label": "manual nearest attack and keyboard movement",
+        "result": "PASS"
+      },
+      {
+        "label": "pause freezes time buffs cooldown; resume resets held keyboard",
+        "result": "PASS"
+      },
+      {
+        "label": "captured drag release and lostpointercapture reset",
+        "result": "PASS"
+      },
+      {
+        "label": "level-up freezes, carries XP, rejects stale/double choice",
+        "result": "PASS"
+      },
+      {
+        "label": "populated arena, species, warnings, pickups, boss IDs",
+        "result": "PASS"
+      },
+      {
+        "label": "death, retry clean state, victory final boss, record",
+        "result": "PASS"
+      },
+      {
+        "label": "auto mode attacks through shared gate; sound toggle and resize",
+        "result": "PASS"
+      },
+      {
+        "label": "loaded-frame performance and bounded entities",
+        "result": "PASS"
+      },
+      {
+        "label": "no blocking console/network errors",
+        "result": "PASS"
+      }
+    ],
+    "errors": [],
+    "failed": [],
+    "performance": {
+      "durationMs": 3001.1999999999766,
+      "frames": 102,
+      "meanMs": 29.423529411764477,
+      "p95Ms": 33.40000000000009,
+      "enemies": 170,
+      "gems": 350,
+      "dpr": 1
+    }
+  },
+  {
+    "name": "webkit-mobile",
+    "browser": "18.4",
+    "viewport": "390x844 DPR3 (canvas capped2)",
+    "checks": [
+      {
+        "label": "boot, Spanish menu, artwork, controls ≥44px",
+        "result": "PASS"
+      },
+      {
+        "label": "ES/EN and independent persisted preferences",
+        "result": "PASS"
+      },
+      {
+        "label": "manual nearest attack and keyboard movement",
+        "result": "PASS"
+      },
+      {
+        "label": "pause freezes time buffs cooldown; resume resets held keyboard",
+        "result": "PASS"
+      },
+      {
+        "label": "captured drag release and lostpointercapture reset",
+        "result": "PASS"
+      },
+      {
+        "label": "level-up freezes, carries XP, rejects stale/double choice",
+        "result": "PASS"
+      },
+      {
+        "label": "populated arena, species, warnings, pickups, boss IDs",
+        "result": "PASS"
+      },
+      {
+        "label": "death, retry clean state, victory final boss, record",
+        "result": "PASS"
+      },
+      {
+        "label": "auto mode attacks through shared gate; sound toggle and resize",
+        "result": "PASS"
+      },
+      {
+        "label": "loaded-frame performance and bounded entities",
+        "result": "PASS"
+      },
+      {
+        "label": "no blocking console/network errors",
+        "result": "PASS"
+      }
+    ],
+    "errors": [],
+    "failed": [],
+    "performance": {
+      "durationMs": 3072,
+      "frames": 31,
+      "meanMs": 99.09677419354838,
+      "p95Ms": 154,
+      "enemies": 170,
+      "gems": 350,
+      "dpr": 3
+    }
+  },
+  {
+    "name": "webkit-desktop",
+    "browser": "18.4",
+    "viewport": "1440x1000 DPR1",
+    "checks": [
+      {
+        "label": "boot, Spanish menu, artwork, controls ≥44px",
+        "result": "PASS"
+      },
+      {
+        "label": "ES/EN and independent persisted preferences",
+        "result": "PASS"
+      },
+      {
+        "label": "manual nearest attack and keyboard movement",
+        "result": "PASS"
+      },
+      {
+        "label": "pause freezes time buffs cooldown; resume resets held keyboard",
+        "result": "PASS"
+      },
+      {
+        "label": "captured drag release and lostpointercapture reset",
+        "result": "PASS"
+      },
+      {
+        "label": "level-up freezes, carries XP, rejects stale/double choice",
+        "result": "PASS"
+      },
+      {
+        "label": "populated arena, species, warnings, pickups, boss IDs",
+        "result": "PASS"
+      },
+      {
+        "label": "death, retry clean state, victory final boss, record",
+        "result": "PASS"
+      },
+      {
+        "label": "auto mode attacks through shared gate; sound toggle and resize",
+        "result": "PASS"
+      },
+      {
+        "label": "loaded-frame performance and bounded entities",
+        "result": "PASS"
+      },
+      {
+        "label": "no blocking console/network errors",
+        "result": "PASS"
+      }
+    ],
+    "errors": [],
+    "failed": [],
+    "performance": {
+      "durationMs": 3053,
+      "frames": 41,
+      "meanMs": 74.46341463414635,
+      "p95Ms": 88,
+      "enemies": 170,
+      "gems": 350,
+      "dpr": 1
+    }
+  }
+]

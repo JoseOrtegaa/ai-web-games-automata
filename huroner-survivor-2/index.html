@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#101f26">
+  <meta name="description" content="Huroner Survivor 2: El último claro. Una fábula de dientes y acero.">
+  <title>Huroner Survivor 2 · El último claro</title>
+  <link rel="icon" href="./icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <aside class="desktop-note" aria-hidden="true"><span>HS / II</span><i></i><p>EL ÚLTIMO<br>CLARO</p></aside>
+  <main id="game-shell">
+    <canvas id="world" aria-label="Arena de Huroner Survivor 2"></canvas>
+    <section id="home" class="screen title-screen" aria-labelledby="game-title">
+      <header class="title-tools"><span data-i18n="chapter">CAPÍTULO II</span><div><button id="language" class="text-button" aria-label="Change language">EN</button><button id="sound" class="icon-button" aria-label="Sonido">♫</button><button id="config" class="icon-button" aria-label="Configuración">⚙</button></div></header>
+      <div class="title-heading"><p class="eyebrow" data-i18n="edition">EL ÚLTIMO CLARO</p><h1 id="game-title">Huroner<br><span>Survivor <em>II</em></span></h1><p class="subtitle" data-i18n="subtitle">Una fábula de dientes y acero</p></div>
+      <div class="hero-illustration"><img src="./assets/hero.svg" alt="" draggable="false"><div class="hero-rule"><span>✦</span></div></div>
+      <div class="title-actions"><p class="intro" data-i18n="intro"></p><button id="start" class="primary"><span data-i18n="start"></span><span aria-hidden="true">↗</span></button><div class="instructions"><p data-i18n="moveHelp"></p><p id="attack-help"></p></div><div class="record-line"><span data-i18n="record"></span><strong id="best"></strong></div></div>
+    </section>
+    <section id="settings-screen" class="screen overlay" hidden aria-labelledby="settings-title">
+      <div class="panel settings-panel"><p class="eyebrow" data-i18n="controlsTitle"></p><h2 id="settings-title" data-i18n="settings"></h2>
+        <fieldset><legend data-i18n="attackType"></legend><div class="segmented"><button id="attack-auto" data-i18n="automatic"></button><button id="attack-manual" data-i18n="manual"></button></div><p class="field-note" data-i18n="cooldown"></p></fieldset>
+        <fieldset id="attack-side-group"><legend data-i18n="attackSide"></legend><div class="segmented"><button id="attack-left" data-i18n="left"></button><button id="attack-right" data-i18n="right"></button></div></fieldset>
+        <fieldset><legend data-i18n="language"></legend><div class="segmented"><button id="lang-es">Español</button><button id="lang-en">English</button></div></fieldset>
+        <div class="setting-row"><span data-i18n="sound"></span><button id="settings-sound" class="secondary"></button></div>
+        <button id="settings-done" class="primary" data-i18n="done"></button>
+      </div>
+    </section>
+    <div id="hud" hidden>
+      <div class="hud-top"><div class="level-badge"><small data-i18n="level"></small><b id="level">1</b></div><div class="vitals"><div class="health-caption"><span>♥ <b id="hp-label">100 / 100</b></span><span id="kills">0</span></div><div class="meter health"><i id="hp-fill"></i></div><div class="meter experience"><i id="xp-fill"></i></div><div class="xp-caption"><span id="xp-label"></span><span id="mutation-label"></span></div></div><button id="pause" class="icon-button" aria-label="Pausar">Ⅱ</button></div>
+      <div class="run-clock"><b id="timer">00:00</b><span id="timer-label"></span></div>
+      <div id="boss-hud" hidden><div class="boss-caption"><span id="boss-name"></span><span id="boss-count"></span></div><div class="meter boss"><i id="boss-fill"></i></div></div>
+      <div id="buffs"></div><div id="equipment" aria-hidden="true"></div>
+      <div id="combat-status"><span id="combat-label"></span><i><b id="combat-fill"></b></i></div>
+    </div>
+    <div id="touch-hint" hidden></div>
+    <div id="joystick" hidden><div id="stick"></div></div>
+    <button id="attack-button" class="attack-control" hidden><span class="sword-icon" aria-hidden="true">⚔</span><span data-i18n="attack"></span><i><b id="attack-fill"></b></i></button>
+    <div id="toast" role="status" aria-live="polite"></div>
+    <section id="level-screen" class="screen overlay" hidden aria-labelledby="level-title"><div class="panel choice-panel"><p id="level-summary" class="eyebrow"></p><h2 id="level-title" data-i18n="levelup"></h2><p class="panel-copy" data-i18n="choose"></p><div id="choices"></div></div></section>
+    <section id="pause-screen" class="screen overlay" hidden aria-labelledby="pause-title"><div class="panel pause-panel"><div class="ornament" aria-hidden="true">❧</div><p class="eyebrow" data-i18n="edition"></p><h2 id="pause-title" data-i18n="paused"></h2><p class="panel-copy" data-i18n="pauseText"></p><button id="resume" class="primary" data-i18n="resume"></button><button id="pause-sound" class="secondary"></button><button id="quit" class="text-button" data-i18n="quit"></button></div></section>
+    <section id="end-screen" class="screen overlay" hidden aria-labelledby="end-title"><div class="panel end-panel"><div class="ornament" aria-hidden="true">✧</div><p id="end-kicker" class="eyebrow"></p><h2 id="end-title"></h2><p id="end-copy" class="panel-copy"></p><div id="end-stats"></div><button id="retry" class="primary" data-i18n="retry"></button><button id="back" class="text-button" data-i18n="quit"></button></div></section>
+  </main>
+  <aside class="desktop-note right-note" aria-hidden="true"><p>UNA FÁBULA<br>DE DIENTES<br>Y ACERO</p><i></i><span>MMXXVI</span></aside>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

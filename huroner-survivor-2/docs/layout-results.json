@@ -1,0 +1,62 @@
+[
+  {
+    "name": "chromium",
+    "size": {
+      "width": 844,
+      "height": 390
+    },
+    "top": 43,
+    "bottom": 322.296875,
+    "result": "PASS"
+  },
+  {
+    "name": "chromium",
+    "size": {
+      "width": 320,
+      "height": 568
+    },
+    "top": 18,
+    "bottom": 539.296875,
+    "result": "PASS"
+  },
+  {
+    "name": "chromium",
+    "size": {
+      "width": 390,
+      "height": 844
+    },
+    "top": 128.84375,
+    "bottom": 684.140625,
+    "result": "PASS"
+  },
+  {
+    "name": "webkit",
+    "size": {
+      "width": 844,
+      "height": 390
+    },
+    "top": 43,
+    "bottom": 322,
+    "result": "PASS"
+  },
+  {
+    "name": "webkit",
+    "size": {
+      "width": 320,
+      "height": 568
+    },
+    "top": 18,
+    "bottom": 539,
+    "result": "PASS"
+  },
+  {
+    "name": "webkit",
+    "size": {
+      "width": 390,
+      "height": 844
+    },
+    "top": 128.984375,
+    "bottom": 683.984375,
+    "result": "PASS"
+  }
+]
