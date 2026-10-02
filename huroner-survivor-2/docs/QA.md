@@ -1,7 +1,7 @@
 # Huroner Survivor 2 — QA
 
 ## Veredicto local
-Matriz funcional PASS: 45 comprobaciones en cuatro perfiles, recuperadas de la ejecución independiente anterior. Revisión: V2 añadida sobre base 40dbf924; integración sobre main b32337f6. Arquitectura y dirección visual completadas. Último defecto corregido: panel de ajustes recortado en horizontal. Retest PASS en ambos navegadores a 844×390, 320×568 y 390×844; cabecera accesible y botón alcanzable mediante scroll, pausa/reanudación intactas. Publicación todavía pendiente.
+Matriz funcional PASS: 45 comprobaciones en cuatro perfiles, recuperadas de la ejecución independiente anterior. Revisión: V2 añadida sobre base 40dbf924; integración sobre main b32337f6. Arquitectura y dirección visual completadas. Último defecto corregido: panel de ajustes recortado en horizontal. Retest PASS en ambos navegadores a 844×390, 320×568 y 390×844; cabecera accesible y botón alcanzable mediante scroll, pausa/reanudación intactas. Publicación verificada: PASS.
 
 ## Criterios y evidencia
 | Criterio | Resultado observado |
@@ -12,7 +12,7 @@ Matriz funcional PASS: 45 comprobaciones en cuatro perfiles, recuperadas de la e
 | A4 Adaptación | Chromium 134.0.6998.35 y WebKit 18.4, 390×844 DPR3 y 1440×1000 DPR1. Comprobaciones adicionales 320×568 y 844×390; panel horizontal corregido y retest PASS. |
 | A5 Estructura | Revisión arquitectónica PASS: simulación, render, input, audio y persistencia separados; imports locales; sin dependencias runtime. |
 | A6 Aislamiento | Claves de V2 independientes; preferencias ES/EN, sonido y lado persistidas. V1 sin cambios; catálogo añade enlace propio. |
-| A7 Carga | Cero errores bloqueantes de consola/red en los cuatro perfiles locales. Humo público pendiente. |
+| A7 Carga | Cero errores bloqueantes de consola/red en los cuatro perfiles locales. Humo público PASS. |
 
 Identidad de archivos: [tested-files.json](tested-files.json), SHA-256 de código/recursos. Retest localizado: [layout-results.json](layout-results.json).
 
@@ -34,4 +34,6 @@ Carga sintética extrema, 170 enemigos visibles y 350 gemas durante ~3 s:
 Entidades acotadas y ejecución estable; no se alcanzan 60 fps en esta carga headless. El PASS funcional no es un PASS de rendimiento ni una medida de un teléfono real. Mejorar rendimiento con cargas densas queda como limitación conocida, sin alterar balance para ocultarla.
 
 ## Publicación
-Pendiente integrar y verificar https://joseortegaa.github.io/ai-web-games-automata/huroner-survivor-2/.
+Commit de juego: `51b61920a9b27a8163af70bbdd49a1ed2623427c`. [Pages 37073839721](https://github.com/JoseOrtegaa/ai-web-games-automata/actions/runs/37073839721): success.
+
+URL verificada: https://joseortegaa.github.io/ai-web-games-automata/huroner-survivor-2/ el 2026-10-02 22:42 UTC. Catálogo, ilustración cargada, inicio, HUD, pausa y reanudación PASS; sin errores de página/red. Navegador del entorno acepta el certificado del proxy: esta comprobación no valida TLS. [Resultado público](public-results.json).

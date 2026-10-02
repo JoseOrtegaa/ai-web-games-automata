@@ -1,0 +1,14 @@
+{
+  "url": "https://joseortegaa.github.io/ai-web-games-automata/huroner-survivor-2/",
+  "status": "PASS",
+  "checks": [
+    "catalogue link",
+    "artwork",
+    "start",
+    "HUD",
+    "pause",
+    "resume",
+    "no network/page errors"
+  ],
+  "date": "2026-10-02T22:42:28.296Z"
+}
