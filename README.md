@@ -17,3 +17,17 @@ El archivo `index.html` es el catálogo. Los futuros juegos se añadirán en car
 GitHub Pages sirve la raíz de la rama `main`; cada carpeta con `index.html` tiene su propia ruta. No requiere servicios externos ni claves de API.
 
 Para probar en local: `python3 -m http.server 8000` y abrir `http://localhost:8000/`.
+
+## Workflow de desarrollo autónomo
+
+Las reglas y los contextos viven en este repositorio. Punto de entrada: [AGENTS.md](AGENTS.md). Guía de uso: [workflow/README.md](workflow/README.md).
+
+- [Instrucciones para tu Proyecto de ChatGPT](workflow/PROJECT_INSTRUCTIONS.md)
+- [Flujo y reglas de contexto](workflow/WORKFLOW.md)
+- [Roles de los agentes](workflow/agents/)
+- [Plantillas para nuevos juegos](workflow/templates/README.md)
+- [Tecnología, build y futuro multijugador](workflow/TECHNOLOGY.md)
+
+Desde un chat con las herramientas necesarias, indica el repositorio, pide leer AGENTS.md y describe el juego o cambio. El workflow concreta la entrega, coordina diseño y programación, comprueba QA y publica automáticamente cuando las condiciones se cumplen.
+
+Los juegos existentes conservan su estructura. Para juegos nuevos con compilación o servidor, la arquitectura debe definir e implementar su publicación; las instrucciones no instalan por sí solas esa infraestructura.
