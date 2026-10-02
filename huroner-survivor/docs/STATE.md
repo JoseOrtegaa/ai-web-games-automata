@@ -1,7 +1,7 @@
 # Huroner Survivor — estado vigente
 
 ## Objetivo y fase
-Mundo más tétrico cada cinco niveles. Implementado y QA local PASS; publicación pendiente. Cambio exclusivamente visual; no repetir diseño ni pruebas de combate ya cerradas.
+Mundo más tétrico cada cinco niveles. Implementado, QA local PASS y publicación verificada. Cambio exclusivamente visual; no repetir diseño ni pruebas de combate ya cerradas.
 
 ## Revisión y archivos
 Base remota: 7ad600cd4a630176f63cfd22a8a064f9294c6441. `world.js` genera/cachea etapas; `render.js` delega fondo usando nivel y tiempo del Game. Contratos y dirección actualizados en ARCHITECTURE/DESIGN; prueba reproducible `tests/world-qa.cjs` con Playwright externo.
@@ -16,4 +16,4 @@ Chromium/WebKit PASS: umbrales, etapas, transición/pausa, reset, movimiento red
 Ruta canónica `huroner-survivor/`. Legacy archivado en `feature/huroner-survivor-legacy`. Conservar claves de almacenamiento `huroner-survivor-2:*` para mantener ajustes/récords. No hay carpeta V2 en main.
 
 ## Siguiente paso
-Integrar y comprobar Pages y cambio de mundo en la URL pública. Después registrar revisión y resultado; no repetir fases anteriores.
+Entrega completada en commit `67c5458b3ea256fdfa2ab6dc45f2975d47f7a75c`. [Pages 37078325776](https://github.com/JoseOrtegaa/ai-web-games-automata/actions/runs/37078325776) success. Humo público PASS: módulo cargado, transición real nivel 4→5 en app, HUD y pausa/reanudación; sin errores de carga/página. Evidencia en world-public.json. Esperar siguiente petición de Jose; no repetir fases anteriores.

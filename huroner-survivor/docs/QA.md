@@ -1,6 +1,6 @@
 # QA vigente — evolución del mundo
 
-Base: `7ad600cd`. PASS local Chromium 134 y WebKit 18.4. Verificados umbrales 5/10/15/20/25/30, estabilidad dentro de etapa, etapas distintas hasta 35, fundido, congelación con tiempo pausado, reinicio, movimiento reducido y ausencia de mutación de Game. Capturas móviles y escritorio inspeccionadas: actores, gema, pickup y aviso legibles. [Resultados](world-local.json). Sin cambios de gameplay; no se repite la suite de combate. Publicación pendiente.
+Base: `7ad600cd`. PASS local Chromium 134 y WebKit 18.4. Verificados umbrales 5/10/15/20/25/30, estabilidad dentro de etapa, etapas distintas hasta 35, fundido, congelación con tiempo pausado, reinicio, movimiento reducido y ausencia de mutación de Game. Capturas móviles y escritorio inspeccionadas: actores, gema, pickup y aviso legibles. [Resultados](world-local.json). Sin cambios de gameplay; no se repite la suite de combate. Publicación PASS: commit `67c5458b`, [Pages 37078325776](https://github.com/JoseOrtegaa/ai-web-games-automata/actions/runs/37078325776) success. [Humo público](world-public.json): app cambia el mundo de nivel 4 a 5, HUD actualizado, pausa/reanudación y recursos sin errores. Selección de nivel instrumentada solo en el navegador de pruebas; certificado del proxy aceptado, sin validar TLS.
 
 ## Evidencia de entregas anteriores
 

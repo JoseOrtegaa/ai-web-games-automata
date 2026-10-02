@@ -1,0 +1,13 @@
+{
+  "date": "2026-10-02T23:37:19.121Z",
+  "url": "https://joseortegaa.github.io/ai-web-games-automata/huroner-survivor/",
+  "result": "PASS",
+  "checks": [
+    "world module loaded",
+    "actual app level4 to5 scenery change",
+    "HUD level5",
+    "pause/resume",
+    "no page/network errors"
+  ],
+  "fixture": "app.js instrumented only in browser to select level; no production hooks"
+}
