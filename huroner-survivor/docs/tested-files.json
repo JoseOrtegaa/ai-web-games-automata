@@ -10,11 +10,13 @@
   "index.html": "9e0d808abdf5162e21386ef34b53b23c2fd099fdcc7fc431bd57ab9a49118220",
   "input.js": "94edbd4e3180e98c65bf756abe5b18eec152394b61f9d5b7e3484dcfda40b4c4",
   "package.json": "aafec7084abceda2b74fc4fa7428028ac26958ae15bd56c91a93f190e3b6def4",
-  "render.js": "7c64750485671d7a93d7e52496873a722412753724c6ec1d3fd9081d2531537b",
+  "render.js": "4cd13fb4dcd34d514f21998fa471f2036c80f6025b472f509216465d7fcce52e",
   "storage.js": "a7b050e1959b1605d8a3ac3becae6ed00f4b9eb67ba38a3bbf6931913cb2b2e5",
   "style.css": "7aa712f1dbd7d59787e9ef7c8c25e06fd554c7cd7d5448120f3d4a9c18ddaab0",
   "tests/browser-qa.cjs": "68feea5b1a47d334d5b9782f3edbef8580be6f4cb44a3850d42ec893bd56938d",
   "tests/core.test.js": "4fb296c160214d2e0cc0df68b4586a65930329a46dfe0dfee47cd65fd1174414",
   "tests/storage.test.js": "459250a30f141cf5e3cc45aa98f9fd33e59c384dd428bb9b3c9da32c8fe32f05",
-  "tests/terminal.test.js": "a8701741d1635b12458b233fe83022ef0d5c12365d09e5221b41cf95d155462d"
+  "tests/terminal.test.js": "a8701741d1635b12458b233fe83022ef0d5c12365d09e5221b41cf95d155462d",
+  "tests/world-qa.cjs": "29c03e777ae6e69b8c32705a5b75436d351c953c41715a1e5a01d8c5ce4ed8cb",
+  "world.js": "23043bbb8e5f48b3182d98e0f722dab7f83b728e1d5cab9f6ecc0de2331e23f2"
 }

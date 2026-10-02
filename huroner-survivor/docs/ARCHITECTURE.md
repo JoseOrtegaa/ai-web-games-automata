@@ -13,6 +13,7 @@ V2 contiene una copia independiente del core y los tests de la base registrada e
 | `index.html`, `style.css` | Estructura semántica, pantallas, HUD, controles, tokens visuales, safe areas y composición adaptable. |
 | `app.js` | Entrada y coordinación: instancia Game, navegación, eventos de botones, elección, traducción del DOM, HUD, récord y único requestAnimationFrame. |
 | `core.js` | Game, reglas, balance, UPGRADES, RNG inyectable y eventos de simulación; sin DOM, audio ni almacenamiento. |
+| `world.js` | Capa de escenario por nivel, tiles cacheados y transición visual; no muta Game ni usa su RNG. |
 | `render.js` | Canvas de arena y portada, cámara, dibujos, culling, resize y caches de recursos visuales. Sólo lee Game. |
 | `input.js` | Teclado, puntero de movimiento, joystick y botón de ataque, captura/cancelación y bloqueo de gestos durante partida. Sin acceso a Game. |
 | `audio.js` | AudioContext, desbloqueo, música original y efectos sintéticos, silencio/suspensión y límites de voces. |

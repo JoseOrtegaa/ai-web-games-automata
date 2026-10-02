@@ -1,15 +1,12 @@
-# Huroner Survivor — entrega vigente
+# Huroner Survivor — evolución del escenario
 
-La edición «El último claro» sustituye al juego anterior en `huroner-survivor/`. Se retira la carpeta `huroner-survivor-2/` de main. El juego antiguo queda archivado en `feature/huroner-survivor-legacy`.
-
-Se traslada todo el proyecto, incluidos módulos, arte, configuración, pruebas y documentos. Se conserva gameplay, balance, diseño y las claves de persistencia de la edición renovada; se adapta el nombre y las referencias de ruta. No hay mecánicas nuevas ni refactorización.
+Cada cinco niveles el mundo cambia y se vuelve más tétrico. Mantener controles, reglas, dificultad, música y balance. Es un cambio de presentación, sin obstáculos ni mecánicas nuevas.
 
 ## Criterios
-- Rama legacy conserva íntegramente el juego anterior.
-- Una única carpeta y entrada de catálogo en main: `huroner-survivor`.
-- Recursos y módulos cargan bajo la ruta canónica; nombre sin sufijo 2.
-- Ajustes y récord de la edición renovada siguen disponibles en el mismo origen.
-- Inicio, pausa y reanudación funcionan; sin errores de página o carga.
-- Pages y URL canónica comprobados tras integrar.
-
-La QA del desarrollo original de esta edición se conserva como evidencia histórica en QA.md; no se repite por este traslado.
+- Primera transformación en nivel 5; siguientes en 10, 15, 20, 25 y cada múltiplo posterior.
+- Cambian paleta y motivos ambientales con una dirección cada vez más siniestra.
+- Jugador, enemigos, pickups, experiencia y avisos conservan contraste y prioridad.
+- Transición suave sin destellos; pausa/elección congelan el tiempo visual y movimiento reducido evita la animación.
+- Reiniciar o volver al menú recupera el mundo inicial.
+- Recursos cacheados y decoración limitada; sin mutar Game ni su aleatoriedad.
+- Verificar en Chromium/WebKit y en la URL publicada.

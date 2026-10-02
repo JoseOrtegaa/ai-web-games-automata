@@ -92,7 +92,7 @@ No quedan decisiones de gameplay pendientes de Jose. Cualquier propuesta posteri
 
 ## Dirección artística
 
-**El último claro.** Un pequeño guardián de bufanda roja sostiene su terreno cuando la pradera familiar se convierte en un cuento extraño. La emoción es valentía frágil, no terror explícito. Dirección propia de ilustración vectorial grabada: contornos cortados, masas de luz mate, detalles botánicos y materiales de corteza, roca y metal. De Hollow Knight toma separación de planos y atmósfera; de Dead Cells, lectura inmediata de impacto; de It Takes Two, expresividad de personaje; de Clash Royale, siluetas legibles a escala pequeña. No se usan ni reproducen sus assets.
+**El último claro.** Un pequeño guardián de bufanda roja sostiene su terreno cuando la pradera familiar se convierte en un cuento extraño. La emoción empieza como valentía frágil y evoluciona hacia un paisaje cada vez más tétrico según el nivel. Dirección propia de ilustración vectorial grabada: contornos cortados, masas de luz mate, detalles botánicos y materiales de corteza, roca y metal. De Hollow Knight toma separación de planos y atmósfera; de Dead Cells, lectura inmediata de impacto; de It Takes Two, expresividad de personaje; de Clash Royale, siluetas legibles a escala pequeña. No se usan ni reproducen sus assets.
 
 Tres principios: **personaje claro sobre suelo oscuro**, **formas que identifican antes que colores**, **riqueza en portada y bordes, calma en el centro de combate**. La pradera puede ser melancólica sin oscurecer el HUD ni las amenazas.
 
@@ -153,3 +153,9 @@ Art usa `save/restore`, no cambia Game, no consume RNG y cachea sólo paths est�
 6. Vida, XP, buffs, ataque y jefes son legibles en viewport móvil; ninguna instrucción necesaria queda bajo botones o safe areas.
 7. Pausa, selección, derrota y victoria se distinguen por título y contenido, además de color. Foco e interacción visibles y áreas táctiles de al menos 44 px.
 8. Capturas finales de menú, arena poblada, elección y final en móvil/escritorio muestran el mismo lenguaje de cobre, marfil y petróleo; dibujo completo de portada y sin texto cortado.
+
+## Evolución del mundo cada cinco niveles
+
+Petición vigente: escenario progresivamente siniestro, exclusivamente visual. Niveles 1–4 conservan la pradera; 5–9: raíces secas y vegetación marchita; 10–14: cementerio frío con lápidas; 15–19: osario, grietas rojizas y tonos vino; 20–24: arcos derruidos y ruinas malditas; desde 25: abismo violeta oscuro. Cada siguiente múltiplo de cinco redistribuye motivos y profundiza la oscuridad hasta un límite que preserva legibilidad.
+
+Transición por fundido de 1,8 s de tiempo de simulación: pausa/elección la congelan. Movimiento reducido cambia directamente. Reiniciar o volver al menú recupera la pradera. Decoración bajo actores, gemas, pickups y avisos; sin colisiones, enemigos, estadísticas, sonido ni luces intermitentes nuevos. Tile de 768 px horneado solo al cambiar de etapa; máximo dos tiles durante el fundido y 38 motivos, independientemente del nivel.

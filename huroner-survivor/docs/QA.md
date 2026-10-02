@@ -1,3 +1,9 @@
+# QA vigente — evolución del mundo
+
+Base: `7ad600cd`. PASS local Chromium 134 y WebKit 18.4. Verificados umbrales 5/10/15/20/25/30, estabilidad dentro de etapa, etapas distintas hasta 35, fundido, congelación con tiempo pausado, reinicio, movimiento reducido y ausencia de mutación de Game. Capturas móviles y escritorio inspeccionadas: actores, gema, pickup y aviso legibles. [Resultados](world-local.json). Sin cambios de gameplay; no se repite la suite de combate. Publicación pendiente.
+
+## Evidencia de entregas anteriores
+
 # Huroner Survivor — QA del traslado
 
 Base: 1e30b200. Juego anterior archivado en `feature/huroner-survivor-legacy`. Traslado íntegro a `huroner-survivor/`; runtime de simulación/render/input/audio/storage sin cambios. Humo local PASS en Chromium 134 y WebKit 18.4: una entrada de catálogo, recursos y módulos relativos, nombre sin sufijo, ajustes/récord existentes, inicio, ataque manual, pausa/reanudación y cero errores de red/página. [Resultado](promotion-local.json). Publicación PASS: commit `bc78b15f`, [Pages 37076932423](https://github.com/JoseOrtegaa/ai-web-games-automata/actions/runs/37076932423) success. Humo público en Chromium/WebKit con los mismos criterios PASS; [evidencia](promotion-public.json). URL canónica: https://joseortegaa.github.io/ai-web-games-automata/huroner-survivor/. Se acepta el certificado del proxy del entorno: no es una validación TLS.

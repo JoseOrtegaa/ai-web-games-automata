@@ -1,32 +1,13 @@
 import { drawFerret, drawAnimal } from './art.js';
+import { createWorldLayer } from './world.js';
 function ellipse(c,x,y,rx,ry,color,stroke){c.beginPath();c.ellipse(x,y,rx,ry,0,0,Math.PI*2);c.fillStyle=color;c.fill();if(stroke){c.strokeStyle=stroke;c.lineWidth=1.8;c.stroke();}}
 function line(c,points,color,width=2){c.strokeStyle=color;c.lineWidth=width;c.lineCap='round';c.lineJoin='round';c.beginPath();points.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.stroke();}
 function sword(c,x,y,angle,scale=1){c.save();c.translate(x,y);c.rotate(angle);c.scale(scale,scale);c.fillStyle='#dce9ce';c.beginPath();c.moveTo(-4,0);c.lineTo(-5,-35);c.lineTo(0,-47);c.lineTo(5,-35);c.lineTo(4,0);c.closePath();c.fill();line(c,[[0,-40],[0,-1]],'#86afa1',1.3);line(c,[[-10,0],[10,0]],'#d6ad57',4);line(c,[[0,2],[0,13]],'#8a5e3c',5);ellipse(c,0,14,3,3,'#e5be70');c.restore();}
 
-function hash(x,y){const value=Math.sin(x*127.1+y*311.7)*43758.5453;return value-Math.floor(value);}
 export function createRenderer({canvas, heroCanvas}) {
   const ctx=canvas.getContext('2d',{alpha:false});
   let W=440,H=780,DPR=1, mist;
-  const tile=document.createElement('canvas');tile.width=768;tile.height=768;
-  const groundContext=tile.getContext('2d');
-  groundContext.fillStyle='#142b32';groundContext.fillRect(0,0,768,768);
-  for(let i=0;i<100;i++){
-    const x=hash(i,4)*768,y=hash(i,9)*768,n=hash(i,2);
-    // Wrap motifs at tile edges once, so the cached floor repeats without seams.
-    for(const offsetX of [-768,0,768])for(const offsetY of [-768,0,768]){
-    groundContext.save();groundContext.translate(offsetX,offsetY);
-    ellipse(groundContext,x,y,35+n*80,20+n*45,n>.5?'#1b363b':'#1c383e');
-    if(i%3===0){line(groundContext,[[x-5,y],[x-8,y-8],[x-1,y-2],[x+4,y-11]],'#50645738',1);}
-    if(i%7===0){groundContext.fillStyle='#2c4849';groundContext.beginPath();groundContext.moveTo(x-7,y);groundContext.lineTo(x-3,y-5);groundContext.lineTo(x+5,y-4);groundContext.lineTo(x+8,y+2);groundContext.lineTo(x,y+5);groundContext.closePath();groundContext.fill();line(groundContext,[[x-3,y-5],[x+5,y-4]],'#62746560',1);}
-    if(i%11===0)ellipse(groundContext,x+7,y+4,1.3,2.3,'#8e795960');
-    for(let j=0;j<3;j++)line(groundContext,[[x+j*4,y+10],[x+j*4+3,y+8]],'#50645720',1);
-    groundContext.restore();
-    }
-  }
-  function ground(w,h,cx,cy){
-    const offsetX=((cx%768)+768)%768,offsetY=((cy%768)+768)%768;
-    for(let x=-offsetX;x<w;x+=768)for(let y=-offsetY;y<h;y+=768)ctx.drawImage(tile,x,y);
-  }
+  const world = createWorldLayer();
   function resize(){
     const rect=canvas.parentElement.getBoundingClientRect();W=rect.width;H=rect.height;DPR=Math.min(window.devicePixelRatio||1,2);
     canvas.width=Math.round(W*DPR);canvas.height=Math.round(H*DPR);ctx.setTransform(DPR,0,0,DPR,0,0);
@@ -35,7 +16,7 @@ export function createRenderer({canvas, heroCanvas}) {
   }
   function fog(){ctx.fillStyle=mist;ctx.fillRect(0,0,W,H);}
 function draw(game, {active = true, moving = false, reducedMotion = false} = {}) {const p=game.player;const zoom=Math.min(1.18,W/390);const viewW=W/zoom,viewH=H/zoom;const cx=active?p.x:0,cy=active?p.y:0;const shake=active&&!reducedMotion?game.shake:0;const camX=cx-viewW/2+Math.sin(game.time*83)*shake,camY=cy-viewH*.51+Math.cos(game.time*71)*shake;
- ctx.save();ctx.scale(zoom,zoom);ground(viewW,viewH,camX,camY);ctx.translate(-camX,-camY);
+ ctx.save();ctx.scale(zoom,zoom);world.draw(ctx,viewW,viewH,camX,camY,{level:active?game.level:1,time:game.time,reducedMotion});ctx.translate(-camX,-camY);
  if(active){
  for(const item of game.pickups){if(Math.abs(item.x-cx)>viewW||Math.abs(item.y-cy)>viewH)continue;ctx.save();ctx.translate(item.x,item.y);if(item.type==='meat'){ellipse(ctx,0,1,9,6,'#b95a55','#f0c9a1');line(ctx,[[-7,-2],[7,3]],'#f4e2be',3);ellipse(ctx,-8,-3,2.5,2.5,'#f4e2be');ellipse(ctx,8,4,2.5,2.5,'#f4e2be');}else if(item.type==='oil'){ellipse(ctx,0,0,7,10,'#d6a94e','#f0d681');ellipse(ctx,-2,-3,2,4,'#fff1b180');}else{ellipse(ctx,0,2,8,11,'#dc6737','#f2ad52');ellipse(ctx,0,4,4,7,'#ffd36a');}ctx.restore();}
  for(const e of game.effects){if(e.type==='blood'){ctx.globalAlpha=Math.min(.42,e.life/4);ellipse(ctx,e.x,e.y,e.r*1.3,e.r*.8,'#812e39');ctx.globalAlpha=1;}}

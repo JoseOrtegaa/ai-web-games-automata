@@ -6,7 +6,7 @@ Aplicar también las reglas comunes de [AGENTS raíz](../AGENTS.md). Este archiv
 Para retomar, [STATE](docs/STATE.md). Según la tarea: [BRIEF](docs/BRIEF.md), [DESIGN](docs/DESIGN.md), [ARCHITECTURE](docs/ARCHITECTURE.md), [QA](docs/QA.md). No leer todos por defecto.
 
 ## Stack y mapa
-HTML/CSS, JavaScript ES Modules, Canvas 2D y Web Audio; sin framework, build ni dependencias runtime. Mapa: `index.html`/`style.css` componen pantallas; `app.js` coordina navegación, HUD y frame; `core.js` posee reglas/estado; `render.js` dibuja; `input.js` gestiona punteros/teclado; `audio.js` sonido; `storage.js` preferencias/récord; `i18n.js` textos. Contratos en ARCHITECTURE. Core y tests derivados de V1, sin importarla; art.js y assets/ contienen el arte propio de V2.
+HTML/CSS, JavaScript ES Modules, Canvas 2D y Web Audio; sin framework, build ni dependencias runtime. Mapa: `index.html`/`style.css` componen pantallas; `app.js` coordina navegación, HUD y frame; `core.js` posee reglas/estado; `render.js` dibuja; `input.js` gestiona punteros/teclado; `audio.js` sonido; `storage.js` preferencias/récord; `i18n.js` textos. Contratos en ARCHITECTURE. `world.js`: escenario cambia en niveles 5/10/15…; decoración cacheada, sin afectar combate.
 
 ## Comandos
 Desde `huroner-survivor/`:
