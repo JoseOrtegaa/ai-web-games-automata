@@ -1,0 +1,37 @@
+{
+  "date": "2026-10-02T23:17:31.304Z",
+  "results": [
+    {
+      "engine": "chromium",
+      "version": "134.0.6998.35",
+      "url": "http://127.0.0.1:8001/huroner-survivor/",
+      "result": "PASS",
+      "checks": [
+        "single catalogue entry",
+        "relative assets/modules",
+        "name",
+        "existing preferences and record",
+        "start",
+        "manual attack",
+        "pause/resume",
+        "no page/network errors"
+      ]
+    },
+    {
+      "engine": "webkit",
+      "version": "18.4",
+      "url": "http://127.0.0.1:8001/huroner-survivor/",
+      "result": "PASS",
+      "checks": [
+        "single catalogue entry",
+        "relative assets/modules",
+        "name",
+        "existing preferences and record",
+        "start",
+        "manual attack",
+        "pause/resume",
+        "no page/network errors"
+      ]
+    }
+  ]
+}

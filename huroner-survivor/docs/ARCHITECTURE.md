@@ -1,10 +1,10 @@
-# Huroner Survivor 2 — arquitectura
+# Huroner Survivor — arquitectura
 
 ## Stack y motivos
 
 HTML/CSS, JavaScript ES Modules, Canvas 2D y Web Audio; pruebas con `node:test`. V2 deriva del juego existente y conserva su simulación: incorporar Phaser, TypeScript o build no aporta una mejora necesaria para este alcance. Sin dependencias de ejecución, backend ni servicios nuevos. Código legible con bloques y nombres explícitos, sin conservar el formato comprimido del original.
 
-V2 contiene una copia independiente del core y los tests de la base registrada en STATE; nunca importar archivos de V1 en ejecución ni modificarlos. Los módulos siguientes ya están implementados; los resultados de sus verificaciones corresponden a QA y STATE.
+V2 contiene una copia independiente del core y los tests de la base registrada en STATE; nunca importar archivos de la rama legacy en ejecución. Los módulos siguientes ya están implementados; los resultados de sus verificaciones corresponden a QA y STATE.
 
 ## Módulos y dependencias
 
@@ -56,12 +56,12 @@ Medir en QA una partida cargada y registrar viewport, navegador, DPR y observaci
 
 Comandos operativos en AGENTS local. Copiar íntegra la suite original y conservar su cobertura; añadir regresiones para el terminal irreversible, puerta compartida manual/auto y guardas tras elección/final. Usar RNG determinista y dt explícitos; comparación de core V1/V2 sólo para escenarios fuera de las correcciones acordadas. Comprobar defaults, claves exclusivas, JSON malformado y excepciones de storage. Sin librerías de test nuevas por rutina.
 
-QA de navegador: ES/EN, sonido, configuración/recarga, pausa/reanudación, reinicio, doble toque de elección, teclado, joystick + ataque de segundo puntero, pointercancel/lostpointercapture, ocultación, resize y guardado. Capturas de menú, arena poblada, elección, pausa y final en móvil y escritorio; red/consola sin errores bloqueantes. Verificar enlace V1 y V2, y ausencia de cambios en `huroner-survivor/`. No confundir automatización/emulación con dispositivos físicos.
+QA de navegador: ES/EN, sonido, configuración/recarga, pausa/reanudación, reinicio, doble toque de elección, teclado, joystick + ataque de segundo puntero, pointercancel/lostpointercapture, ocultación, resize y guardado. Capturas de menú, arena poblada, elección, pausa y final en móvil y escritorio; red/consola sin errores bloqueantes. Verificar el enlace canónico `huroner-survivor/` y el archivo antiguo en la rama `feature/huroner-survivor-legacy`. No confundir automatización/emulación con dispositivos físicos.
 
 ## Persistencia
 
-Usar exclusivamente `huroner-survivor-2:preferences:v1` y `huroner-survivor-2:record:v1`. No leer, migrar ni borrar `huroner-*` del original. Escribir al cambiar ajustes o mejorar récord, nunca cada frame. Mantener la comparación de récord de V1 (victoria primero; después tiempo limitado a 600 y bajas). Si almacenamiento falla, continuar con estado en memoria. Sin red, cuenta, guardado de partidas ni progresión permanente.
+Conservar estos identificadores históricos aunque la carpeta se llame `huroner-survivor`, para no perder ajustes/récords de la edición renovada. Usar exclusivamente `huroner-survivor-2:preferences:v1` y `huroner-survivor-2:record:v1`. No leer, migrar ni borrar `huroner-*` del original. Escribir al cambiar ajustes o mejorar récord, nunca cada frame. Mantener la comparación de récord de V1 (victoria primero; después tiempo limitado a 600 y bajas). Si almacenamiento falla, continuar con estado en memoria. Sin red, cuenta, guardado de partidas ni progresión permanente.
 
 ## Publicación
 
-Fuente y artefacto coinciden en `huroner-survivor-2/`; no hay build ni dist. `index.html` carga `./app.js` como módulo y los imports/assets son relativos. Pages sirve raíz de `main`, según README: mantener este mecanismo y catálogo, añadiendo V2 sin sustituir V1. Ruta prevista: `https://joseortegaa.github.io/ai-web-games-automata/huroner-survivor-2/`; no declararla publicada/comprobada hasta QA y humo remoto registrados en STATE. El coordinador integra y publica tras QA; arquitectura no cambia configuración remota.
+Fuente y artefacto coinciden en `huroner-survivor/`; no hay build ni dist. `index.html` carga `./app.js` como módulo y los imports/assets son relativos. Pages sirve raíz de `main`, según README: mantener este mecanismo y una sola entrada del juego en el catálogo. Ruta prevista: `https://joseortegaa.github.io/ai-web-games-automata/huroner-survivor/`; no declararla publicada/comprobada hasta QA y humo remoto registrados en STATE. El coordinador integra y publica tras QA; arquitectura no cambia configuración remota.

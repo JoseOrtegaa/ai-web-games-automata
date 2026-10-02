@@ -3,15 +3,15 @@ export const BOSS_TIME = 600;
 export const ATTACK_COOLDOWN = .25;
 export const UPGRADES = [
   {id:'power', icon:'⚔', name:['Filo salvaje','Wild edge'], desc:['+22% de daño en todos los ataques.','+22% damage to all attacks.'], max:8},
-  {id:'twin', icon:'⚔', name:['Colmillo gemelo','Twin fang'], desc:['Cada toque lanza dos espadazos.','Each tap unleashes two sword slashes.'], max:1},
+  {id:'twin', icon:'⚔', name:['Colmillo gemelo','Twin fang'], desc:['Cada ataque lanza dos espadazos.','Each attack unleashes two sword slashes.'], max:1},
   {id:'vitality', icon:'♥', name:['Corazón indomable','Wild heart'], desc:['+25 de vida máxima y cura 35.','+25 maximum health and heal 35.'], max:6},
-  {id:'armor', icon:'⬡', name:['Armadura de corteza','Bark armor'], desc:['+2 de armadura. Reduce el daño recibido.','+2 armor. Reduce incoming damage.'], max:6},
+  {id:'armor', icon:'⬡', name:['Armadura de corteza','Bark armor'], desc:['Reduce el daño: divisor +0,18 por rango.','Reduce damage: divisor +0.18 per rank.'], max:6},
   {id:'reach', icon:'⤢', name:['Espada colosal','Colossal sword'], desc:['+18% de alcance y un arco más amplio.','+18% reach and a wider slash.'], max:5},
   {id:'speed', icon:'➶', name:['Patas ligeras','Light paws'], desc:['+12% de velocidad de movimiento.','+12% movement speed.'], max:5},
   {id:'magnet', icon:'✦', name:['Imán de almas','Soul magnet'], desc:['+45% de radio para recoger experiencia.','+45% experience pickup radius.'], max:4},
   {id:'regen', icon:'✚', name:['Instinto vital','Healing instinct'], desc:['Regenera 0,7 puntos de vida por segundo.','Regenerate 0.7 health per second.'], max:4},
   {id:'orbit', icon:'✧', name:['Cuchillas lunares','Moon blades'], desc:['Añade una cuchilla que orbita a tu alrededor.','Add a blade that orbits around you.'], max:4},
-  {id:'lightning', icon:'ϟ', name:['Tormenta salvaje','Wild storm'], desc:['Rayos automáticos. Cada mejora añade un objetivo.','Automatic lightning. Each upgrade adds a target.'], max:4},
+  {id:'lightning', icon:'ϟ', name:['Tormenta salvaje','Wild storm'], desc:['Rayos a 2 objetivos; +1 por rango posterior.','Lightning hits 2 targets; +1 per later rank.'], max:4},
   {id:'frost', icon:'❄', name:['Aliento de invierno','Winter breath'], desc:['Aura que daña y ralentiza. Mejora su radio.','A damaging, slowing aura. Upgrade its radius.'], max:4},
   {id:'leech', icon:'♦', name:['Colmillo carmesí','Crimson fang'], desc:['Cada baja tiene un 20% de curarte 2 de vida.','Each kill has a 20% chance to heal 2 health.'], max:3}
 ];
@@ -72,7 +72,7 @@ export class Game {
     this.emit('mutation',{tier});
   }
   hit(e,damage,kx=0,ky=0) {
-    if(e.hp<=0)return;
+    if(this.state==='dead'||this.state==='won'||e.hp<=0)return;
     e.hp-=damage;e.flash=.13;e.x+=kx;e.y+=ky;
     if(e.hp>0)return;
     this.kills++;this.emit('kill');
@@ -87,13 +87,14 @@ export class Game {
     else if(e.boss&&this.boss===e)this.boss=null;
   }
   attack(aimAngle=null) {
+    if(this.state!=='playing')return;
     const p=this.player;let target=null,best=Infinity;
     for(const e of this.enemies){if(e.hp<=0)continue;let d=Math.hypot(e.x-p.x,e.y-p.y);if(d<best){best=d;target=e;}}
     const angle=aimAngle??(target?Math.atan2(target.y-p.y,target.x-p.x):p.face);
     const half=Math.min(2.5,1.35+this.rank('reach')*.13);
     this.addEffect({type:'slash',x:p.x,y:p.y,angle,half,r:this.reach,life:.23,max:.23,fire:this.fireTimer>0});
     this.emit('slash');
-    for(const e of this.enemies){const dx=e.x-p.x,dy=e.y-p.y,d=Math.hypot(dx,dy);const a=Math.atan2(Math.sin(Math.atan2(dy,dx)-angle),Math.cos(Math.atan2(dy,dx)-angle));if(d<this.reach+e.r&&Math.abs(a)<half+.15)this.hit(e,this.damage,dx/(d||1)*10,dy/(d||1)*10);}
+    for(const e of this.enemies){const dx=e.x-p.x,dy=e.y-p.y,d=Math.hypot(dx,dy);const a=Math.atan2(Math.sin(Math.atan2(dy,dx)-angle),Math.cos(Math.atan2(dy,dx)-angle));if(d<this.reach+e.r&&Math.abs(a)<half+.15)this.hit(e,this.damage,dx/(d||1)*10,dy/(d||1)*10);if(this.state!=='playing')return;}
   }
   manualAttack() {
     if(this.state!=='playing'||this.manualAttackCooldown>0)return;
@@ -101,7 +102,8 @@ export class Game {
     this.automaticAttack();
   }
   automaticAttack() {
-    if(this.rank('twin')){this.attack();this.attack();}
+    if(this.state!=='playing')return;
+    if(this.rank('twin')){this.attack();if(this.state==='playing')this.attack();}
     else this.attack();
   }
   stepEnemySpecial(e,dt,distance) {
@@ -138,6 +140,7 @@ export class Game {
       }
     }else{
       if(Math.hypot(p.x-a.x,p.y-a.y)<a.radius+13)this.hurt(e.damage);
+      if(this.state!=='playing')return true;
       this.addEffect({type:'enemy-impact',x:a.x,y:a.y,r:a.radius,life:.25,max:.25});
     }
     e.specialAttack=null;
@@ -151,6 +154,7 @@ export class Game {
     if(p.hp<=0){p.hp=0;this.state='dead';this.emit('dead');}
   }
   offer() {
+    if(this.state==='dead'||this.state==='won')return;
     this.state='levelup';this.choices=UPGRADES.filter(u=>this.rank(u.id)<u.max);
     for(let i=this.choices.length-1;i>0;i--){const j=Math.floor(this.random()*(i+1));[this.choices[i],this.choices[j]]=[this.choices[j],this.choices[i]];}
     this.choices=this.choices.slice(0,3);
@@ -158,6 +162,7 @@ export class Game {
     this.emit('level');
   }
   checkLevel() {
+    if(this.state!=='playing')return;
     if(this.xp>=xpNeeded(this.level)){
       this.xp-=xpNeeded(this.level);this.level++;this.mutate();
       if(this.level%5===0&&this.level>this.lastLevelBoss){this.lastLevelBoss=this.level;this.spawn(null,true,this.level,false);}
@@ -193,6 +198,7 @@ export class Game {
       const dx=p.x-e.x,dy=p.y-e.y,d=Math.hypot(dx,dy)||1;let speed=e.speed*(e.slow>0?.48:1);
       const usesSpecial=!e.boss&&e.kind!=='hare';
       const busy=usesSpecial&&this.stepEnemySpecial(e,dt,d);
+      if(this.state!=='playing')return;
       if(busy)speed=0;
       if(!usesSpecial){
         e.ability-=dt;
@@ -214,13 +220,14 @@ export class Game {
       else{e.x+=dx/d*speed*dt;e.y+=dy/d*speed*dt;}
       if(d>800&&!e.boss){const a=this.random()*Math.PI*2;e.x=p.x+Math.cos(a)*480;e.y=p.y+Math.sin(a)*480;}
       if(!busy&&d<e.r+13)this.hurt(e.damage);
-      if(this.rank('orbit')&&e.orbitCD<=0){for(let i=0;i<this.rank('orbit');i++){const a=this.time*2.5+i/this.rank('orbit')*Math.PI*2;const ox=p.x+Math.cos(a)*72,oy=p.y+Math.sin(a)*72;if(Math.hypot(e.x-ox,e.y-oy)<e.r+17){this.hit(e,this.damage*.65);e.orbitCD=.35;break;}}}
+      if(this.state!=='playing')return;
+      if(this.rank('orbit')&&e.orbitCD<=0){for(let i=0;i<this.rank('orbit');i++){const a=this.time*2.5+i/this.rank('orbit')*Math.PI*2;const ox=p.x+Math.cos(a)*72,oy=p.y+Math.sin(a)*72;if(Math.hypot(e.x-ox,e.y-oy)<e.r+17){this.hit(e,this.damage*.65);if(this.state!=='playing')return;e.orbitCD=.35;break;}}}
     }
     // A sparse spatial grid keeps crowd separation approximately linear.
     const grid=new Map();for(const e of this.enemies){if(e.hp<=0)continue;const gx=Math.floor(e.x/48),gy=Math.floor(e.y/48);for(let x=gx-1;x<=gx+1;x++)for(let y=gy-1;y<=gy+1;y++)for(const o of grid.get(x+','+y)||[]){let dx=e.x-o.x,dy=e.y-o.y,d=Math.hypot(dx,dy),min=(e.r+o.r)*.7;if(d>0&&d<min){let f=(min-d)*.2;e.x+=dx/d*f;e.y+=dy/d*f;o.x-=dx/d*f;o.y-=dy/d*f;}}let key=gx+','+gy;if(!grid.has(key))grid.set(key,[]);grid.get(key).push(e);}
-    this.stormTimer-=dt;if(this.rank('lightning')&&this.stormTimer<=0){this.stormTimer=2.8;let targets=this.enemies.filter(e=>e.hp>0&&Math.hypot(e.x-p.x,e.y-p.y)<350).sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y)).slice(0,this.rank('lightning')+1);for(const e of targets){this.addEffect({type:'bolt',x:e.x,y:e.y,life:.3,max:.3});this.hit(e,this.damage*2.1);}if(targets.length)this.emit('storm');}
-    this.auraTimer-=dt;if(this.rank('frost')&&this.auraTimer<=0){this.auraTimer=.6;let radius=65+this.rank('frost')*15;for(const e of this.enemies)if(Math.hypot(e.x-p.x,e.y-p.y)<radius){e.slow=1;this.hit(e,this.damage*.25*this.rank('frost'));}}
-    for(const s of this.shots){s.life-=dt;s.x+=s.vx*dt;s.y+=s.vy*dt;if(Math.hypot(s.x-p.x,s.y-p.y)<17){this.hurt(s.damage||14);s.life=0;}}
+    this.stormTimer-=dt;if(this.rank('lightning')&&this.stormTimer<=0){this.stormTimer=2.8;let targets=this.enemies.filter(e=>e.hp>0&&Math.hypot(e.x-p.x,e.y-p.y)<350).sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y)).slice(0,this.rank('lightning')+1);for(const e of targets){this.addEffect({type:'bolt',x:e.x,y:e.y,life:.3,max:.3});this.hit(e,this.damage*2.1);if(this.state!=='playing')return;}if(targets.length)this.emit('storm');}
+    this.auraTimer-=dt;if(this.rank('frost')&&this.auraTimer<=0){this.auraTimer=.6;let radius=65+this.rank('frost')*15;for(const e of this.enemies)if(Math.hypot(e.x-p.x,e.y-p.y)<radius){e.slow=1;this.hit(e,this.damage*.25*this.rank('frost'));if(this.state!=='playing')return;}}
+    for(const s of this.shots){s.life-=dt;s.x+=s.vx*dt;s.y+=s.vy*dt;if(Math.hypot(s.x-p.x,s.y-p.y)<17){this.hurt(s.damage||14);if(this.state!=='playing')return;s.life=0;}}
     this.shots=this.shots.filter(s=>s.life>0).slice(-150);
     for(const item of this.pickups){if(item.taken)continue;const d=Math.hypot(item.x-p.x,item.y-p.y);if(d<18){if(item.type==='meat')p.hp=Math.min(p.maxHp,p.hp+3);if(item.type==='oil')this.speedBoostTimer=Math.max(this.speedBoostTimer,20);if(item.type==='fire')this.fireTimer=Math.max(this.fireTimer,15);item.taken=true;this.emit('item',{kind:item.type});}}
     this.pickups=this.pickups.filter(item=>!item.taken);

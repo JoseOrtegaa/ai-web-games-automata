@@ -1,4 +1,4 @@
-# Huroner Survivor 2 — diseño
+# Huroner Survivor — diseño
 
 ## Gameplay
 

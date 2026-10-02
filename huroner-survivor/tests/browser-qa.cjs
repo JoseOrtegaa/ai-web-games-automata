@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const assert=require('node:assert/strict');
 const OUT=process.env.QA_OUTPUT || '/tmp/huroner-v2-qa';
 fs.mkdirSync(OUT,{recursive:true});
-const BASE=process.env.QA_BASE_URL || 'http://127.0.0.1:8000/huroner-survivor-2/';
+const BASE=process.env.QA_BASE_URL || 'http://127.0.0.1:8000/huroner-survivor/';
 const results=[];
 const wait=page=>page.waitForTimeout(150);
 async function run(name,type,mobile){
@@ -12,7 +12,7 @@ async function run(name,type,mobile){
  const context=await browser.newContext({viewport:mobile?{width:390,height:844}:{width:1440,height:1000},deviceScaleFactor:mobile?3:1,isMobile:mobile,hasTouch:mobile,locale:'es-ES'});
  const page=await context.newPage(); const errors=[],failed=[];
  page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});page.on('response',r=>{if(r.status()>=400)failed.push(`${r.status()} ${r.url()}`)});page.on('requestfailed',r=>failed.push(r.url()+': '+r.failure()?.errorText));
- await page.route('**/huroner-survivor-2/app.js',async route=>{const r=await route.fetch();await route.fulfill({response:r,body:(await r.text()).replace('const game = new Game();','const game = window.__qaGame = new Game();')});});
+ await page.route('**/huroner-survivor/app.js',async route=>{const r=await route.fetch();await route.fulfill({response:r,body:(await r.text()).replace('const game = new Game();','const game = window.__qaGame = new Game();')});});
  const entry={name,browser:browser.version(),viewport:mobile?'390x844 DPR3 (canvas capped2)':'1440x1000 DPR1',checks:[],errors,failed};results.push(entry);
  const check=async(label,fn)=>{try{await fn();entry.checks.push({label,result:'PASS'});console.log(name,label,'PASS')}catch(e){entry.checks.push({label,result:'FAIL',error:e.stack});console.log(name,label,'FAIL',e.message);await page.screenshot({path:`${OUT}/${name}-failure-${entry.checks.length}.png`}).catch(()=>{});throw e;}};
  const shot=async suffix=>page.screenshot({path:`${OUT}/${name}-${suffix}.png`});

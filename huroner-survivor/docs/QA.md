@@ -1,3 +1,10 @@
+# Huroner Survivor — QA del traslado
+
+Base: 1e30b200. Juego anterior archivado en `feature/huroner-survivor-legacy`. Traslado íntegro a `huroner-survivor/`; runtime de simulación/render/input/audio/storage sin cambios. Humo local PASS en Chromium 134 y WebKit 18.4: una entrada de catálogo, recursos y módulos relativos, nombre sin sufijo, ajustes/récord existentes, inicio, ataque manual, pausa/reanudación y cero errores de red/página. [Resultado](promotion-local.json). Publicación pendiente.
+
+## Evidencia histórica de la edición renovada
+Lo siguiente corresponde al desarrollo y publicación previos bajo la ruta `huroner-survivor-2/`. Las referencias V1 intacta y ambas URLs describen aquel estado, no la estructura actual. Los JSON de resultados previos se conservan sin alterarlos.
+
 # Huroner Survivor 2 — QA
 
 ## Veredicto local
@@ -14,7 +21,7 @@ Matriz funcional PASS: 45 comprobaciones en cuatro perfiles, recuperadas de la e
 | A6 Aislamiento | Claves de V2 independientes; preferencias ES/EN, sonido y lado persistidas. V1 sin cambios; catálogo añade enlace propio. |
 | A7 Carga | Cero errores bloqueantes de consola/red en los cuatro perfiles locales. Humo público PASS. |
 
-Identidad de archivos: [tested-files.json](tested-files.json), SHA-256 de código/recursos. Retest localizado: [layout-results.json](layout-results.json).
+Identidad de archivos tras actualizar rutas y nombre (misma lógica jugable): [tested-files.json](tested-files.json), SHA-256 de código/recursos. Retest localizado: [layout-results.json](layout-results.json).
 
 Resultados medidos: [browser-results.json](browser-results.json). Fixture de navegador: [browser-qa.cjs](../tests/browser-qa.cjs); intercepta app.js solo en pruebas para acceder a Game, sin hooks en producción. Victoria y escenas pobladas se preparan con fixture; no equivalen a jugar diez minutos manualmente.
 

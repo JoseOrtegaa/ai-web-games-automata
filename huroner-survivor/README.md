@@ -1,25 +1,42 @@
 # Huroner Survivor
 
-**Jugar / Play:** https://joseortegaa.github.io/ai-web-games-automata/huroner-survivor/
+Edición actual de Huroner Survivor: un hurón con espada sobrevive a hordas mutantes durante diez minutos y derrota al jefe final. Conserva contenido y balance del original, con presentación «El último claro», módulos separados y almacenamiento propio. El juego anterior está archivado en la rama `feature/huroner-survivor-legacy`, dentro de `huroner-survivor/`.
 
-Survivor web vertical en español e inglés. Un hurón con espada sobrevive a conejos, liebres, codornices y pollos mutantes, recoge experiencia y elige una de tres mejoras aleatorias al subir de nivel. El jefe aparece a los **10 minutos de juego activo**: hay que derrotarlo para ganar.
+## Ejecutar
 
-- **Móvil:** toca y arrastra en la arena para mover el joystick flotante. Ataques automáticos.
-- **Ordenador:** WASD, flechas o arrastrar con ratón. Escape pausa/reanuda.
-- **Progresión:** daño, velocidad de ataque, alcance, vida, armadura, regeneración, imán, robo de vida, cuchillas orbitales, rayos y aura de hielo.
-- **Mutaciones en niveles 6, 11 y 16:** cambios visuales, estadísticas y habilidades; liebres que embisten y pollos que lanzan proyectiles.
-- **Partidas independientes:** no hay mejoras permanentes. Récord, idioma y sonido se guardan en localStorage del navegador. El récord no se sincroniza entre dispositivos.
-- **Audio:** música y efectos sintetizados con Web Audio, con opción de silenciar. La partida se pausa al cambiar de pestaña o perder el foco.
-- **Arte:** ilustraciones originales dibujadas con Canvas 2D. Sangre estilizada.
+Desde esta carpeta, sin instalar dependencias ni compilar:
 
-## Desarrollo
+```bash
+npm test
+python3 -m http.server 8000 --directory ..
+```
 
-Sin dependencias ni compilación. Desde la raíz del repositorio: `python3 -m http.server 8000`, luego abrir `http://localhost:8000/huroner-survivor/`.
+Abrir <http://localhost:8000/huroner-survivor/>. Usar un servidor HTTP: los módulos no deben abrirse con `file://`.
 
-Pruebas de la simulación: `cd huroner-survivor && npm test`.
+## Jugar
 
-`core.js` contiene la simulación independiente del navegador; `app.js` se ocupa de controles, interfaz, audio y renderizado.
+- Móvil: arrastrar por la arena para mover el joystick; usar otro dedo para pulsar ataque.
+- Escritorio: WASD o flechas para moverse, espacio para atacar y Escape para pausar/reanudar. También se puede arrastrar con el ratón.
+- Ajustes: ataque manual o automático, botón a izquierda/derecha, sonido e idioma ES/EN.
+- Ambos modos atacan al enemigo vivo más cercano y comparten una recarga de 0,25 segundos.
+- Recoger experiencia permite elegir mejoras; cada cinco niveles aparece un jefe. A los diez minutos llega el jefe final: hay que derrotarlo para ganar.
+- Pausa y elección detienen la simulación. Cambiar de pestaña pausa el combate; se reanuda con una acción explícita.
 
-## English
+Las preferencias y el récord se guardan localmente cuando el navegador lo permite. No se guarda una partida en curso ni se requiere cuenta o conexión a un servicio.
 
-A portrait, auto-attacking survival game. Drag to move, collect experience and pick one of three upgrades. Enemies mutate at levels 6, 11 and 16. Defeat the boss that arrives after 10 minutes of active play. Every run starts fresh; only your personal best and preferences persist locally. Switch ES/EN on the title screen.
+## Organización
+
+| Archivo | Responsabilidad |
+| --- | --- |
+| `core.js` | Simulación, reglas, balance y eventos; RNG inyectable, sin navegador. |
+| `app.js` | Pantallas, HUD, preferencias y único bucle de actualización. |
+| `render.js`, `art.js`, `assets/` | Cámara, arena, personajes y recursos visuales. |
+| `input.js` | Teclado, joystick, multitáctil y cancelación de punteros. |
+| `audio.js` | Música y efectos mediante Web Audio. |
+| `storage.js`, `i18n.js` | Validación de persistencia y textos ES/EN. |
+| `index.html`, `style.css` | Estructura, interfaz adaptable y safe areas. |
+| `tests/` | Regresiones deterministas del core y almacenamiento falso. |
+
+Se conservan las claves de la edición renovada para mantener ajustes y récords al cambiar de URL: `huroner-survivor-2:preferences:v1` y `huroner-survivor-2:record:v1`; no se leen ni migran datos de V1. El primer resultado `dead`/`won` es irreversible hasta reiniciar, y detiene las reglas posteriores del mismo paso.
+
+Las pruebas automatizadas se ejecutan también con `node --test tests/*.test.js`. La verificación de navegador, sus limitaciones y la publicación se registran en [QA](docs/QA.md) y [STATE](docs/STATE.md). Los contratos técnicos están en [ARCHITECTURE](docs/ARCHITECTURE.md); alcance y dirección visual, en [BRIEF](docs/BRIEF.md) y [DESIGN](docs/DESIGN.md).

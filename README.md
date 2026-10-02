@@ -9,7 +9,8 @@ Juegos web creados íntegramente por IA siguiendo las indicaciones de Jose, sin 
 | Juego | Carpeta | Descripción |
 | --- | --- | --- |
 | [Huroner Survivor](https://joseortegaa.github.io/ai-web-games-automata/huroner-survivor/) | `huroner-survivor/` | Survivor vertical: hurón con espada, hordas mutantes, mejoras, bosses y ataque automático o por botón configurable. |
-| [Huroner Survivor 2](https://joseortegaa.github.io/ai-web-games-automata/huroner-survivor-2/) | `huroner-survivor-2/` | Versión independiente revisada por diseño, arquitectura y QA, con presentación renovada. |
+
+La edición actual de Huroner Survivor incorpora «El último claro». El código anterior está archivado en [feature/huroner-survivor-legacy](https://github.com/JoseOrtegaa/ai-web-games-automata/tree/feature/huroner-survivor-legacy/huroner-survivor).
 
 El archivo `index.html` es el catálogo. Los futuros juegos se añadirán en carpetas independientes.
 

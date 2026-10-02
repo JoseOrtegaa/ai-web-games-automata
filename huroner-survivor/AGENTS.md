@@ -1,25 +1,25 @@
-# Huroner Survivor — Agent Guide
+# Huroner Survivor — mapa para agentes
 
-## Stack
-Juego web vertical sin framework ni build. Usa HTML5, CSS, JavaScript ES Modules, Canvas 2D y Web Audio. Estado persistente simple con `localStorage`. Tests con Node `node:test`. Publicación directa en GitHub Pages.
+Aplicar también las reglas comunes de [AGENTS raíz](../AGENTS.md). Este archivo resume exclusivamente este juego; máximo orientativo: 300 palabras.
 
-## Arquitectura
-- `index.html`: estructura de pantallas, HUD, configuración y controles.
-- `style.css`: layout móvil, HUD, modales, joystick y botón de ataque.
-- `core.js`: simulación pura/determinista. Player, enemigos, XP, niveles, mejoras, bosses, pickups, daño, proyectiles y victoria/derrota.
-- `app.js`: render Canvas, input táctil/teclado, audio, traducciones ES/EN, navegación de pantallas, configuración y sincronización con `core.js`.
-- `tests/core.test.js`: pruebas de la lógica de juego.
+## Lectura
+Para retomar, [STATE](docs/STATE.md). Según la tarea: [BRIEF](docs/BRIEF.md), [DESIGN](docs/DESIGN.md), [ARCHITECTURE](docs/ARCHITECTURE.md), [QA](docs/QA.md). No leer todos por defecto.
 
-## Gameplay actual
-Supervivencia de 10 minutos. El hurón gana XP, sube de nivel y elige mejoras. XP con destello blanco breve sobre la gema, desfasado y sin halo en suelo. Hay bosses cada 5 niveles y un boss final a los 10 minutos. Enemigos mutan por nivel. Desde nivel 6: conejo salta a un punto marcado, codorniz dispara 3 plumas y gallina golpea un círculo; nivel 11: salto más rápido, 5 plumas y círculo +15%; nivel 16: recarga de estos especiales /1,15. Avisos fijos; daño según estadísticas existentes. Liebre y bosses conservan ataques. Pickups: carne (+3 HP), aceite de salmón (+10% velocidad/20s) y fuego (+35% daño/15s). Ataque automático/manual al enemigo más cercano, recarga compartida de 0,25 s (`ATTACK_COOLDOWN`); el botón puede estar a izquierda/derecha. “Colmillo Gemelo” duplica cada ataque. Preferencias, idioma, sonido y récord se guardan en `localStorage`.
+## Stack y mapa
+HTML/CSS, JavaScript ES Modules, Canvas 2D y Web Audio; sin framework, build ni dependencias runtime. Mapa: `index.html`/`style.css` componen pantallas; `app.js` coordina navegación, HUD y frame; `core.js` posee reglas/estado; `render.js` dibuja; `input.js` gestiona punteros/teclado; `audio.js` sonido; `storage.js` preferencias/récord; `i18n.js` textos. Contratos en ARCHITECTURE. Core y tests derivados de V1, sin importarla; art.js y assets/ contienen el arte propio de V2.
 
-## Para modificar
-Cambios de reglas/estadísticas: `core.js` + test correspondiente. UI/controles/render: `app.js`, `index.html`, `style.css`. Evita mezclar lógica de juego en la UI. Mantén límites de entidades y comportamiento móvil. Ejecuta siempre:
+## Comandos
+Desde `huroner-survivor/`:
 
 ```bash
-cd huroner-survivor
-npm test
+node --test tests/*.test.js
+python3 -m http.server 8000 --directory ..
 ```
 
-No añadas dependencias salvo necesidad explícita.
-Prohibido el zoom del navegador durante la partida.
+Abrir `http://localhost:8000/huroner-survivor/`. No instalación ni compilación. También disponible `npm test`.
+
+## Restricciones
+Preservar contenido/balance; sólo corregir estados terminales y discrepancias documentadas. Manual y automático pasan por `manualAttack()` y comparten 0,25 s; nunca llamar `automaticAttack()` desde UI. Primer `dead/won` irreversible, sin reglas posteriores. UI no muta Game. Pausa/elección congelan tiempo; resetear input al salir de juego activo. ES/EN, multitáctil, cancelación y zoom bloqueado durante partida. Prioridad iPhone/Safari y Android/Chrome, escritorio equilibrado; no afirmar pruebas físicas no realizadas. Mantener claves históricas para conservar ajustes/récords: `huroner-survivor-2:preferences:v1` y `huroner-survivor-2:record:v1`.
+
+## Publicación
+Pages desde raíz de `main`, archivos fuente directamente en `huroner-survivor/`. Ruta `/ai-web-games-automata/huroner-survivor/`; estado de publicación en STATE y QA. Rutas relativas. Juego antiguo archivado en rama `feature/huroner-survivor-legacy`. Sin backend.
