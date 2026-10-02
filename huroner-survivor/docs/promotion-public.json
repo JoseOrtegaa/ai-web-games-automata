@@ -1,0 +1,37 @@
+{
+  "date": "2026-10-02T23:20:28.494Z",
+  "results": [
+    {
+      "engine": "chromium",
+      "version": "134.0.6998.35",
+      "url": "https://joseortegaa.github.io/ai-web-games-automata/huroner-survivor/",
+      "result": "PASS",
+      "checks": [
+        "single catalogue entry",
+        "relative assets/modules",
+        "name",
+        "existing preferences and record",
+        "start",
+        "manual attack",
+        "pause/resume",
+        "no page/network errors"
+      ]
+    },
+    {
+      "engine": "webkit",
+      "version": "18.4",
+      "url": "https://joseortegaa.github.io/ai-web-games-automata/huroner-survivor/",
+      "result": "PASS",
+      "checks": [
+        "single catalogue entry",
+        "relative assets/modules",
+        "name",
+        "existing preferences and record",
+        "start",
+        "manual attack",
+        "pause/resume",
+        "no page/network errors"
+      ]
+    }
+  ]
+}
