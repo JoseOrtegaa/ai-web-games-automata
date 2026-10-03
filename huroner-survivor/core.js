@@ -192,9 +192,9 @@ export class Game {
       const range={jump:220,fan:280,burst:110,lunge:175,shot:330,ram:195,explode:115}[style]||180;
       if(e.tier<(e.specialTier??0)||e.ability>0||distance>range)return false;
       const angle=Math.atan2(p.y-e.y,p.x-e.x);
-      if(style==='jump')e.specialAttack={kind:'jump',phase:'warning',time:.72,x:p.x,y:p.y,radius:31,angle,duration:.42};
-      else if(style==='fan')e.specialAttack={kind:'fan',phase:'warning',time:.72,x:e.x,y:e.y,radius:30,angle,count:3};
-      else if(style==='burst')e.specialAttack={kind:'burst',phase:'warning',time:.78,x:e.x,y:e.y,radius:65,angle};
+      if(style==='jump')e.specialAttack={kind:'jump',phase:'warning',time:.75,x:p.x,y:p.y,radius:31,angle,duration:.45};
+      else if(style==='fan')e.specialAttack={kind:'fan',phase:'warning',time:.75,x:e.x,y:e.y,radius:30,angle,count:3};
+      else if(style==='burst')e.specialAttack={kind:'burst',phase:'warning',time:.8,x:e.x,y:e.y,radius:65,angle};
       else if(style==='shot')e.specialAttack={kind:'shot',phase:'warning',time:.7,x:e.x,y:e.y,radius:24,angle,count:1,projectileKind:e.projectileKind||'bone'};
       else if(style==='explode')e.specialAttack={kind:'explode',phase:'warning',time:.88,x:e.x,y:e.y,radius:74,angle};
       else e.specialAttack={kind:style,phase:'warning',time:style==='ram'?.5:.58,x:p.x,y:p.y,radius:28,angle,duration:style==='ram'?.36:.4,hit:false};
