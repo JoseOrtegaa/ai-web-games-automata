@@ -196,7 +196,7 @@ test('rabbit warns, jumps to its locked target, damages on landing and can be do
     assert.ok(g.effects.some(effect=>effect.type==='enemy-impact'));
   }
 });
-test('quail keeps one evolved fan pattern with three locked feathers',()=>{
+test('quail primary fan pattern keeps three locked feathers',()=>{
   for(const level of [5,11,16,30]){
     const {g,e}=specialScenario('quail',level,240);g.step(.01);const angle=e.specialAttack.angle;
     advance(g,.74,{x:0,y:1});assert.equal(g.shots.length,0);advance(g,.02);assert.equal(g.shots.length,3);
