@@ -105,4 +105,4 @@ Reproducir QA con Playwright 1.51.1 instalado fuera del proyecto; `QA_BROWSERS=c
 - La prueba `tests/render.test.js` fue actualizada para esas referencias y conserva las pruebas del indicador de boss.
 - Las aserciones numéricas equivalentes se ejecutaron con Node y pasan.
 - No se ejecutó la suite completa ni QA de navegador en este entorno porque el runner no tiene acceso de red al repositorio; no se afirma prueba física en iPhone/Android.
-- GitHub Pages: run 37161784959 iniciado para el commit de juego; verificar conclusión antes de considerar publicación cerrada.
+- GitHub Pages: run 37161784959 completado con `success` para el commit de juego `ed7d597ace7be7543761913c0853df57d1738d26`.
