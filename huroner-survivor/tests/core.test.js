@@ -27,6 +27,32 @@ test('manual and automatic attacks target the nearest living enemy regardless of
   }
   assert.equal(UPGRADES.find(u=>u.id==='twin').max,1);
 });
+test('ordinary spawns avoid sectors that are already locally saturated',()=>{
+  const g=new Game(rng(77));g.spawnTimer=g.pickupTimer=999;
+  g.enemies=Array.from({length:40},(_,i)=>({id:1000+i,hp:1,boss:false,x:450,y:(i-20)*2}));
+  const e=g.spawn('rabbit');
+  const angle=(Math.atan2(e.y-g.player.y,e.x-g.player.x)+Math.PI*2)%(Math.PI*2);
+  const sector=Math.floor(angle/(Math.PI*2/8));
+  assert.ok(sector!==0&&sector!==7,'spawn should avoid the crowded east sectors');
+});
+
+test('crowd steering spreads a dense melee pack instead of collapsing it into one stack',()=>{
+  const g=new Game(rng(91));g.spawnTimer=g.pickupTimer=999;g.player.invuln=999;
+  g.enemies=[];
+  for(let i=0;i<36;i++){
+    const e=g.spawn('rabbit');Object.assign(e,{x:105,y:0,speed:30,ability:999,hp:100,maxHp:100,tier:0});
+  }
+  for(let i=0;i<100;i++)g.step(.05);
+  const buckets=new Map();
+  for(const e of g.enemies){
+    const key=Math.floor(e.x/18)+','+Math.floor(e.y/18);
+    buckets.set(key,(buckets.get(key)||0)+1);
+  }
+  assert.ok(Math.max(...buckets.values())<=4,'no 18px area should contain a large sprite stack');
+  const radii=g.enemies.map(e=>Math.hypot(e.x-g.player.x,e.y-g.player.y));
+  assert.ok(Math.max(...radii)-Math.min(...radii)>25,'the pack should occupy multiple local lanes');
+});
+
 test('ten-minute stress simulation maintains bounded entities and finite state',()=>{const g=new Game(rng());g.upgrades={power:5,twin:1,armor:4,reach:3,orbit:3,lightning:3,frost:3,regen:3};for(let i=0;i<12005;i++){g.player.hp=100;g.player.invuln=1;if(g.state==='levelup')g.choose(g.choices[0].id);g.step(.05,{x:Math.cos(i/140),y:Math.sin(i/140)});g.events=[];assert.ok(Number.isFinite(g.player.x)&&Number.isFinite(g.player.hp));assert.ok(g.enemies.length<=171);assert.ok(g.particles.length<=200);assert.ok(g.shots.length<=150);if(g.state==='won')break;}assert.ok(g.time>=600);assert.ok(g.bossSpawned);});
 
 test('manual attack rejects rapid taps until 250ms, including twin slashes, and resets for a new run',()=>{
