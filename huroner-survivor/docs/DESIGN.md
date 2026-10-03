@@ -167,3 +167,9 @@ Las siguientes bajadas se desbloquean tras los bosses de nivel 15 y 30. Capas: s
 
 Los cambios de capa o fase visual usan un fundido de 1,25 s de tiempo de simulación; con movimiento reducido el cambio es inmediato. La decoración queda bajo actores, gemas, pickups y avisos, no añade colisiones ni modifica estadísticas, y los tiles de 768 px se cachean por etapa visual.
 
+## Familias de enemigos por mundo
+
+Los enemigos normales pertenecen visual y mecánicamente a la capa actual. Superficie conserva conejo, liebre, codorniz y pollo, con una única evolución desde nivel 5. Subsuelo usa calavera ósea, esqueleto con espada, esqueleto arquero que dispara huesos y conejo esquelético; en su evolución los humanos cambian físicamente sin cambiar arma y la calavera pasa de embestida a explosión. Profundidades usa guerrero de roca, arquero de roca, conejo pétreo y jabalí de roca. Magma usa guerrero calcinado, arquero de brasas, bestia de lava y calavera de magma explosiva.
+
+Las familias pueden compartir patrones comprensibles (salto, embestida, disparo o ataque de área), pero deben mantener silueta, material, proyectil y efectos de muerte propios. Al descender, los spawns normales cambian inmediatamente al roster de la nueva capa. Bosses permanecen en su sistema separado.
+

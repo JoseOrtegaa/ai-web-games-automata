@@ -7,7 +7,7 @@ test('normalized controls, fixed time ceiling and paused simulation',()=>{const 
 test('manual slash targets enemies and drops collectible experience',()=>{const g=new Game(rng());g.player.face=0;let e=nearby(g);g.manualAttack();for(let i=0;i<10;i++)g.step(.05);g.manualAttack();assert.ok(e.hp<=0);assert.equal(g.kills,1);assert.ok(g.gems.length);g.gems=[{x:g.player.x,y:g.player.y,value:3}];g.step(.02);assert.equal(g.xp,3.6);});
 test('level up offers three distinct valid choices and carries over XP',()=>{const g=new Game(rng());g.xp=xpNeeded(1)+xpNeeded(2)+2;g.checkLevel();assert.equal(g.level,2);assert.equal(g.state,'levelup');assert.equal(g.choices.length,3);assert.equal(new Set(g.choices.map(x=>x.id)).size,3);assert.equal(g.choose('invalid'),false);let id=g.choices[0].id;assert.equal(g.choose(id),true);assert.equal(g.rank(id),1);assert.equal(g.level,3);assert.equal(g.state,'levelup');assert.equal(g.xp,2);g.choose(g.choices[0].id);assert.equal(g.state,'playing');});
 test('level-up XP remainder stays rounded to one decimal',()=>{const g=new Game(rng());g.level=10;g.xp=xpNeeded(10)+.2;g.checkLevel();assert.equal(g.level,11);assert.equal(g.xp,.2);assert.equal(String(g.xp),'0.2');});
-test('mutations affect living enemies and unlock combat abilities',()=>{const g=new Game(rng());const hare=nearby(g,'hare',150,0);const chicken=nearby(g,'chicken',200,0);let old=hare.maxHp;g.level=6;g.mutate();assert.equal(hare.tier,1);assert.ok(hare.maxHp>old);hare.ability=0;g.step(.02);assert.ok(hare.charge>0);g.level=11;g.mutate();chicken.x=70;chicken.ability=0;g.step(.02);assert.equal(chicken.specialAttack.kind,'chicken');assert.equal(mutationFor(16),3);assert.equal(mutationFor(90),3);});
+test('surface enemies have a single evolution that unlocks their combat abilities',()=>{const g=new Game(rng());const hare=nearby(g,'hare',150,0);const chicken=nearby(g,'chicken',70,0);let old=hare.maxHp;g.level=5;g.mutate();assert.equal(hare.tier,1);assert.ok(hare.maxHp>old);hare.ability=0;g.step(.02);assert.equal(hare.specialAttack.kind,'ram');g.level=20;g.mutate();assert.equal(g.mutation,1);assert.equal(mutationFor(16),1);assert.equal(mutationFor(90),1);chicken.ability=0;g.step(.02);assert.equal(chicken.specialAttack.kind,'burst');});
 test('armor mitigates damage, invulnerability prevents stacked hits and death ends run',()=>{const g=new Game(rng());g.upgrades.armor=2;g.player.shield=0;g.hurt(20);assert.ok(g.player.hp>80);const hp=g.player.hp;g.hurt(20);assert.equal(g.player.hp,hp);g.player.invuln=0;g.hurt(1000);assert.equal(g.state,'dead');assert.equal(g.player.hp,0);});
 test('new weapons damage foes; vitality heals and upgrades stop at caps',()=>{const g=new Game(rng());g.upgrades={lightning:1,frost:1};g.stormTimer=0;g.auraTimer=0;const e=nearby(g,'chicken',20,0);const hp=e.hp;g.step(.02);assert.ok(e.hp<hp);g.player.hp=10;g.offer();g.choices=[UPGRADES.find(u=>u.id==='vitality')];g.choose('vitality');assert.equal(g.player.maxHp,125);assert.equal(g.player.hp,45);for(const u of UPGRADES)g.upgrades[u.id]=u.max;g.offer();assert.deepEqual(g.choices.map(x=>x.id),['heal']);g.choose('heal');assert.equal(g.player.hp,125);});
 test('boss appears only at ten active minutes, once, and must be killed',()=>{const g=new Game(rng());g.time=BOSS_TIME-.03;g.step(.02);assert.equal(g.bossSpawned,false);g.step(.02);assert.equal(g.bossSpawned,true);assert.equal(g.state,'playing');const id=g.boss.id;g.step(.02);assert.equal(g.boss.id,id);g.hit(g.boss,10000);assert.equal(g.state,'won');const time=g.time;g.step(.05);assert.equal(g.time,time);g.reset();assert.equal(g.time,0);assert.equal(g.level,1);assert.deepEqual(g.upgrades,{});assert.equal(g.boss,null);});
@@ -33,7 +33,7 @@ test('developer controls set level, selected upgrades, healing and boss level wi
   const ordinary=nearby(g,'rabbit',120,0);
   g.state='levelup';g.choices=[UPGRADES[0]];
   assert.equal(g.debugSetLevel(25),25);
-  assert.equal(g.level,25);assert.equal(g.xp,0);assert.equal(g.mutation,3);assert.equal(g.state,'playing');assert.deepEqual(g.choices,[]);
+  assert.equal(g.level,25);assert.equal(g.xp,0);assert.equal(g.mutation,1);assert.equal(g.state,'playing');assert.deepEqual(g.choices,[]);
   assert.ok(!g.enemies.includes(ordinary));
   assert.equal(g.debugSetUpgrade('power',999),8);assert.equal(g.rank('power'),8);
   assert.equal(g.debugSetUpgrade('regen',2),2);assert.equal(g.rank('regen'),2);
@@ -87,10 +87,10 @@ function specialScenario(kind,level=6,x=150){
   const e=nearby(g,kind,x);e.ability=0;return {g,e};
 }
 function advance(g,seconds,input){for(let left=seconds;left>1e-9;left-=.01)g.step(Math.min(.01,left),input);}
-test('new specials unlock at level 6 and wait until in range',()=>{
-  for(const kind of ['rabbit','quail','chicken']){
-    const {g,e}=specialScenario(kind,5,60);g.step(.01);assert.equal(e.specialAttack,null);
-    g.level=6;g.mutate();g.step(.01);assert.equal(e.specialAttack.kind,kind);
+test('surface specials unlock at the single level-5 evolution and wait until in range',()=>{
+  for(const [kind,attack] of [['rabbit','jump'],['quail','fan'],['chicken','burst']]){
+    const {g,e}=specialScenario(kind,4,60);g.step(.01);assert.equal(e.specialAttack,null);
+    g.level=5;g.mutate();g.step(.01);assert.equal(e.specialAttack.kind,attack);
     const far=specialScenario(kind,16,400);far.g.step(.01);assert.equal(far.e.specialAttack,null);
   }
 });
@@ -104,11 +104,10 @@ test('rabbit warns, jumps to its locked target, damages on landing and can be do
     assert.ok(g.effects.some(effect=>effect.type==='enemy-impact'));
   }
 });
-test('quail warns then fires a spaced, locked fan using existing enemy damage',()=>{
-  for(const level of [6,11,16,30]){
+test('quail keeps one evolved fan pattern with three locked feathers',()=>{
+  for(const level of [5,11,16,30]){
     const {g,e}=specialScenario('quail',level,240);g.step(.01);const angle=e.specialAttack.angle;
-    advance(g,.74,{x:0,y:1});assert.equal(g.shots.length,0);
-    advance(g,.02);assert.equal(g.shots.length,level===6?3:5);
+    advance(g,.74,{x:0,y:1});assert.equal(g.shots.length,0);advance(g,.02);assert.equal(g.shots.length,3);
     const angles=g.shots.map(s=>Math.atan2(s.vy,s.vx));
     for(let i=0;i<angles.length;i++){
       const expected=angle+(i-(angles.length-1)/2)*.3;
@@ -116,7 +115,6 @@ test('quail warns then fires a spaced, locked fan using existing enemy damage',(
       assert.equal(g.shots[i].damage,e.damage);assert.equal(g.shots[i].kind,'feather');
     }
   }
-  const {g,e}=specialScenario('quail',6,120);g.step(.01);advance(g,1.7);assert.equal(g.player.hp,100-e.damage);
 });
 test('chicken circle has a full warning, one hit and a safe escape',()=>{
   for(const dodge of [false,true]){
@@ -126,18 +124,11 @@ test('chicken circle has a full warning, one hit and a safe escape',()=>{
     assert.equal(g.shots.length,0);assert.ok(e.ability>=5);
   }
 });
-test('tier progression changes attacks and cooldown while preserving warning duration',()=>{
-  for(const kind of ['rabbit','quail','chicken']){
-    const values=[6,11,16,30].map(level=>{
-      const {g,e}=specialScenario(kind,level,60);g.step(.01);const attack={...e.specialAttack};
-      while(e.specialAttack)g.step(.01);
-      return {attack,cooldown:e.ability};
-    });
-    assert.equal(values[0].attack.time,values[1].attack.time);assert.equal(values[1].attack.time,values[2].attack.time);
-    assert.ok(Math.abs(values[1].cooldown/values[2].cooldown-1.15)<1e-8);
-    assert.deepEqual(values[2],values[3]);
-    if(kind==='rabbit'){assert.equal(values[0].attack.duration,.45);assert.equal(values[1].attack.duration,.34);}
-    if(kind==='chicken')assert.ok(Math.abs(values[1].attack.radius/values[0].attack.radius-1.15)<1e-8);
+test('surface evolution is capped at one tier instead of escalating every five levels',()=>{
+  for(const kind of ['rabbit','hare','quail','chicken']){
+    const values=[5,10,20,40].map(level=>{const {g,e}=specialScenario(kind,level,60);return {tier:e.tier,attack:e.attackStyle};});
+    assert.deepEqual(values.map(v=>v.tier),[1,1,1,1]);
+    assert.equal(new Set(values.map(v=>v.attack)).size,1);
   }
 });
 test('specials pause with simulation, cancel on death and honor projectile limits',()=>{
