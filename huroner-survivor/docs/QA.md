@@ -77,3 +77,16 @@ Publicación verificada: commit `7903e2b3b5415df74a4d1eb777906fff6546b857`, Page
 - Revisión de capturas: siluetas diferenciadas (caballero/mago, cristal, gran escudo y conejo azul, cornamenta, mortero, ocho patas, campana, guadaña, tres colas, alas/corona); avisos coral discontinuos y daño sólido. Capturas temporales `/tmp/huroner-bosses-qa/`, resultados duraderos `bosses-local.json`. No pruebas físicas iPhone/Android; balance subjetivo pendiente de partidas del usuario.
 
 Publicación verificada en `c9cd1f8b11dd23406935f966a6b42edffb4f0a22`; Pages `37133803328` success. Nueve archivos runtime públicos idénticos byte por byte a los probados. Humo público en Chrome: inicio, HUD 20/20 y 100/100, pausa/reanudación PASS. Sin errores propios de la página en la consola observada; errores de metadatos de la extensión del navegador excluidos. Evidencia `bosses-public.json`.
+
+
+## 2026-10-03 — Vida y dos ataques adicionales por boss
+
+**PASS lógico y Chromium móvil.** Base `ee1ff19`, rama `feature/boss-health-attacks`; revisión propia, sin delegación.
+
+- `node --test --test-isolation=none tests/*.test.js`: 57 casos PASS. Seis casos nuevos recorren todo el catálogo: HP +30–50% sobre fórmula anterior (niveles 1/5/10/15/20/25/50/100), total de gemelos, rey final y auxiliar sin bonus; no curación al subir de nivel.
+- Los 24 ataques nuevos son alcanzables en el ciclo; advertencia previa, geometría fija, daño efectivo y salida segura. Proyectiles, carga y saltos probados con impacto real y esquiva lateral. Pausa/elección, cancelación por muerte, límites 64/150. Regresiones: 10 minutos simulados, convivencia, escudos, XP, controles y terminales.
+- `tests/core.test.js` adapta la prueba de las tres habilidades del rey a su nueva rotación/aviso, conservando aserciones de cantidad de proyectiles y carga.
+- `tests/boss-expansion-qa.cjs`: Chromium 134.0.6998.35, Playwright 1.51.1 externo, viewport 390×844. 24 escenas de aviso y ataque, renderer inmutable, efectos acotados y pausa real PASS; sin errores de página ni recursos. Evidencia en `boss-expansion-local.json`; capturas temporales `/tmp/huroner-boss-expansion/`. Revisión visual de ácido/fuego, cristales/veneno, cruces, saltos y ondas. Se amplía radio inicial de dos ondas para que sus avisos no queden tapados por el cuerpo.
+- WebKit BLOCKED: faltan bibliotecas del sistema (GTK/GStreamer y otras). No se afirman pruebas de Safari ni teléfonos físicos. La validación funcional y visual publicada corresponde a Chromium. Balance subjetivo pendiente de partidas reales.
+
+Reproducir QA con Playwright 1.51.1 instalado fuera del proyecto; `QA_BROWSERS=chromium node tests/boss-expansion-qa.cjs`. Sin nuevas dependencias runtime.

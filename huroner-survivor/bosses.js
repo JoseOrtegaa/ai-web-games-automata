@@ -12,6 +12,17 @@ export const BOSSES = [
   {id:'storm',kind:'quail',name:['Búho de la tormenta','Storm owl'],hint:['Tres rayos marcados · sigue moviéndote','Three marked lightning strikes · keep moving']},
 ];
 export const bossDefinition = id => BOSSES.find(b => b.id === id);
+// The existing level formula remains; the additional bonus rises from 30% to 50%.
+// Snapshot at spawn: leveling up never refills a boss that is already being fought.
+export const bossHealthMultiplier = level => 1.3 + Math.min(.2, Math.max(0, level - 5) * .01);
+export const EXTRA_ATTACKS = {
+  blade:['sword-lunge','eclipse-cleave'], mage:['rune-triad','arcane-star'],
+  prism:['split-prism','crystal-burst'], bastion:['shield-wave','siege-hammer'],
+  antler:['antler-quake','antler-leap'], mortar:['acid-pool','bomb-carpet'],
+  weaver:['web-cross','venom-fan'], bell:['implosion','echo-triangle'],
+  reaper:['twin-scythes','wing-cut'], ember:['fire-trail','ember-pounce'],
+  storm:['storm-cross','lightning-cage'], king:['royal-quake','judgment']
+};
 export function bossEncounters(game) {
   const groups = new Map();
   for (const e of game.enemies) {
@@ -61,31 +72,132 @@ function hazard(game, e, kind, data = {}) {
   if (game.hazards.length >= 64) return;
   game.hazards.push({ownerId:e.id,kind,x:e.x,y:e.y,angle:Math.atan2(game.player.y-e.y,game.player.x-e.x),age:-.85,duration:.25,damage:e.damage,color:e.bossType,...data});
 }
-function projectile(game, e, angle, kind='magic', speed=145) {
+function projectile(game, e, angle, kind='magic', speed=145, damage=e.damage*.75) {
   if (game.shots.length >= 150) return;
-  game.shots.push({ownerId:e.id,kind,x:e.x,y:e.y,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,life:3,age:0,damage:e.damage*.75});
+  game.shots.push({ownerId:e.id,kind,x:e.x,y:e.y,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,life:3,age:0,damage});
+}
+function volley(game, e, angles, kind='magic', speed=145, damage=e.damage*.75) {
+  for(const angle of angles)hazard(game,e,'beam',{angle,range:kind==='scythe'?270:320,width:7,damage:0,age:-1,duration:.12});
+  e.pending={kind:'volley',time:1,angles,projectileKind:kind,speed,damage,x:e.x,y:e.y};
+  e.castLeft=1.15;
+}
+function leap(game,e,p,kind='circle') {
+  hazard(game,e,kind,{x:p.x,y:p.y,radius:58,age:-1.2,duration:kind==='web'?2.2:.3});
+  e.pending={kind:'leap',time:.85,x:p.x,y:p.y,fromX:e.x,fromY:e.y};
+  e.castLeft=1.6;
+}
+function extraAttack(game,e,id,angle) {
+  const p=game.player;
+  e.ability=3.8;e.castLeft=1.4;
+  switch(id) {
+    case 'sword-lunge':
+      hazard(game,e,'beam',{angle,range:225,width:30,damage:0,age:-1,duration:.75});
+      e.pending={kind:'charge',time:1,angle};e.castLeft=1;break;
+    case 'eclipse-cleave':
+      for(let i=0;i<2;i++)hazard(game,e,'sector',{angle:angle+i*Math.PI,range:145,half:1.2,age:-.9-i*.55,duration:.22});
+      e.castLeft=1.8;break;
+    case 'rune-triad':
+      for(let i=0;i<3;i++){const a=angle+i*Math.PI*2/3;hazard(game,e,'circle',{x:p.x+Math.cos(a)*48,y:p.y+Math.sin(a)*48,radius:35,age:-1-i*.28,duration:.3});}
+      e.castLeft=1.9;break;
+    case 'arcane-star':volley(game,e,Array.from({length:8},(_,i)=>angle+i*Math.PI/4));break;
+    case 'split-prism':
+      for(const offset of [-.48,0,.48])hazard(game,e,'beam',{angle:angle+offset,range:360,width:9,age:-1.15,duration:.5});
+      e.castLeft=1.7;break;
+    case 'crystal-burst':volley(game,e,Array.from({length:6},(_,i)=>angle+i*Math.PI/3),'crystal',175);break;
+    case 'shield-wave':
+      hazard(game,e,'beam',{angle,range:300,width:28,age:-1.1,duration:.35});e.castLeft=1.5;break;
+    case 'siege-hammer':
+      hazard(game,e,'circle',{x:p.x,y:p.y,radius:60,age:-1.2,duration:.25});
+      hazard(game,e,'ring',{x:p.x,y:p.y,radius:60,rate:90,width:10,age:-1.5,duration:1.3,damage:e.damage*.75});
+      e.castLeft=1.8;break;
+    case 'antler-quake':
+      hazard(game,e,'ring',{radius:65,rate:130,width:15,age:-1,duration:1.6});break;
+    case 'antler-leap':leap(game,e,p);break;
+    case 'acid-pool':
+      hazard(game,e,'web',{x:p.x,y:p.y,radius:66,age:-1.2,duration:3.2,damage:e.damage*.65});e.ability=4.6;break;
+    case 'bomb-carpet':
+      for(let i=0;i<4;i++)hazard(game,e,'circle',{x:e.x+Math.cos(angle)*(65+i*65),y:e.y+Math.sin(angle)*(65+i*65),radius:38,age:-.95-i*.3,duration:.25});
+      e.castLeft=2.2;e.ability=4.4;break;
+    case 'web-cross':
+      for(let i=0;i<2;i++){const a=angle+i*Math.PI/2;hazard(game,e,'beam',{x:p.x-Math.cos(a)*140,y:p.y-Math.sin(a)*140,angle:a,range:280,width:14,age:-1.15,duration:2,damage:e.damage*.65});}
+      e.ability=4.6;break;
+    case 'venom-fan':volley(game,e,[-.6,-.3,0,.3,.6].map(a=>angle+a),'venom',125);break;
+    case 'implosion':
+      hazard(game,e,'ring',{radius:220,rate:-75,width:12,age:-1.2,duration:2.4});e.ability=4.5;break;
+    case 'echo-triangle':
+      for(let i=0;i<3;i++){const a=angle+i*Math.PI*2/3;hazard(game,e,'ring',{x:p.x+Math.cos(a)*100,y:p.y+Math.sin(a)*100,radius:20,rate:65,width:8,age:-1.2-i*.4,duration:1.4,damage:e.damage*.8});}
+      e.castLeft=2.1;e.ability=4.6;break;
+    case 'twin-scythes':volley(game,e,[angle-.35,angle+.35],'scythe',190);break;
+    case 'wing-cut':
+      for(const side of [-1,1])hazard(game,e,'sector',{angle:angle+side*Math.PI/2,range:180,half:.85,age:-1,duration:.45});break;
+    case 'fire-trail':
+      for(let i=0;i<3;i++)hazard(game,e,'web',{x:e.x+Math.cos(angle)*(70+i*65),y:e.y+Math.sin(angle)*(70+i*65),radius:36,age:-1-i*.25,duration:2,damage:e.damage*.7});
+      e.castLeft=1.9;e.ability=4.2;break;
+    case 'ember-pounce':leap(game,e,p,'web');e.ability=4.2;break;
+    case 'storm-cross':
+      for(let i=0;i<2;i++){const a=angle+Math.PI/4+i*Math.PI/2;hazard(game,e,'beam',{x:p.x-Math.cos(a)*180,y:p.y-Math.sin(a)*180,angle:a,range:360,width:13,age:-1.1,duration:.35});}
+      e.castLeft=1.5;break;
+    case 'lightning-cage':
+      for(let i=0;i<6;i++){const a=i*Math.PI/3;hazard(game,e,'lightning',{x:p.x+Math.cos(a)*110,y:p.y+Math.sin(a)*110,radius:25,age:-1.25,duration:.25});}
+      hazard(game,e,'lightning',{x:p.x,y:p.y,radius:48,age:-1.9,duration:.25});e.castLeft=2.2;e.ability=4.5;break;
+    case 'royal-quake':
+      for(let i=0;i<2;i++)hazard(game,e,'ring',{radius:70,rate:110,width:12,age:-1-i*.8,duration:2});
+      e.castLeft=2.1;e.ability=4.2;break;
+    case 'judgment':
+      for(let i=0;i<4;i++)hazard(game,e,'beam',{angle:angle+i*Math.PI/2,range:310,width:20,age:-1.2,duration:.55});
+      hazard(game,e,'lightning',{x:p.x,y:p.y,radius:52,age:-2,duration:.35});e.castLeft=2.4;e.ability=4.6;break;
+  }
 }
 function release(game, e, action) {
   if (action.kind === 'magic') for(let i=-1;i<=1;i++)projectile(game,e,action.angle+i*.26);
   if (action.kind === 'scythe') projectile(game,e,action.angle,'scythe',210);
-  if (action.kind === 'charge') {e.charge=.75;e.vx=Math.cos(action.angle)*285;e.vy=Math.sin(action.angle)*285;}
+  if (action.kind === 'charge') {e.charge=action.duration??.75;e.vx=Math.cos(action.angle)*(action.speed??285);e.vy=Math.sin(action.angle)*(action.speed??285);}
+  if (action.kind === 'volley') for(const angle of action.angles)projectile(game,{...e,x:action.x,y:action.y},angle,action.projectileKind,action.speed,action.damage);
+  if (action.kind === 'leap') e.leap={...action,age:0,duration:.35};
 }
 export function stepBoss(game, e, dt, distance) {
   const p=game.player;
+  if(e.leap) {
+    e.leap.age=Math.min(e.leap.duration,e.leap.age+dt);
+    const t=e.leap.age/e.leap.duration;
+    e.x=e.leap.fromX+(e.leap.x-e.leap.fromX)*t;e.y=e.leap.fromY+(e.leap.y-e.leap.fromY)*t;
+    if(t>=1)e.leap=null;
+    return true;
+  }
   if(e.bossType==='prism') {
     const before=e.sinceHit;e.sinceHit+=dt;
     const healTime=Math.max(0,e.sinceHit-Math.max(3,before));
     e.hp=Math.min(e.maxHp,e.hp+e.maxHp*.018*healTime);
   }
   if(e.pending) {e.pending.time-=dt;if(e.pending.time<=0){release(game,e,e.pending);e.pending=null;}}
-  e.castLeft=Math.max(0,e.castLeft-dt);
+  e.castLeft=Math.max(0,(e.castLeft||0)-dt);
   if(e.charge>0)return false;
   if(e.castLeft>0)return true;
   e.ability-=dt;
-  const melee=e.bossType==='bastion'||(e.bossType==='twins'&&e.bossPart==='blade');
+  const index=e.attackIndex||0;
+  const melee=index===0&&(e.bossType==='bastion'||(e.bossType==='twins'&&e.bossPart==='blade'));
   if(e.ability>0||distance>(melee?135:330))return false;
   const angle=Math.atan2(p.y-e.y,p.x-e.x);
   e.ability=3.4;e.castLeft=1.1;
+  const key=e.finalBoss?'king':e.bossType==='twins'?e.bossPart:e.bossType;
+  const originalCount=e.finalBoss?3:1;
+  e.attackIndex=(index+1)%(originalCount+2);
+  if(index>=originalCount){
+    e.lastAttack=EXTRA_ATTACKS[key][index-originalCount];
+    extraAttack(game,e,e.lastAttack,angle);return true;
+  }
+  e.lastAttack=e.finalBoss?['charge','ring','burst'][index]:'original';
+  if(e.finalBoss){
+    if(index===0){
+      const speed=230+Math.min(70,e.bossLevel*3);
+      hazard(game,e,'beam',{angle,range:speed*.65,width:43,damage:0,age:-1,duration:.65});
+      e.pending={kind:'charge',time:1,angle,speed,duration:.65};e.castLeft=1;
+    }else if(index===1){
+      const count=Math.min(16,8+Math.floor(e.bossLevel/5));
+      volley(game,e,Array.from({length:count},(_,i)=>i/count*Math.PI*2),'magic',115,Math.max(14,e.damage*.65));
+    }else volley(game,e,[-2,-1,0,1,2].map(i=>angle+i*.16),'magic',145,Math.max(14,e.damage*.72));
+    e.ability=3.1;return true;
+  }
   switch(e.bossType) {
     case 'twins':
       if(e.bossPart==='blade')hazard(game,e,'sector',{range:115,half:1.05,angle});

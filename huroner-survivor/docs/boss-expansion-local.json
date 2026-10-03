@@ -1,0 +1,40 @@
+[
+  {
+    "browser": "chromium",
+    "version": "134.0.6998.35",
+    "result": "PASS",
+    "attacks": [
+      "sword-lunge",
+      "eclipse-cleave",
+      "rune-triad",
+      "arcane-star",
+      "split-prism",
+      "crystal-burst",
+      "shield-wave",
+      "siege-hammer",
+      "antler-quake",
+      "antler-leap",
+      "acid-pool",
+      "bomb-carpet",
+      "web-cross",
+      "venom-fan",
+      "implosion",
+      "echo-triangle",
+      "twin-scythes",
+      "wing-cut",
+      "fire-trail",
+      "ember-pounce",
+      "storm-cross",
+      "lightning-cage",
+      "royal-quake",
+      "judgment"
+    ],
+    "checks": [
+      "24 warning/active renders",
+      "renderer immutable",
+      "bounded effects",
+      "real UI pause"
+    ],
+    "errors": []
+  }
+]
