@@ -1,45 +1,54 @@
-# Catálogo de bosses — 2026-10-03
+# Catálogo de bosses por mundo — 2026-10-03
 
-Alcance: diez encuentros de nivel, uno aleatorio cada 5 niveles; se evita repetición inmediata, sin descartar encuentros anteriores vivos. El rey final de los 600 s mantiene su función de victoria. HP/daño escalan con la fórmula vigente de jefes. Desde esta ampliación, la HP recibe además un bonus del 30% en nivel 5, +1 punto porcentual por nivel hasta el 50% en nivel 25 (mínimo 30%, máximo 50%). Se fija al aparecer, sin curar ni redimensionar bosses vivos al subir de nivel. Aplica al total de los gemelos y al rey final; no al conejo auxiliar. Cada encuentro concede una sola recompensa de 20 XP (30/70), salvo su conejo de apoyo normal.
+Los bosses normales aparecen cada 5 niveles. Ya no existe un pool global: la capa actual aporta exactamente **5 bosses diferentes**, elegidos aleatoriamente evitando repetición inmediata. El rey final de los 600 s sigue separado. Los perfiles de ataque pueden reutilizarse entre mundos, pero nombre, silueta, material, proyectiles y paleta se adaptan al entorno.
 
-| ID | Nombre | Silueta | Mecánica / respuesta |
-| --- | --- | --- | --- |
-| twins | Hermanos del eclipse | Conejo caballero con espada + conejo encapuchado con bastón | Dos cuerpos, una barra sumada y una recompensa; arco de espada cercano y abanico mágico dirigido. Matar ambos. |
-| prism | Codorniz prismática | Cresta de cristal y ojo-lente | Láser recto con dirección fijada durante aviso; regenera 1,8% HP/s tras 3 s sin recibir golpes. Atacar para cortar la cura. |
-| bastion | Pollo bastión | Gran escudo hexagonal y yelmo | Invulnerable mientras vive su conejo azul brillante; matarlo rompe permanentemente el escudo. Golpe circular cercano. |
-| antler | Liebre cornuda | Cuernos largos y placas rojas | Embestida recta de 0,75 s tras mostrar la trayectoria; apartarse de la línea. |
-| mortar | Sapo bombardero | Sapo ancho con alforjas y mortero | Tres bombas escalonadas con círculos fijados alrededor de la posición del jugador. Salir de las marcas. |
-| weaver | Viuda de espinas | Araña de ocho patas y abdomen marcado | Deja tres telarañas persistentes dañinas, con aviso; rodearlas. Sin inmovilización nueva. |
-| bell | Tortuga campanera | Caparazón abovedado y campana | Onda circular creciente: cruzarla antes del impacto o aprovechar el centro ya vacío. |
-| reaper | Cuervo segador | Alas negras, capucha y guadaña | Guadaña que va y vuelve hacia el dueño, con trayecto inicial avisado. |
-| ember | Zorro de brasas | Hocico largo, orejas y tres colas de fuego | Abanico de fuego sostenido con dirección bloqueada; rodearlo por un costado. |
-| storm | Búho de la tormenta | Alas anchas, cejas y corona de rayos | Tres impactos de rayo escalonados en posiciones fijadas durante el aviso. Seguir moviéndose. |
+## Mundo 1 · Superficie
+| Boss | Perfil |
+| --- | --- |
+| Hermanos del eclipse | Dúo espada + magia |
+| Codorniz prismática | Láser/cristal + regeneración |
+| Pollo bastión | Escudo + objetivo auxiliar |
+| Liebre cornuda | Embestida/terremoto/salto |
+| Viuda de espinas | Telarañas/zonas/proyectiles |
 
-## Contratos mínimos
-`bosses.js` posee catálogo, creación, comportamiento, agrupación y zonas de peligro. Core lo llama desde `step`, `hit`, `checkLevel`; sin UI. Encuentro identificado por `encounterId`. Gemelos mantienen `encounterMaxHp` para una barra que no se rellena al morir uno. Auxiliar lleva `shieldOwnerId`; no cuenta como boss. Su muerte desactiva sólo el escudo de su dueño.
+## Mundo 2 · Subsuelo
+| Boss | Perfil |
+| --- | --- |
+| Caballero del osario | Hoja de hueso de ida/vuelta + cortes |
+| Oráculo de médula | Magia ósea, marcas y rayos |
+| Bombardero de cráneos | Bombas y zonas malditas |
+| Campanero del sepulcro | Ondas expansivas/implosivas |
+| Sabueso del osario | Embestidas y salto |
 
-`boss-art.js` dibuja siluetas, escudos, auxiliar y zonas sin mutar Game ni usar RNG. Cada ataque se anuncia ≥0,75 s (bombas/rayos sucesivos añaden demora); tonos de peligro coral/marfil con contornos discontinuos durante aviso. Efectos solo con tiempo activo, máximo 64 peligros y 150 proyectiles; propietarios muertos cancelan sus peligros/proyectiles. No añadir menús ni dependencias.
+## Mundo 3 · Profundidades
+| Boss | Perfil |
+| --- | --- |
+| Coloso de granito | Ondas sísmicas |
+| Vidente de cristal | Haces/cristales + regeneración |
+| Carnero de cantera | Embestidas pétreas |
+| Tejedora de obsidiana | Grietas persistentes y proyectiles |
+| Artillero de la falla | Bombardeo de roca |
 
-QA: selección/umbrales, totalidad del catálogo, cada ataque/aviso y escape, gemelos/recompensa, láser/regeneración, escudo/auxiliar correcto, coexistencia, pausa/elección, terminales, reseteo, límites de entidades, HUD ES/EN y capturas Chromium/WebKit móvil/escritorio. Incluir humo del enlace público.
+## Mundo 4 · Magma
+| Boss | Perfil |
+| --- | --- |
+| Sabueso del infierno | Sectores y rastros de fuego |
+| Segador de ceniza | Guadañas ardientes de ida/vuelta |
+| Coloso de lava | Anillos de magma |
+| Oráculo piromante | Marcas mágicas y rayos de fuego |
+| Ariete volcánico | Embestidas y terremotos |
 
+## Contratos
+`BOSS_POOLS` contiene 4 listas de 5 IDs. `BOSSES` contiene 20 definiciones con `depth`, `profile`, `form`, nombre y pista ES/EN. `spawnBoss()` selecciona solo dentro de `game.worldDepth`; un tipo explícito sigue disponible para QA/DEV.
 
-## Ampliación de repertorio y vida — 2026-10-03
+`bossProfile` controla la mecánica; `bossType` identifica el encuentro; `bossTheme` y `bossForm` controlan arte/paleta. Esto permite reutilizar una mecánica sin que dos bosses de mundos diferentes se vean iguales.
 
-Cada actor alterna su ataque original y dos adicionales, en ciclo para que todos aparezcan. El rey conserva carga, anillo de proyectiles y ráfaga, seguidos de dos ataques nuevos. Sus ataques usan ahora los avisos y límites comunes. Son 24 ataques añadidos: dos para cada hermano, dos para cada uno de los otros nueve encuentros y dos para el final.
+Se conservan las reglas de HP: bonus 30% en nivel 5, +1 punto porcentual por nivel hasta 50% desde nivel 25. Gemelos comparten barra/recompensa; Bastión mantiene su objetivo auxiliar. Cada encuentro normal concede una sola recompensa de boss. El rey final conserva carga, anillo, ráfaga, terremoto real y juicio.
 
-| Boss / actor | Nuevo ataque 1 | Nuevo ataque 2 |
-| --- | --- | --- |
-| Gemelo espada | Estocada: embestida por un carril avisado | Corte del eclipse: dos tajos en sentidos opuestos, escalonados |
-| Gemelo mago | Tríada de runas: tres explosiones alrededor de la posición fijada | Estrella arcana: ocho proyectiles radiales |
-| Codorniz prismática | Prisma dividido: tres láseres divergentes | Estallido de cristal: seis fragmentos rápidos radiales |
-| Pollo bastión | Onda de escudo: golpe recto a distancia | Martillo de asedio: impacto en posición marcada y onda posterior |
-| Liebre cornuda | Terremoto: onda rápida desde el boss | Salto cornudo: salto hacia una zona marcada, impacto al aterrizar |
-| Sapo bombardero | Charco ácido: zona persistente verde | Alfombra de bombas: cuatro detonaciones en línea escalonadas |
-| Viuda de espinas | Cruz de seda: dos franjas persistentes | Abanico venenoso: cinco gotas verdes divergentes |
-| Tortuga campanera | Implosión: anillo que se cierra, flechas hacia dentro | Triángulo de ecos: tres ondas escalonadas desde centros distintos |
-| Cuervo segador | Guadañas gemelas: dos trayectorias de ida y vuelta | Corte de alas: dos sectores laterales, frente/espalda libres |
-| Zorro de brasas | Rastro de fuego: tres zonas ardientes en línea | Salto de brasas: aterrizaje sobre una zona ardiente persistente |
-| Búho de tormenta | Cruz de tormenta: dos descargas diagonales en el objetivo marcado | Jaula de rayos: seis impactos periféricos y uno central retrasado |
-| Rey final | Terremoto real: dos ondas sucesivas | Juicio: cuatro rayos desde el rey y un impacto en el objetivo fijado |
+Avisos de ataques permanecen anticipados, objetivos/direcciones se fijan antes del impacto, pausa/elección congelan simulación, muerte del dueño cancela hazards/proyectiles y se mantienen límites de 64 hazards y 150 proyectiles.
 
-Se mantienen la cura de la codorniz, el escudo/conejo del pollo, las recompensas y la cadencia de aparición. Peligros anunciados al menos 0,85 s; objetivos/direcciones fijados, sin persecución de las marcas. Daño limitado por la invulnerabilidad existente del jugador. Saltos sin daño de contacto durante el desplazamiento. Ácido, fuego, cristales y veneno diferenciados visualmente. Pausa/elección congelan el ciclo; muerte cancela efectos del actor.
+## Arte
+Superficie conserva las siluetas animales existentes. Subsuelo usa hueso/calavera/caballeros/oráculos; Profundidades usa granito, cristal y obsidiana; Magma usa ceniza, roca fundida y fuego. La magia y los proyectiles toman la paleta del mundo. Las zonas tipo telaraña pasan a grietas de obsidiana en roca.
+
+## QA vigente
+Comprobar: 20 IDs únicos; 5 bosses y 5 perfiles distintos por mundo; selección restringida a la capa; no repetición inmediata; cada encuentro ejecuta su perfil; perfiles extra siguen alcanzables; coexistencia mantiene límites; rey final sigue separado; HUD resuelve nombre/pista por `bossType`.
