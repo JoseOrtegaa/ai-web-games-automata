@@ -5,13 +5,11 @@ export const BOSS_TIME = 600;
 export const ATTACK_COOLDOWN = .25;
 export const FINAL_ARENA_RADIUS = 285;
 const INITIAL_HP = 100;
-const SHIELD_STEP = INITIAL_HP * .2;
 export const UPGRADES = [
   {id:'power', icon:'⚔', name:['Filo salvaje','Wild edge'], desc:['+22% de daño en todos los ataques.','+22% damage to all attacks.'], max:8},
   {id:'twin', icon:'⚔', name:['Colmillo gemelo','Twin fang'], desc:['Cada ataque lanza dos espadazos.','Each attack unleashes two sword slashes.'], max:1},
   {id:'vitality', icon:'♥', name:['Corazón indomable','Wild heart'], desc:['+25 de vida máxima y cura 35.','+25 maximum health and heal 35.'], max:6},
   {id:'armor', icon:'⬡', name:['Armadura de corteza','Bark armor'], desc:['Reduce el daño: divisor +0,18 por rango.','Reduce damage: divisor +0.18 per rank.'], max:6},
-  {id:'shield', icon:'◇', name:['Escudo del claro','Glade shield'], desc:['+20 de escudo. Se recarga tras 6 s sin daño.','+20 shield. Recharges after 6 s without damage.'], max:5},
   {id:'reach', icon:'⤢', name:['Espada colosal','Colossal sword'], desc:['+18% de alcance y un arco más amplio.','+18% reach and a wider slash.'], max:5},
   {id:'speed', icon:'➶', name:['Patas ligeras','Light paws'], desc:['+12% de velocidad de movimiento.','+12% movement speed.'], max:5},
   {id:'magnet', icon:'✦', name:['Imán de almas','Soul magnet'], desc:['+45% de radio para recoger experiencia.','+45% experience pickup radius.'], max:4},
@@ -23,6 +21,7 @@ export const UPGRADES = [
 ];
 export const xpNeeded = level => Math.round(6 + level * 3 + level * level * .12);
 export const mutationFor = level => enemyEvolutionTier(0,level);
+export const ferretEvolutionFor = level => Number(level)>=30?3:Number(level)>=20?2:Number(level)>=10?1:0;
 export const spawnRateFor = (level,time=0) => {
   const l=Math.max(1,Number(level)||1);
   const early=Math.min(14,l-1),mid=Math.min(15,Math.max(0,l-15)),late=Math.max(0,l-30);
@@ -38,7 +37,7 @@ export class Game {
   constructor(random = Math.random) { this.random=random; this.reset(); }
   reset() {
     this.state='playing'; this.time=0; this.level=1; this.xp=0; this.kills=0;
-    this.player={x:0,y:0,hp:INITIAL_HP,maxHp:INITIAL_HP,shield:SHIELD_STEP,shieldDelay:0,face:-Math.PI/2,invuln:0};
+    this.player={x:0,y:0,hp:INITIAL_HP,maxHp:INITIAL_HP,face:-Math.PI/2,invuln:0};
     this.upgrades={}; this.enemies=[]; this.gems=[]; this.pickups=[]; this.particles=[]; this.shots=[]; this.effects=[]; this.combatTexts=[];
     this.manualAttackCooldown=0; this.hazards=[]; this.lastBossType=null;
     this.spawnTimer=.5; this.pickupTimer=5; this.stormTimer=2; this.auraTimer=0;
@@ -52,7 +51,6 @@ export class Game {
   get reach() {return 98*(1+.18*this.rank('reach'));}
   get speed() {return 124*(1+.12*this.rank('speed'))*(this.speedBoostTimer>0?1.1:1);}
   get pickup() {return 56*(1+.45*this.rank('magnet'));}
-  get maxShield() {return SHIELD_STEP*(1+this.rank('shield'));}
   get nextDescentLevel() {return this.descentPlan[this.worldDepth]??null;}
   get canEnterCave() {return !!this.cave&&Math.hypot(this.player.x-this.cave.x,this.player.y-this.cave.y)<=70;}
   get finalBossPhase() {if(!this.boss?.finalBoss)return 0;const ratio=this.boss.hp/this.boss.maxHp;return ratio<=.35?3:ratio<=.7?2:1;}
@@ -116,7 +114,7 @@ export class Game {
     const upgrade=UPGRADES.find(u=>u.id===id),rank=clamp(Math.round(Number(value)||0),0,upgrade.max);
     this.upgrades[id]=rank;return rank;
   }
-  debugHeal() {this.player.hp=this.player.maxHp;this.player.shield=this.maxShield;return true;}
+  debugHeal() {this.player.hp=this.player.maxHp;return true;}
   debugSpawnBoss() {return this.state==='playing'?spawnBoss(this,null,this.level):null;}
   gainXp(amount) {this.xp=Math.round((this.xp+amount)*10)/10;}
   emit(type,data={}) {this.events.push({type,...data});}
@@ -312,8 +310,7 @@ export class Game {
     const p=this.player;if(p.invuln>0||this.state!=='playing')return false;
     // Armor has diminishing returns; damage always remains meaningful.
     const damage=Math.max(1,amount*100/(100+this.rank('armor')*18));
-    const absorbed=Math.min(p.shield,damage);
-    p.shield-=absorbed;p.hp-=damage-absorbed;p.shieldDelay=6;
+    p.hp-=damage;
     p.invuln=.65;this.shake=5;this.emit('hurt');
     if(p.hp<=0){p.hp=0;this.state='dead';this.emit('dead');}
     return true;
@@ -339,7 +336,7 @@ export class Game {
     const upgrade=UPGRADES.find(u=>u.id===id);
     if(id!=='heal'&&(!upgrade||this.rank(id)>=upgrade.max))return false;
     if(id==='heal')this.heal(this.player.maxHp,true);
-    else{this.upgrades[id]=this.rank(id)+1;if(id==='vitality'){this.player.maxHp+=25;this.heal(35,true);}if(id==='shield')this.player.shield+=SHIELD_STEP;}
+    else{this.upgrades[id]=this.rank(id)+1;if(id==='vitality'){this.player.maxHp+=25;this.heal(35,true);}}
     this.choices=[];this.state='playing';this.checkLevel();return true;
   }
   step(dt,input={x:0,y:0}) {
@@ -347,9 +344,6 @@ export class Game {
     dt=clamp(dt,0,.05);this.time+=dt;const p=this.player;
     this.manualAttackCooldown=Math.max(0,this.manualAttackCooldown-dt);
     p.invuln=Math.max(0,p.invuln-dt);this.shake=Math.max(0,this.shake-dt*20);
-    const rechargeTime=Math.max(0,dt-p.shieldDelay);
-    p.shieldDelay=Math.max(0,p.shieldDelay-dt);
-    p.shield=Math.min(this.maxShield,p.shield+this.maxShield*.1*rechargeTime);
     this.speedBoostTimer=Math.max(0,this.speedBoostTimer-dt);this.fireTimer=Math.max(0,this.fireTimer-dt);
     this.heal(this.rank('regen')*.7*dt);
     this.healTextTimer=Math.max(0,this.healTextTimer-dt);if(this.healTextTimer<=0&&this.healTextPending>.05)this.flushHealText();

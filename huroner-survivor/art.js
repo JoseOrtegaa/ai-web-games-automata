@@ -15,7 +15,8 @@ function oval(c, x, y, rx, ry, fill, stroke = null, width = 1.2) {
 function line(c, data, color = INK, width = 1) { shape(c, data, null, color, width); }
 
 /** Approximately 46 × 60 units. x/y is the actor ground anchor, face is ±1. */
-export function drawFerret(c, { x = 0, y = 0, scale = 1, face = 1, walk = 0, armor = 0, shield = 1 } = {}) {
+export function drawFerret(c, { x = 0, y = 0, scale = 1, face = 1, walk = 0, armor = 0, evolution = 0 } = {}) {
+  const evo=Math.max(0,Math.min(3,Math.round(Number(evolution)||0)));
   c.save(); c.translate(x, y); c.scale(scale * (face < 0 ? -1 : 1), scale);
   c.lineJoin = 'round'; c.lineCap = 'round';
   const step = Math.sin(walk) * 2;
@@ -35,23 +36,42 @@ export function drawFerret(c, { x = 0, y = 0, scale = 1, face = 1, walk = 0, arm
     shape(c, 'M-8-2L-6 7L0 9L4 4L3-6Z', '#9da48a', '#b8b494', .7);
     line(c, 'M-12 3L10 0M-2-6L0 10', '#344e4d', 1);
   }
+  // Visual evolution is level-driven and never changes collision or stats.
+  if(evo>=1){
+    shape(c,'M-13-7L-18-2L-14 4L-9 1L-7-7Z',evo>=3?'#6b3935':'#6f6657','#b99562',.8);
+    shape(c,'M9-8L15-5L16 1L11 3L7-5Z',evo>=3?'#6b3935':'#6f6657','#b99562',.8);
+    line(c,'M-9 12L-3 13M5 12L11 10',evo>=3?'#e27a55':'#b99562',1.5);
+  }
+  if(evo>=2){
+    shape(c,'M-11-5L-8 8L0 12L9 7L11-5L3-10L-4-9Z',evo>=3?'#493633':'#53615d','#c6aa72',1);
+    shape(c,'M-5-6L-3 6L1 8L5 4L4-7Z',evo>=3?'#8b4b3e':'#8e927a','#d7c28a',.7);
+    line(c,'M-8 1L8-1M0-8L1 9',evo>=3?'#dd6c49':'#708f88',1);
+  }
+  if(evo>=3){
+    shape(c,'M-12-11L-19-17L-17-8L-24-5L-14-1Z','#6f2f32','#c95e48',.9);
+    line(c,'M-7-4L-2 1L-5 6L2 11M5-6L9-1L6 4', '#f39a5d',1.5);
+  }
   // Scarf knot and wind-cut pennant stay red at every armor rank.
   shape(c, 'M-8-12Q-20-15-25-8L-20-6L-24-1Q-11-3-7-9Z', '#a7443b');
   shape(c, 'M-12-14Q-2-10 10-15L12-9Q0-3-12-8Z', '#c9604d');
   line(c, 'M-12-10Q-2-7 10-12', '#f0986e', .8);
-  // Sword held beside the body, ivory blade and copper guard.
-  shape(c, 'M13 9L20-12L23-15L23-9L17 10Z', '#e6eddf', '#607b79', 1);
-  line(c, 'M20-9L16 6', '#fff9df', .8);
-  shape(c, 'M11 7L20 10L19 12L10 9Z', '#b99054');
+  // Sword is the ferret's only held weapon; it evolves visually with the hunter.
+  const blade=evo>=3?'#fff0b8':evo>=2?'#eef1df':'#e6eddf';
+  const edge=evo>=3?'#e77945':evo>=2?'#b6aa75':'#607b79';
+  if(evo>=2)shape(c,'M12 10L21-15L25-20L25-11L18 11Z',blade,edge,1.15);
+  else shape(c,'M13 9L20-12L23-15L23-9L17 10Z',blade,edge,1);
+  line(c,evo>=2?'M21-13L16 7':'M20-9L16 6',evo>=3?'#fff0a6':'#fff9df',evo>=3?1.4:.8);
+  shape(c, 'M11 7L20 10L19 12L10 9Z', evo>=3?'#cf7546':'#b99054');
   line(c, 'M14 11L12 16', '#705743', 3);
+  if(evo>=2)line(c,'M17-4L20-1M16 1L19 4',evo>=3?'#f39a5d':'#8bc7bc',1);
+  if(evo>=3){c.save();c.globalAlpha=.2+.08*Math.sin(walk*.55);oval(c,20,-7,8,20,'#f0784930');c.restore();}
   oval(c, 11, 1, 4.3, 6.5, '#d7c6a6', INK);
   oval(c, 13, 5, 3.3, 3, '#efe1c4', INK, .9);
-  // A compact shield in the free paw, opposite the sword; stays visible when depleted.
+  // Free paw remains visible; no shield or second weapon.
   oval(c, -12, 2, 4, 5, '#d7c6a6', INK);
-  shape(c, 'M-24-5Q-16-2-7-5L-8 8Q-10 15-16 19Q-23 15-25 8Z', '#263f53', '#b99562', 1.6);
-  shape(c, 'M-21-1L-17 0L-17 14Q-21 11-22 6Z', '#47718a', null);
-  line(c, 'M-16-1L-16 15M-22 4L-10 4', '#638da1', .8);
-  shape(c, 'M-16 0L-12 5L-16 10L-20 5Z', shield > 0 ? '#9dd9ff' : '#536b78', INK, .8);
+  line(c,'M-12 5L-17 11','#8b785f',2.4);
+  oval(c,-18,12,3.2,2.5,'#efe1c4',INK,.8);
+  if(evo>=1)shape(c,'M-16 5L-20 8L-18 13L-14 10Z',evo>=3?'#6b3935':'#6f6657','#b99562',.7);
   // Rounded ears, narrow muzzle and dark eye mask distinguish a ferret.
   oval(c, -10, -23, 5.3, 5.8, '#dcccaf', INK);
   oval(c, 7, -25, 5.2, 5.2, '#dcccaf', INK);

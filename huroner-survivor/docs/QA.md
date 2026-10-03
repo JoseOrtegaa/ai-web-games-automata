@@ -90,3 +90,7 @@ Publicación verificada en `c9cd1f8b11dd23406935f966a6b42edffb4f0a22`; Pages `37
 - WebKit BLOCKED: faltan bibliotecas del sistema (GTK/GStreamer y otras). No se afirman pruebas de Safari ni teléfonos físicos. La validación funcional y visual publicada corresponde a Chromium. Balance subjetivo pendiente de partidas reales.
 
 Reproducir QA con Playwright 1.51.1 instalado fuera del proyecto; `QA_BROWSERS=chromium node tests/boss-expansion-qa.cjs`. Sin nuevas dependencias runtime.
+
+## 2026-10-04 — evolución del hurón, sin escudo y cámara alejada
+
+**PASS lógico localizado.** Se elimina el sistema de escudo del jugador sin tocar la protección especial de bosses. Daño mitigado por armadura pasa directo a HP. `ferretEvolutionFor` cubre cuatro etapas 1–9/10–19/20–29/30+; el arte produce cuatro firmas distintas y no conserva el dibujo del escudo de mano. `cameraZoomFor` da 0,84 a 390 px, 0,926 a 430 px y tope 0,99 a 540 px, equivalente a un encuadre aproximado 16% más lejano que el histórico. HUD/runtime no contienen referencias al escudo del jugador. Core, arte, renderer y app parsean. Prueba física en iPhone pendiente.

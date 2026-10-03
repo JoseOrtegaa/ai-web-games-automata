@@ -5,8 +5,6 @@ import { Game, ATTACK_COOLDOWN, xpNeeded } from '../core.js';
 function scenario() {
   const game = new Game(() => .5);
   game.spawnTimer = game.pickupTimer = 999;
-  game.player.shieldDelay = 999;
-  game.player.shield = 0; // Isolate lethal health damage; shield behavior has its own tests.
   return game;
 }
 function enemy(game, x, { final = false, hp = 1 } = {}) {

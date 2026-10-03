@@ -1,7 +1,7 @@
 import { drawBoss, drawShieldKey, drawBossHazards, drawBossProjectile } from './boss-art.js';
 import { drawFerret, drawAnimal } from './art.js';
 import { createWorldLayer } from './world.js';
-import { FINAL_ARENA_RADIUS } from './core.js';
+import { FINAL_ARENA_RADIUS, ferretEvolutionFor } from './core.js';
 function ellipse(c,x,y,rx,ry,color,stroke){c.beginPath();c.ellipse(x,y,rx,ry,0,0,Math.PI*2);c.fillStyle=color;c.fill();if(stroke){c.strokeStyle=stroke;c.lineWidth=1.8;c.stroke();}}
 function line(c,points,color,width=2){c.strokeStyle=color;c.lineWidth=width;c.lineCap='round';c.lineJoin='round';c.beginPath();points.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.stroke();}
 function sword(c,x,y,angle,scale=1){c.save();c.translate(x,y);c.rotate(angle);c.scale(scale,scale);c.fillStyle='#dce9ce';c.beginPath();c.moveTo(-4,0);c.lineTo(-5,-35);c.lineTo(0,-47);c.lineTo(5,-35);c.lineTo(4,0);c.closePath();c.fill();line(c,[[0,-40],[0,-1]],'#86afa1',1.3);line(c,[[-10,0],[10,0]],'#d6ad57',4);line(c,[[0,2],[0,13]],'#8a5e3c',5);ellipse(c,0,14,3,3,'#e5be70');c.restore();}
@@ -52,6 +52,8 @@ function drawFinalArenaBoundary(ctx,time){
   }
   ctx.globalAlpha=.12+pulse*.12;ctx.fillStyle='#ff3e24';ctx.beginPath();ctx.arc(0,0,FINAL_ARENA_RADIUS,0,Math.PI*2);ctx.arc(0,0,FINAL_ARENA_RADIUS-25,0,Math.PI*2,true);ctx.fill();ctx.restore();
 }
+export const cameraZoomFor = width => Math.min(.99,(Math.max(280,Number(width)||390)/390)*.84);
+
 export function createRenderer({canvas, heroCanvas}) {
   const ctx=canvas.getContext('2d',{alpha:false});
   let W=440,H=780,DPR=1, mist;
@@ -87,7 +89,7 @@ export function createRenderer({canvas, heroCanvas}) {
     ctx.beginPath();ctx.moveTo(13,0);ctx.lineTo(-7,-10);ctx.lineTo(-2,0);ctx.lineTo(-7,10);ctx.closePath();ctx.fill();ctx.stroke();
     ctx.restore();
   }
-function draw(game, {active = true, moving = false, reducedMotion = false, bossId = null} = {}) {const p=game.player;const zoom=Math.min(1.18,W/390);const viewW=W/zoom,viewH=H/zoom;const cx=active?p.x:0,cy=active?p.y:0;const shake=active&&!reducedMotion?game.shake:0;const camX=cx-viewW/2+Math.sin(game.time*83)*shake,camY=cy-viewH*.51+Math.cos(game.time*71)*shake;
+function draw(game, {active = true, moving = false, reducedMotion = false, bossId = null} = {}) {const p=game.player;const zoom=cameraZoomFor(W);const viewW=W/zoom,viewH=H/zoom;const cx=active?p.x:0,cy=active?p.y:0;const shake=active&&!reducedMotion?game.shake:0;const camX=cx-viewW/2+Math.sin(game.time*83)*shake,camY=cy-viewH*.51+Math.cos(game.time*71)*shake;
  ctx.save();ctx.scale(zoom,zoom);world.draw(ctx,viewW,viewH,camX,camY,{depth:active?game.worldDepth:0,level:active?game.level:1,time:game.time,reducedMotion,finalArena:active&&game.finalArena});ctx.translate(-camX,-camY);
  if(active){
  if(game.finalArena)drawFinalArenaBoundary(ctx,game.time);
@@ -109,7 +111,7 @@ function draw(game, {active = true, moving = false, reducedMotion = false, bossI
  for(const e of game.effects){if(e.type==='enemy-impact'){ctx.save();ctx.globalAlpha=e.life/e.max;ellipse(ctx,e.x,e.y,e.r,e.r,'#f49c5555','#f0dfbf');ctx.restore();}}
  const entities=[...game.enemies,{player:true,y:p.y}].sort((a,b)=>a.y-b.y);
  drawBossHazards(ctx,game);
- for(const e of entities){if(e.player){ctx.globalAlpha=p.invuln>0?.5+Math.sin(game.time*45)*.3:1;drawFerret(ctx,{x:p.x,y:p.y,scale:1,face:Math.cos(p.face)<-.05?-1:1,walk:reducedMotion?0:game.time*(moving?14:3),armor:game.rank('armor'),shield:p.shield/game.maxShield});ctx.globalAlpha=1;}else{if(Math.abs(e.x-cx)>viewW/2+80||Math.abs(e.y-cy)>viewH*.6+80)continue;if(e.boss&&e.special==='charge'&&e.ability<.65){ctx.setLineDash([4,6]);line(ctx,[[e.x,e.y],[p.x,p.y]],'#e9ae7a65',2);ctx.setLineDash([]);}const jump=e.specialAttack?.phase==='jump'?Math.sin(Math.PI*(1-e.specialAttack.time/e.specialAttack.duration))*32:0;if(e.bossType)drawBoss(ctx,e.leap?{...e,y:e.y-Math.sin(Math.PI*e.leap.age/e.leap.duration)*38}:e,reducedMotion?0:game.time);else if(e.shieldOwnerId)drawShieldKey(ctx,e,reducedMotion?0:game.time);else drawAnimal(ctx,{...e,x:e.x,y:e.y-jump,scale:e.boss?2.15:1+e.tier*.1,time:reducedMotion?0:game.time});if(e.hp<e.maxHp&&!e.boss){ctx.fillStyle='#071410';ctx.fillRect(e.x-13,e.y-40,26,3);ctx.fillStyle='#dba77a';ctx.fillRect(e.x-13,e.y-40,26*e.hp/e.maxHp,3);}}}
+ for(const e of entities){if(e.player){ctx.globalAlpha=p.invuln>0?.5+Math.sin(game.time*45)*.3:1;drawFerret(ctx,{x:p.x,y:p.y,scale:1,face:Math.cos(p.face)<-.05?-1:1,walk:reducedMotion?0:game.time*(moving?14:3),armor:game.rank('armor'),evolution:ferretEvolutionFor(game.level)});ctx.globalAlpha=1;}else{if(Math.abs(e.x-cx)>viewW/2+80||Math.abs(e.y-cy)>viewH*.6+80)continue;if(e.boss&&e.special==='charge'&&e.ability<.65){ctx.setLineDash([4,6]);line(ctx,[[e.x,e.y],[p.x,p.y]],'#e9ae7a65',2);ctx.setLineDash([]);}const jump=e.specialAttack?.phase==='jump'?Math.sin(Math.PI*(1-e.specialAttack.time/e.specialAttack.duration))*32:0;if(e.bossType)drawBoss(ctx,e.leap?{...e,y:e.y-Math.sin(Math.PI*e.leap.age/e.leap.duration)*38}:e,reducedMotion?0:game.time);else if(e.shieldOwnerId)drawShieldKey(ctx,e,reducedMotion?0:game.time);else drawAnimal(ctx,{...e,x:e.x,y:e.y-jump,scale:e.boss?2.15:1+e.tier*.1,time:reducedMotion?0:game.time});if(e.hp<e.maxHp&&!e.boss){ctx.fillStyle='#071410';ctx.fillRect(e.x-13,e.y-40,26,3);ctx.fillStyle='#dba77a';ctx.fillRect(e.x-13,e.y-40,26*e.hp/e.maxHp,3);}}}
  for(let i=0;i<game.rank('orbit');i++){let a=game.time*2.5+i/game.rank('orbit')*Math.PI*2;sword(ctx,p.x+Math.cos(a)*72,p.y+Math.sin(a)*72,a,.65);}
  for(const e of game.effects){let life=e.life/e.max;if(e.type==='slash'){ctx.save();ctx.translate(e.x,e.y);ctx.globalAlpha=life;ctx.beginPath();ctx.arc(0,0,e.r,e.angle-e.half,e.angle+e.half);ctx.strokeStyle=e.fire?'#e56f36b5':'#dcecc873';ctx.lineWidth=19;ctx.stroke();ctx.beginPath();ctx.arc(0,0,e.r+8,e.angle-e.half,e.angle+e.half);ctx.strokeStyle=e.fire?'#ffd36f':'#fff5c3';ctx.lineWidth=3;ctx.stroke();ctx.restore();}if(e.type==='bolt'){ctx.globalAlpha=life;line(ctx,[[e.x+15,e.y-200],[e.x-12,e.y-90],[e.x+15,e.y-95],[e.x,e.y]],'#d6edff',4);ellipse(ctx,e.x,e.y,17,8,'#c8e5ef80');ctx.globalAlpha=1;}}
  for(const q of game.particles){ctx.globalAlpha=Math.min(1,q.life*2);ellipse(ctx,q.x,q.y,q.size,q.size*.7,q.color||'#a35453');}ctx.globalAlpha=1;

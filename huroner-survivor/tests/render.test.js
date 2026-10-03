@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { bossIndicatorGeometry } from '../render.js';
+import { bossIndicatorGeometry, cameraZoomFor } from '../render.js';
 
 test('boss direction indicator stays hidden while the boss is safely visible', () => {
   assert.equal(bossIndicatorGeometry(220, 390, 220, 390, 440, 780), null);
@@ -17,4 +17,12 @@ test('boss direction indicator clamps to the viewport edge and keeps direction',
   const downLeft = bossIndicatorGeometry(-500, 1200, 220, 390, 440, 780);
   assert.ok(downLeft); assert.ok(downLeft.x >= 36 && downLeft.x <= 404); assert.ok(downLeft.y <= 712);
   assert.ok(downLeft.angle > Math.PI / 2);
+});
+
+
+test('camera zoom is roughly sixteen percent farther out than the previous framing',()=>{
+  assert.ok(Math.abs(cameraZoomFor(390)-.84)<1e-8);
+  assert.ok(Math.abs(cameraZoomFor(430)-.9261538461538461)<1e-8);
+  assert.equal(cameraZoomFor(540),.99);
+  assert.ok(cameraZoomFor(320)>=.68&&cameraZoomFor(320)<.7);
 });
