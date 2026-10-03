@@ -85,7 +85,7 @@ Antes de empezar, explicar movimiento, ataque seleccionado y condición de victo
 
 ### Invariantes y criterios comprobables para QA
 
-1. La misma secuencia de input, tiempo y aleatoriedad produce las reglas de combate y progresión documentadas, incluidas las peticiones de XP repartida y escudo del 2026-10-03. Ningún ajuste de diseño altera cifras para aparentar mayor dificultad o potencia.
+1. La misma secuencia de input, tiempo y aleatoriedad produce las reglas de combate y progresión documentadas. El escudo histórico del jugador fue retirado explícitamente el 2026-10-04; ningún ajuste visual de evolución o cámara altera cifras para aparentar mayor dificultad o potencia.
 2. Manual y automático comparten los 0,25 s; Gemelo duplica el espadazo una sola vez; el objetivo siempre es el vivo más cercano o la orientación previa si no existe.
 3. Tiempo/buffs/recargas no avanzan en pausa ni elección; reanudar no compensa de golpe el tiempo de pestaña oculta. Reiniciar vacía enemigos, efectos, elecciones, buffs e input retenido.
 4. Los niveles 5/10 generan jefes una vez; 6/11/16 mutan; el boss final aparece una sola vez a los 600 s. Los avisos no persiguen al jugador después de fijarse.
