@@ -17,10 +17,18 @@ render.js: texto flotante pequeño con contorno oscuro, crema para daño y verde
 tests/core.test.js: agregación, cap y throttling/cura real.
 
 ## QA
-Pendiente comprobar lógica, límites y parseo.
+PASS lógico localizado:
+- Colmillo gemelo agrega dos golpes simultáneos en un solo número por enemigo;
+- al expirar la ventana de 0,22 s, un golpe posterior crea un número nuevo;
+- máximo global de 10 textos simultáneos;
+- regeneración produce como máximo un texto visible por ciclo de ~0,9 s;
+- curación muestra HP real recuperado y no el valor nominal si hay overheal;
+- overkill muestra como máximo el HP restante del enemigo;
+- cada texto desaparece en menos de 1 s;
+- core.js y render.js parsean correctamente.
 
 ## Contexto preservado
 Spawn midgame suavizado; jitter de embestidas corregido; arena final del inframundo integrada; 20 bosses normales; ataque automático por defecto; XP 30/70; escudo 20→120; ataque 0,25 s; zoom bloqueado.
 
 ## Siguiente paso
-Ejecutar QA localizado, revisar diff, integrar en main y comprobar Pages.
+Revisar diff, integrar en main, comprobar Pages y validar visualmente en móvil que tamaño/contraste sean suficientemente sutiles.
