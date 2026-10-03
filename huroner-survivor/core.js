@@ -1,5 +1,5 @@
 import { spawnBoss, bossHit, stepBoss, stepHazards, stepBossShot, bossHealthMultiplier } from './bosses.js';
-import { enemyRoster, enemyDefinition, enemyEvolutionTier, enemyAttackStyle } from './enemies.js';
+import { enemyRoster, enemyDefinition, enemyEvolutionTier, enemyAttackStyle, enemyAttackOptions } from './enemies.js';
 // Deterministic, rendering-independent simulation. All time is active play time.
 export const BOSS_TIME = 600;
 export const ATTACK_COOLDOWN = .25;
@@ -33,6 +33,8 @@ const TAU = Math.PI * 2;
 const CROWD_SECTORS = 8;
 const CROWD_CELL = 56;
 const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
+const SPECIAL_RANGES = {jump:220,fan:280,burst:110,lunge:175,shot:330,ram:195,explode:115};
+const AIM_ERROR = {jump:26,fan:18,lunge:22,shot:22,ram:28};
 export class Game {
   constructor(random = Math.random) { this.random=random; this.reset(); }
   reset() {
@@ -248,20 +250,50 @@ export class Game {
     if(this.rank('twin')){this.attack();if(this.state==='playing')this.attack();}
     else this.attack();
   }
+  chooseEnemySpecialStyle(e,distance) {
+    const options=enemyAttackOptions(e.kind,e.tier).filter(style=>distance<=(SPECIAL_RANGES[style]||180));
+    if(!options.length)return null;
+    const primary=e.attackStyle,alternatives=options.filter(style=>style!==primary);
+    let style=options.includes(primary)?primary:options[0];
+    const count=e.specialCount||0;
+    if(alternatives.length&&count===0&&e.id%4===0){
+      style=alternatives[Math.floor(e.id/4)%alternatives.length];
+    }else if(count>0&&alternatives.length&&this.random()<.38){
+      const varied=options.filter(candidate=>candidate!==e.lastAttackKind);
+      if(varied.length)style=varied[Math.floor(this.random()*varied.length)];
+    }
+    if(style===e.lastAttackKind&&(e.attackRepeat||0)>=2){
+      const different=options.filter(candidate=>candidate!==e.lastAttackKind);
+      if(different.length)style=different[Math.floor(this.random()*different.length)];
+    }
+    return style;
+  }
+  imperfectEnemyAim(e,p,style) {
+    const maxError=AIM_ERROR[style]||0;
+    if(maxError<=0)return {x:p.x,y:p.y,angle:Math.atan2(p.y-e.y,p.x-e.x)};
+    const personality=.8+(e.id%9)*.05;
+    const radius=maxError*personality*(.35+this.random()*.65),offset=this.random()*TAU;
+    const x=p.x+Math.cos(offset)*radius,y=p.y+Math.sin(offset)*radius;
+    return {x,y,angle:Math.atan2(y-e.y,x-e.x)};
+  }
   stepEnemySpecial(e,dt,distance) {
-    const p=this.player,style=e.attackStyle;
-    if(!style)return false;
+    const p=this.player;
+    if(!e.attackStyle)return false;
     if(!e.specialAttack){
       e.ability=Math.max(0,e.ability-dt);
-      const range={jump:220,fan:280,burst:110,lunge:175,shot:330,ram:195,explode:115}[style]||180;
-      if(e.tier<(e.specialTier??0)||e.ability>0||distance>range)return false;
-      const angle=Math.atan2(p.y-e.y,p.x-e.x);
-      if(style==='jump')e.specialAttack={kind:'jump',phase:'warning',time:.75,x:p.x,y:p.y,radius:31,angle,duration:.45};
-      else if(style==='fan')e.specialAttack={kind:'fan',phase:'warning',time:.75,x:e.x,y:e.y,radius:30,angle,count:3};
+      if(e.tier<(e.specialTier??0)||e.ability>0)return false;
+      const style=this.chooseEnemySpecialStyle(e,distance);
+      if(!style)return false;
+      const aim=this.imperfectEnemyAim(e,p,style),angle=aim.angle;
+      if(style==='jump')e.specialAttack={kind:'jump',phase:'warning',time:.75,x:aim.x,y:aim.y,radius:31,angle,duration:.45};
+      else if(style==='fan')e.specialAttack={kind:'fan',phase:'warning',time:.75,x:e.x,y:e.y,radius:30,angle,count:3,projectileKind:e.projectileKind||'feather'};
       else if(style==='burst')e.specialAttack={kind:'burst',phase:'warning',time:.8,x:e.x,y:e.y,radius:65,angle};
       else if(style==='shot')e.specialAttack={kind:'shot',phase:'warning',time:.7,x:e.x,y:e.y,radius:24,angle,count:1,projectileKind:e.projectileKind||'bone'};
       else if(style==='explode')e.specialAttack={kind:'explode',phase:'warning',time:.88,x:e.x,y:e.y,radius:74,angle};
-      else e.specialAttack={kind:style,phase:'warning',time:style==='ram'?.5:.58,x:p.x,y:p.y,radius:28,angle,duration:style==='ram'?.36:.4,hit:false};
+      else e.specialAttack={kind:style,phase:'warning',time:style==='ram'?.5:.58,x:aim.x,y:aim.y,radius:28,angle,duration:style==='ram'?.36:.4,hit:false};
+      e.specialCount=(e.specialCount||0)+1;
+      e.attackRepeat=style===e.lastAttackKind?(e.attackRepeat||0)+1:1;
+      e.lastAttackKind=style;
       return true;
     }
     const a=e.specialAttack;a.time=Math.max(0,a.time-dt);
@@ -292,7 +324,8 @@ export class Game {
       const count=a.kind==='fan'?a.count:1;
       for(let i=0;i<count&&this.shots.length<150;i++){
         const angle=a.angle+(i-(count-1)/2)*(a.kind==='fan'?.3:0);
-        this.shots.push({kind:a.kind==='fan'?'feather':a.projectileKind,x:e.x,y:e.y,vx:Math.cos(angle)*(a.kind==='fan'?120:150),vy:Math.sin(angle)*(a.kind==='fan'?120:150),life:3,damage:e.damage});
+        const projectileKind=a.projectileKind||(a.kind==='fan'?'feather':e.projectileKind||'bone');
+        this.shots.push({kind:projectileKind,x:e.x,y:e.y,vx:Math.cos(angle)*(a.kind==='fan'?120:150),vy:Math.sin(angle)*(a.kind==='fan'?120:150),life:3,damage:e.damage});
       }
     }else if(a.kind==='explode'){
       if(Math.hypot(p.x-e.x,p.y-e.y)<a.radius+13)this.hurt(e.damage*1.15);
