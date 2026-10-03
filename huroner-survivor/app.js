@@ -35,6 +35,7 @@ function syncControls() {
   const active = mode === 'playing' && game.state === 'playing';
   input.setEnabled(active);
   $('attack-button').hidden = !active || preferences.attackMode !== 'button';
+  $('enter-cave').hidden = !active || !game.canEnterCave;
   $('attack-button').classList.toggle('left', preferences.attackSide === 'left');
   const readiness = Math.max(0, 1 - game.manualAttackCooldown / ATTACK_COOLDOWN);
   $('attack-button').classList.toggle('cooling', readiness < 1);
@@ -189,6 +190,8 @@ function consumeEvents() {
     if (event.type === 'mutation') toast(`${t('mutation')} ${['I', 'II', 'III', 'IV'][event.tier]} · ${t('mutationToast')}`);
     if (event.type === 'item') toast(t(`${event.kind}Toast`));
     if (event.type === 'boss') toast(event.final ? t('finalToast') : `${t('bossToast')} · ${event.level}`);
+    if (event.type === 'caveOpen') toast(t('caveOpenToast'));
+    if (event.type === 'worldDescent') toast(t('descentToast'));
   }
   if (mode === 'playing' && (game.state === 'dead' || game.state === 'won')) end();
   else if (mode === 'playing' && game.state === 'levelup' && visibleChoices !== game.choices) levelMenu();
@@ -210,6 +213,10 @@ function frame(now) {
   requestAnimationFrame(frame);
 }
 $('start').onclick = start; $('retry').onclick = start; $('pause').onclick = pause; $('resume').onclick = resume;
+$('enter-cave').onclick = () => {
+  if (!game.enterCave()) return;
+  shownBossId = null; input.reset(); syncControls(); hud(); focusArena();
+};
 $('quit').onclick = home; $('back').onclick = home;
 $('config').onclick = () => { mode = 'settings'; input.reset(); updateSettings(); show('settings-screen'); $('attack-auto').focus({ preventScroll: true }); };
 $('settings-done').onclick = () => { mode = 'home'; show('home'); $('config').focus({ preventScroll: true }); };
