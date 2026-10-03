@@ -52,7 +52,7 @@ function drawFinalArenaBoundary(ctx,time){
   }
   ctx.globalAlpha=.12+pulse*.12;ctx.fillStyle='#ff3e24';ctx.beginPath();ctx.arc(0,0,FINAL_ARENA_RADIUS,0,Math.PI*2);ctx.arc(0,0,FINAL_ARENA_RADIUS-25,0,Math.PI*2,true);ctx.fill();ctx.restore();
 }
-export const cameraZoomFor = width => Math.min(.99,(Math.max(280,Number(width)||390)/390)*.84);
+export const cameraZoomFor = width => Math.min(.99,(Math.max(280,Number(width)||390)/390)*.84)/1.3;
 
 export function createRenderer({canvas, heroCanvas}) {
   const ctx=canvas.getContext('2d',{alpha:false});
