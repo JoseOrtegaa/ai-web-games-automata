@@ -1,7 +1,7 @@
 # Huroner Survivor — estado vigente
 
 ## Objetivo / fase
-Eliminar completamente el escudo del jugador, hacer que el hurón evolucione visualmente con el nivel y alejar la cámara para mostrar más arena. Implementación, QA lógico e integración en `main` completados.
+Estado vigente: escudo del jugador eliminado, evolución visual del hurón activa y cámara de combate alejada de nuevo para mostrar ~30% más campo por eje respecto a la revisión anterior. Implementación, QA lógico localizado e integración en `main` completados.
 
 ## Escudo del jugador
 - Eliminados estado shield/shieldDelay/maxShield, mejora Escudo del claro, absorción/recarga, barra HUD y arte del escudo en la pata libre.
@@ -18,8 +18,9 @@ Eliminar completamente el escudo del jugador, hacer que el hurón evolucione vis
 - La espada queda como única arma sostenida; la pata libre ya no porta escudo ni otra arma.
 
 ## Cámara
-- Nuevo cameraZoomFor(width): mismo mundo/hitboxes, encuadre ~16% más lejano respecto al anterior.
-- Referencias: 390 px → 0,84; 430 px → 0,926; 540 px → 0,99.
+- `cameraZoomFor(width)` conserva el encuadre anterior y divide su zoom entre 1,30: mismo mundo, hitboxes y balance; solo cambia presentación.
+- Referencias actuales: 320 px → 0,530; 390 px → 0,646; 430 px → 0,712; 540 px → 0,762.
+- El HUD permanece fuera de la transformación de cámara y conserva su tamaño.
 
 ## QA lógico
 - jugador no contiene shield/shieldDelay/maxShield ni existe upgrade shield;
@@ -32,10 +33,10 @@ Eliminar completamente el escudo del jugador, hacer que el hurón evolucione vis
 - core.js, art.js, render.js y app.js parsean.
 
 ## Integración
-PR #14 fusionado en `main` el 2026-10-04. Merge squash: `eef0f6a5328a3f02472e02d147adbb4bb49915de`.
+PR #14 fusionado en `main` el 2026-10-04 para evolución/sin escudo/cámara inicial. PR #15 fusionado en `main` el 2026-10-04 para el alejamiento adicional de cámara. Último squash: `ed7d597ace7be7543761913c0853df57d1738d26`.
 
 ## Contexto preservado
 Números de daño/curación sutiles; spawn midgame suavizado; jitter de embestidas corregido; arena final del inframundo; 20 bosses normales; ataque automático por defecto; XP 30/70; ataque 0,25 s; zoom del navegador bloqueado.
 
 ## Siguiente paso
-Validar visualmente en iPhone el tamaño de cámara y que las cuatro evoluciones se distingan bien durante partida; ajustar solo presentación si hiciera falta.
+Validar visualmente en iPhone si el nuevo encuadre ~30% más amplio tiene la distancia deseada; si hiciera falta, ajustar únicamente `cameraZoomFor`, sin tocar gameplay.
