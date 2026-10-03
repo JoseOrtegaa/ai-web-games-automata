@@ -1,38 +1,35 @@
 # Huroner Survivor — estado vigente
 
 ## Objetivo / fase
-Añadir familias de enemigos normales distintas para cada mundo, eliminando la antigua escalada visual repetitiva de la superficie. Implementación, QA lógico e integración en `main` completados.
+Reemplazar el pool global de bosses por cinco bosses temáticos y aleatorios para cada mundo. Implementación y QA lógico completados en `feature/boss-pools-by-world`; pendiente integración/publicación.
 
-## Familias
-- Superficie: conejo, liebre, codorniz y pollo actuales; una sola evolución desde nivel 5.
-- Subsuelo: calavera ósea, esqueleto espada, esqueleto arquero con proyectiles de hueso y conejo esquelético. Evolución en torno a nivel 12; humanos cambian físicamente y la calavera pasa de embestir a explotar.
-- Profundidades: guerrero de roca, arquero de roca, conejo pétreo y jabalí de roca. Evolución visual desde nivel 25.
-- Magma: guerrero calcinado, arquero de brasas, bestia de lava y calavera de magma explosiva. Evolución visual desde nivel 35.
+## Bosses por mundo
+- Superficie: Hermanos del eclipse, Codorniz prismática, Pollo bastión, Liebre cornuda, Viuda de espinas.
+- Subsuelo: Caballero del osario, Oráculo de médula, Bombardero de cráneos, Campanero del sepulcro, Sabueso del osario.
+- Profundidades: Coloso de granito, Vidente de cristal, Carnero de cantera, Tejedora de obsidiana, Artillero de la falla.
+- Magma: Sabueso del infierno, Segador de ceniza, Coloso de lava, Oráculo piromante, Ariete volcánico.
+- Rey final de 600 s permanece separado.
 
 ## Implementación
-`enemies.js`: rosters, stats, evolución, XP y estilos de ataque.
-`core.js`: spawn por `worldDepth`, especiales genéricos (salto/fan/área/embestida/lunge/disparo/explosión) y proyectiles temáticos.
-`art.js`: siluetas vectoriales propias por familia.
-`render.js`: telegráficos y proyectiles hueso/roca/brasa, partículas y manchas por material.
-`tests/enemy-families.test.js` + adaptación de `core.test.js`.
+`bosses.js`: `BOSS_POOLS` (4×5), 20 definiciones, selección por `worldDepth`, separación `bossType` / `bossProfile` / `bossTheme` / `bossForm`.
+`boss-art.js`: 15 siluetas nuevas para capas inferiores, paletas de hueso/roca/magma y hazards/proyectiles temáticos.
+`app.js`: HUD consulta mecánica Bastión por perfil.
+Tests de bosses adaptados a catálogo y pools.
 
 ## QA
 PASS lógico:
-- superficie limitada a tier 1 y especiales bloqueados antes de nivel 5;
-- 12 enemigos de capas inferiores activan el ataque esperado;
-- arqueros disparan hueso/roca/brasa respectivamente;
-- calavera ósea evoluciona de embestida con empuje a explosión;
-- humanos óseos conservan arma/ataque al evolucionar;
-- simulación corta estable en las cuatro capas;
-- core/enemies/art/render parsean correctamente.
+- 20 bosses, 5 perfiles y 5 formas distintas por mundo;
+- selección aleatoria restringida a la capa y sin repetición inmediata;
+- los 20 bosses ejecutan su perfil asignado;
+- ataques extra siguen alcanzables por perfil;
+- cinco bosses simultáneos por mundo respetan 64 hazards / 150 proyectiles y estado finito;
+- rey final de 10 minutos sigue separado;
+- bosses.js, boss-art.js y app.js parsean.
 
-No se afirma prueba física en iPhone ni validación visual con navegador automatizado en esta sesión.
-
-## Integración
-PR #7 fusionado en `main` el 2026-10-03. Merge squash: `af40e71d08b574ffcf08873ff8754fbf74215b8c`.
+No se afirma prueba física en iPhone ni ejecución de la suite Node desde checkout local: el contenedor de esta sesión no pudo resolver github.com.
 
 ## Contexto preservado
-Mundos conectados por cuevas: primera bajada aleatoria tras boss 5/10, siguientes tras 15/30; fases visuales 20/25/35. Modo DEV por `?dev=1`. Ataque automático por defecto. Bosses cada 5 niveles y sistema de bosses sin cambios. XP 30/70 y remanente redondeado a una décima; escudo 20→120; ataque 0,25 s; zoom bloqueado.
+Familias normales por mundo ya integradas. Cuevas: primera bajada tras boss 5/10 aleatorio, siguientes tras 15/30. Modo DEV `?dev=1`. Ataque automático por defecto. XP 30/70 con remanente redondeado; escudo 20→120; ataque 0,25 s; zoom bloqueado.
 
 ## Siguiente paso
-Probar visualmente cada roster en móvil y ajustar lectura/tamaño/contraste si alguna silueta o telegráfico lo necesita.
+Revisar diff, integrar en `main`, comprobar GitHub Pages y probar visualmente bosses de las cuatro capas en móvil.
