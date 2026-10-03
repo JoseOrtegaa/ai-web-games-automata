@@ -1,7 +1,7 @@
 # Huroner Survivor — estado vigente
 
 ## Objetivo / fase
-Sustituir la antigua rotación automática de fondos por un sistema de mundos descendentes conectados mediante cuevas. Implementación y QA lógico completados en `feature/world-descent-layers`; pendiente integración/publicación.
+Sustituir la antigua rotación automática de fondos por un sistema de mundos descendentes conectados mediante cuevas. Implementación, QA lógico e integración en `main` completados.
 
 ## Progresión de mundos
 - Superficie inicial.
@@ -33,8 +33,11 @@ PASS lógico:
 
 No se afirma prueba física en iPhone ni ejecución Playwright local en esta sesión.
 
+## Integración
+PR #5 fusionado en `main` el 2026-10-03. Merge squash: `6eff54aba9c2069f67da02e560fc43eb6befa8e2`.
+
 ## Contexto preservado
 Modo DEV por `?dev=1`; sus saltos de nivel colocan una capa representativa para pruebas. Ataque automático por defecto. Flecha de boss fuera de pantalla. Bosses cada 5 niveles, HP +30→50% y repertorio ampliado. XP 30/70; escudo 20→120; ataque 0,25 s; zoom bloqueado.
 
 ## Siguiente paso
-Revisar diff, integrar en `main`, comprobar publicación de GitHub Pages y probar la progresión visual en móvil.
+Probar la progresión completa en móvil y pulir enemigos/ambientación de cada capa en iteraciones posteriores.
