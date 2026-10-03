@@ -18,6 +18,16 @@ export function bossIndicatorGeometry(targetX,targetY,originX,originY,width,heig
   return {x:originX+dx*t,y:originY+dy*t,angle:Math.atan2(dy,dx)};
 }
 
+function drawCave(ctx,cave,time){
+  ctx.save();ctx.translate(cave.x,cave.y);
+  const pulse=.85+Math.sin(time*2.4)*.08;
+  ctx.globalAlpha=.22;ellipse(ctx,0,9,64,28,'#000');ctx.globalAlpha=1;
+  ellipse(ctx,0,3,47,29,'#171414','#6f5c49');
+  ellipse(ctx,0,8,37,20,'#020304');
+  for(let i=0;i<9;i++){const a=Math.PI+(i/8)*Math.PI,r=43;const x=Math.cos(a)*r,y=8+Math.sin(a)*25;ellipse(ctx,x,y,7+(i%3),5+(i%2),'#4b4036','#756553');}
+  ctx.save();ctx.scale(pulse,pulse);line(ctx,[[-15,10],[0,19],[15,10]],'#b99562aa',2);line(ctx,[[-11,3],[0,10],[11,3]],'#87c9bf80',1.5);ctx.restore();
+  ctx.restore();
+}
 export function createRenderer({canvas, heroCanvas}) {
   const ctx=canvas.getContext('2d',{alpha:false});
   let W=440,H=780,DPR=1, mist;
@@ -41,9 +51,22 @@ export function createRenderer({canvas, heroCanvas}) {
     ctx.beginPath();ctx.moveTo(12,0);ctx.lineTo(-7,-9);ctx.lineTo(-2,0);ctx.lineTo(-7,9);ctx.closePath();ctx.fill();ctx.stroke();
     ctx.restore();
   }
+  function drawCaveIndicator(game,cave,camX,camY,zoom){
+    const targetX=(cave.x-camX)*zoom,targetY=(cave.y-camY)*zoom;
+    const originX=(game.player.x-camX)*zoom,originY=(game.player.y-camY)*zoom;
+    const marker=bossIndicatorGeometry(targetX,targetY,originX,originY,W,H);
+    if(!marker)return;
+    ctx.save();ctx.translate(marker.x,marker.y);ctx.rotate(marker.angle);
+    const pulse=1+Math.sin(game.time*4.2)*.1;ctx.scale(pulse,pulse);
+    ctx.fillStyle='#071410dd';ctx.beginPath();ctx.arc(0,0,19,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#87c9bf';ctx.strokeStyle='#e9fff6';ctx.lineWidth=1.4;
+    ctx.beginPath();ctx.moveTo(13,0);ctx.lineTo(-7,-10);ctx.lineTo(-2,0);ctx.lineTo(-7,10);ctx.closePath();ctx.fill();ctx.stroke();
+    ctx.restore();
+  }
 function draw(game, {active = true, moving = false, reducedMotion = false, bossId = null} = {}) {const p=game.player;const zoom=Math.min(1.18,W/390);const viewW=W/zoom,viewH=H/zoom;const cx=active?p.x:0,cy=active?p.y:0;const shake=active&&!reducedMotion?game.shake:0;const camX=cx-viewW/2+Math.sin(game.time*83)*shake,camY=cy-viewH*.51+Math.cos(game.time*71)*shake;
- ctx.save();ctx.scale(zoom,zoom);world.draw(ctx,viewW,viewH,camX,camY,{level:active?game.level:1,time:game.time,reducedMotion});ctx.translate(-camX,-camY);
+ ctx.save();ctx.scale(zoom,zoom);world.draw(ctx,viewW,viewH,camX,camY,{depth:active?game.worldDepth:0,level:active?game.level:1,time:game.time,reducedMotion});ctx.translate(-camX,-camY);
  if(active){
+ if(game.cave)drawCave(ctx,game.cave,game.time);
  for(const item of game.pickups){if(Math.abs(item.x-cx)>viewW||Math.abs(item.y-cy)>viewH)continue;ctx.save();ctx.translate(item.x,item.y);if(item.type==='meat'){ellipse(ctx,0,1,9,6,'#b95a55','#f0c9a1');line(ctx,[[-7,-2],[7,3]],'#f4e2be',3);ellipse(ctx,-8,-3,2.5,2.5,'#f4e2be');ellipse(ctx,8,4,2.5,2.5,'#f4e2be');}else if(item.type==='oil'){ellipse(ctx,0,0,7,10,'#d6a94e','#f0d681');ellipse(ctx,-2,-3,2,4,'#fff1b180');}else{ellipse(ctx,0,2,8,11,'#dc6737','#f2ad52');ellipse(ctx,0,4,4,7,'#ffd36a');}ctx.restore();}
  for(const e of game.effects){if(e.type==='blood'){ctx.globalAlpha=Math.min(.42,e.life/4);ellipse(ctx,e.x,e.y,e.r*1.3,e.r*.8,'#812e39');ctx.globalAlpha=1;}}
  for(const g of game.gems){if(Math.abs(g.x-cx)>viewW||Math.abs(g.y-cy)>viewH)continue;ctx.save();ctx.translate(g.x,g.y);if(g.heal){ellipse(ctx,0,0,6,6,'#e9917f');line(ctx,[[-3,0],[3,0]],'#ffe6bc',2);line(ctx,[[0,-3],[0,3]],'#ffe6bc',2);}else{
@@ -78,6 +101,7 @@ function draw(game, {active = true, moving = false, reducedMotion = false, bossI
  }ctx.restore();fog();
  const boss=bossId==null?null:game.enemies.find(e=>e.hp>0&&e.boss&&(e.encounterId??e.id)===bossId);
  if(active&&boss)drawBossIndicator(game,boss,camX,camY,zoom);
+ if(active&&game.cave)drawCaveIndicator(game,game.cave,camX,camY,zoom);
 }
 
   const observer=new ResizeObserver(resize);observer.observe(canvas.parentElement);resize();

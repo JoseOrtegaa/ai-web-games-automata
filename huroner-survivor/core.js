@@ -35,6 +35,7 @@ export class Game {
     this.manualAttackCooldown=0; this.hazards=[]; this.lastBossType=null;
     this.spawnTimer=.5; this.pickupTimer=5; this.stormTimer=2; this.auraTimer=0;
     this.mutation=0; this.bossSpawned=false; this.boss=null; this.lastLevelBoss=0; this.choices=[];
+    this.worldDepth=0; this.descentPlan=[this.random()<.5?5:10,15,30]; this.cave=null; this.defeatedBossLevels=[];
     this.speedBoostTimer=0; this.fireTimer=0; this.events=[]; this.nextId=1; this.shake=0;
   }
   rank(id) {return this.upgrades[id]||0;}
@@ -43,13 +44,34 @@ export class Game {
   get speed() {return 124*(1+.12*this.rank('speed'))*(this.speedBoostTimer>0?1.1:1);}
   get pickup() {return 56*(1+.45*this.rank('magnet'));}
   get maxShield() {return SHIELD_STEP*(1+this.rank('shield'));}
+  get nextDescentLevel() {return this.descentPlan[this.worldDepth]??null;}
+  get canEnterCave() {return !!this.cave&&Math.hypot(this.player.x-this.cave.x,this.player.y-this.cave.y)<=70;}
+  openCave(level) {
+    if(this.cave||this.worldDepth>=3||level!==this.nextDescentLevel)return false;
+    const angle=(level*GOLDEN_ANGLE+this.worldDepth*1.71)%TAU,distance=245,p=this.player;
+    this.cave={x:p.x+Math.cos(angle)*distance,y:p.y+Math.sin(angle)*distance,targetDepth:this.worldDepth+1,level};
+    this.emit('caveOpen',{level,depth:this.cave.targetDepth});return this.cave;
+  }
+  tryOpenCave() {
+    const level=this.nextDescentLevel;
+    return level!=null&&this.defeatedBossLevels.includes(level)?this.openCave(level):false;
+  }
+  enterCave() {
+    if(this.state!=='playing'||!this.canEnterCave)return false;
+    this.worldDepth=this.cave.targetDepth;this.cave=null;
+    this.enemies=[];this.gems=[];this.pickups=[];this.particles=[];this.shots=[];this.effects=[];this.hazards=[];
+    this.boss=null;this.lastBossType=null;this.spawnTimer=.5;this.pickupTimer=5;
+    this.player.x=0;this.player.y=0;this.player.face=-Math.PI/2;
+    this.emit('worldDescent',{depth:this.worldDepth});this.tryOpenCave();return this.worldDepth;
+  }
   debugSetLevel(value) {
     if(this.state==='dead'||this.state==='won')return false;
     const level=clamp(Math.round(Number(value)||1),1,99);
     this.level=level;this.xp=0;this.mutation=mutationFor(level);this.lastLevelBoss=Math.floor(level/5)*5;
+    this.worldDepth=level>=30?3:level>=15?2:level>=this.descentPlan[0]?1:0;this.cave=null;this.defeatedBossLevels=[];
     this.choices=[];if(this.state==='levelup')this.state='playing';
-    // Level jumps start a clean combat scenario; fresh spawns use the selected tier.
-    this.enemies=[];this.hazards=[];this.shots=[];this.boss=null;this.lastBossType=null;
+    // Level jumps start a clean combat scenario; fresh spawns use the selected tier/world.
+    this.enemies=[];this.gems=[];this.pickups=[];this.particles=[];this.effects=[];this.hazards=[];this.shots=[];this.boss=null;this.lastBossType=null;
     return level;
   }
   debugSetUpgrade(id,value) {
@@ -130,6 +152,10 @@ export class Game {
     if(this.rank('leech')&&this.random()<.2)this.player.hp=Math.min(this.player.maxHp,this.player.hp+2*this.rank('leech'));
     for(let i=0;i<8;i++){if(this.particles.length>=200)break;let a=this.random()*6.28;this.particles.push({x:e.x,y:e.y,vx:Math.cos(a)*(15+this.random()*65),vy:Math.sin(a)*(15+this.random()*65),life:.6+this.random()*.5,max:1.1,size:2+this.random()*4});}
     this.addEffect({type:'blood',x:e.x,y:e.y,r:e.r,life:5,max:5});
+    if(e.boss&&!e.finalBoss){
+      if(!this.defeatedBossLevels.includes(e.bossLevel))this.defeatedBossLevels.push(e.bossLevel);
+      this.tryOpenCave();
+    }
     if(e.finalBoss){this.state='won';this.emit('won');}
     else if(e.boss&&this.boss===e)this.boss=null;
   }
