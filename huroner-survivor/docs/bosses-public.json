@@ -1,0 +1,55 @@
+{
+  "commit": "c9cd1f8b11dd23406935f966a6b42edffb4f0a22",
+  "pagesRun": 37133803328,
+  "source": [
+    {
+      "file": "index.html",
+      "sha256": "88206004f9ef9a349e7e1b75d0552387a7761607b5d4a95bb60ce1c389bc2959"
+    },
+    {
+      "file": "core.js",
+      "sha256": "72ea896a00d70c5487a45e27ca5b9ebb0f1a8a4edaa762e7bb51557c167628b5"
+    },
+    {
+      "file": "app.js",
+      "sha256": "8c8048b19fbc0612feba97e108815e888735584506319338a42e61f5eea6a72a"
+    },
+    {
+      "file": "style.css",
+      "sha256": "49dd4b1844b7f3acc7f09f32a94f89b9d775122289fb9181ae4b25ce03e0c4c2"
+    },
+    {
+      "file": "i18n.js",
+      "sha256": "72375e59a12e4adfc700b2a5d67809d887809aedb83fcf98e01bd707774005a0"
+    },
+    {
+      "file": "art.js",
+      "sha256": "fe3aacde185ff8f8dbee40be3d18c36a772ebe9111336998e82318e9a6846db1"
+    },
+    {
+      "file": "render.js",
+      "sha256": "169bf4e6916821e474e0af4bcad99530515adbd04be7df61e8e5bfb1a951d71d"
+    },
+    {
+      "file": "bosses.js",
+      "sha256": "e06330116a7293698d39ed281639ecb330ac805fcc89d32ec448e315e26b5ead"
+    },
+    {
+      "file": "boss-art.js",
+      "sha256": "42c7dbe912bdc42e2b7b3b67bb4e7b3acc267c26e2325445c7b6413cd8e63b4a"
+    }
+  ],
+  "smoke": {
+    "browser": "Chrome cloud browser",
+    "result": "PASS",
+    "checks": [
+      "public menu",
+      "start match",
+      "HUD shield 20/20 and health 100/100",
+      "pause",
+      "resume"
+    ],
+    "pageErrors": [],
+    "note": "Browser-extension metadata errors are unrelated to game scripts. Local Chromium/WebKit gameplay results remain in bosses-local.json."
+  }
+}
