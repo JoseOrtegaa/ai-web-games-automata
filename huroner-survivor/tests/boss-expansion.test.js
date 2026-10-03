@@ -9,7 +9,7 @@ function scene(key,index=1,level=5) {
   if(key==='mage')e=g.enemies.find(e=>e.bossPart==='mage');
   for(const other of g.enemies)if(other!==e){other.x=-2000;other.ability=999;other.speed=0;}
   Object.assign(e,{x:0,y:0,speed:0,ability:0,attackIndex:index});
-  Object.assign(g.player,{x:100,y:0,shield:0,shieldDelay:999});
+  Object.assign(g.player,{x:100,y:0});
   return {g,e};
 }
 function advance(g,seconds){for(let i=0;i<Math.round(seconds*100);i++)g.step(.01);}
@@ -113,7 +113,7 @@ test('final arena king gains HP and escalates into overlapping but warned phases
   const direct=new Game(()=>.5);direct.level=35;const base=direct.spawn('chicken',true,35,true);
   assert.ok(king.maxHp>base.maxHp);
 
-  Object.assign(g.player,{x:100,y:0,shield:0,shieldDelay:999});
+  Object.assign(g.player,{x:100,y:0});
   king.x=0;king.y=0;king.speed=0;king.ability=0;king.attackIndex=0;
   stepBoss(g,king,.01,100);
   const phase1Hazards=g.hazards.length;assert.ok(phase1Hazards>=1);
