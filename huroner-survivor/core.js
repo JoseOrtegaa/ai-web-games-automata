@@ -34,7 +34,13 @@ const CROWD_SECTORS = 8;
 const CROWD_CELL = 56;
 const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
 const SPECIAL_RANGES = {jump:220,fan:280,burst:110,lunge:175,shot:330,ram:195,explode:115};
-const AIM_ERROR = {jump:26,fan:18,lunge:22,shot:22,ram:28};
+const AIM_ERROR = {
+  jump:{min:46,max:92},
+  fan:{min:38,max:96},
+  lunge:{min:16,max:42},
+  shot:{min:24,max:70},
+  ram:{min:22,max:56},
+};
 export class Game {
   constructor(random = Math.random) { this.random=random; this.reset(); }
   reset() {
@@ -270,10 +276,10 @@ export class Game {
     return style;
   }
   imperfectEnemyAim(e,p,style) {
-    const maxError=AIM_ERROR[style]||0;
-    if(maxError<=0)return {x:p.x,y:p.y,angle:Math.atan2(p.y-e.y,p.x-e.x)};
-    const personality=.8+(e.id%9)*.05;
-    const radius=maxError*personality*(.35+this.random()*.65),offset=this.random()*TAU;
+    const error=AIM_ERROR[style];
+    if(!error)return {x:p.x,y:p.y,angle:Math.atan2(p.y-e.y,p.x-e.x)};
+    const personality=.85+(e.id%7)*.045;
+    const radius=(error.min+(error.max-error.min)*this.random())*personality,offset=this.random()*TAU;
     const x=p.x+Math.cos(offset)*radius,y=p.y+Math.sin(offset)*radius;
     return {x,y,angle:Math.atan2(y-e.y,x-e.x)};
   }
@@ -287,7 +293,7 @@ export class Game {
       if(!style)return false;
       const aim=this.imperfectEnemyAim(e,p,style),angle=aim.angle;
       if(style==='jump')e.specialAttack={kind:'jump',phase:'warning',time:.75,x:aim.x,y:aim.y,radius:31,angle,duration:.45};
-      else if(style==='fan')e.specialAttack={kind:'fan',phase:'warning',time:.75,x:e.x,y:e.y,radius:30,angle,count:3,projectileKind:e.projectileKind||'feather'};
+      else if(style==='fan')e.specialAttack={kind:'fan',phase:'warning',time:.75,x:e.x,y:e.y,radius:30,angle,count:3,spread:.34+this.random()*.14,jitter:.055+this.random()*.055,projectileKind:e.projectileKind||'feather'};
       else if(style==='burst')e.specialAttack={kind:'burst',phase:'warning',time:.8,x:e.x,y:e.y,radius:65,angle};
       else if(style==='shot')e.specialAttack={kind:'shot',phase:'warning',time:.7,x:e.x,y:e.y,radius:24,angle,count:1,projectileKind:e.projectileKind||'bone'};
       else if(style==='explode')e.specialAttack={kind:'explode',phase:'warning',time:.88,x:e.x,y:e.y,radius:74,angle};
@@ -324,7 +330,9 @@ export class Game {
     if(a.kind==='fan'||a.kind==='shot'){
       const count=a.kind==='fan'?a.count:1;
       for(let i=0;i<count&&this.shots.length<150;i++){
-        const angle=a.angle+(i-(count-1)/2)*(a.kind==='fan'?.3:0);
+        const spread=a.kind==='fan'?(a.spread??.3):0;
+        const jitter=a.kind==='fan'?(this.random()-.5)*2*(a.jitter??0):0;
+        const angle=a.angle+(i-(count-1)/2)*spread+jitter;
         const projectileKind=a.projectileKind||(a.kind==='fan'?'feather':e.projectileKind||'bone');
         this.shots.push({kind:projectileKind,x:e.x,y:e.y,vx:Math.cos(angle)*(a.kind==='fan'?120:150),vy:Math.sin(angle)*(a.kind==='fan'?120:150),life:3,damage:e.damage});
       }
