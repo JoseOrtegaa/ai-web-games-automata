@@ -52,6 +52,8 @@ function drawFinalArenaBoundary(ctx,time){
   }
   ctx.globalAlpha=.12+pulse*.12;ctx.fillStyle='#ff3e24';ctx.beginPath();ctx.arc(0,0,FINAL_ARENA_RADIUS,0,Math.PI*2);ctx.arc(0,0,FINAL_ARENA_RADIUS-25,0,Math.PI*2,true);ctx.fill();ctx.restore();
 }
+export const cameraZoomFor = width => Math.min(.99,(Math.max(280,Number(width)||390)/390)*.84);
+
 export function createRenderer({canvas, heroCanvas}) {
   const ctx=canvas.getContext('2d',{alpha:false});
   let W=440,H=780,DPR=1, mist;
@@ -87,7 +89,6 @@ export function createRenderer({canvas, heroCanvas}) {
     ctx.beginPath();ctx.moveTo(13,0);ctx.lineTo(-7,-10);ctx.lineTo(-2,0);ctx.lineTo(-7,10);ctx.closePath();ctx.fill();ctx.stroke();
     ctx.restore();
   }
-export const cameraZoomFor = width => Math.min(.99,(Math.max(280,Number(width)||390)/390)*.84);
 function draw(game, {active = true, moving = false, reducedMotion = false, bossId = null} = {}) {const p=game.player;const zoom=cameraZoomFor(W);const viewW=W/zoom,viewH=H/zoom;const cx=active?p.x:0,cy=active?p.y:0;const shake=active&&!reducedMotion?game.shake:0;const camX=cx-viewW/2+Math.sin(game.time*83)*shake,camY=cy-viewH*.51+Math.cos(game.time*71)*shake;
  ctx.save();ctx.scale(zoom,zoom);world.draw(ctx,viewW,viewH,camX,camY,{depth:active?game.worldDepth:0,level:active?game.level:1,time:game.time,reducedMotion,finalArena:active&&game.finalArena});ctx.translate(-camX,-camY);
  if(active){
