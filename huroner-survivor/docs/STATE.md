@@ -13,10 +13,15 @@ En Profundidades el stone_boar usa ram. Cada embestida aplicaba un empujón fís
 - Un impacto válido mantiene el empujón de 34 px y el screen shake existente (shake=5), por lo que no se pierde feedback.
 
 ## QA
-Pendiente ejecutar comprobación lógica localizada sobre múltiples embestidas y parseo de core.js.
+PASS lógico localizado:
+- una embestida válida sigue causando daño, 34 px de knockback y shake=5;
+- 7 embestidas solapadas durante invulnerabilidad añaden 0 px de knockback;
+- al terminar la invulnerabilidad una nueva embestida válida vuelve a empujar 34 px;
+- hurt() distingue impacto aplicado (true) de impacto bloqueado (false);
+- core.js parsea correctamente.
 
 ## Contexto preservado
 Arena final del inframundo integrada; 20 bosses normales (5 por mundo); generación gradual por nivel/tiempo; familias de enemigos por mundo; cuevas 5/10→15→30; ataque automático por defecto; XP 30/70; escudo 20→120; ataque 0,25 s; zoom bloqueado.
 
 ## Siguiente paso
-Validar que una embestida durante invulnerabilidad no mueve al jugador, que una embestida válida sí mantiene knockback/shake, integrar en main y comprobar Pages.
+Revisar diff, integrar en main y comprobar Pages; validar en móvil alrededor del nivel 23 que la cámara ya no entra en efecto pinball con varios jabalíes.
