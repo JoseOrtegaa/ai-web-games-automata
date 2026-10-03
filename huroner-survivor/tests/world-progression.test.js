@@ -32,6 +32,7 @@ test('boss completion opens a cave but world changes only after nearby interacti
   assert.equal(game.cave, null);
   assert.equal(game.player.x, 0);
   assert.equal(game.player.y, 0);
+  assert.ok(game.spawnTimer <= .15);
 });
 
 test('later descents unlock after level 15 and 30 bosses', () => {
