@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {Game,UPGRADES,xpNeeded,mutationFor,spawnRateFor,spawnIntervalFor,BOSS_TIME} from '../core.js';
+import {Game,UPGRADES,xpNeeded,mutationFor,ferretEvolutionFor,spawnRateFor,spawnIntervalFor,BOSS_TIME} from '../core.js';
 function rng(seed=123){return()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};}
 function nearby(g,kind='rabbit',x=40,y=0){const e=g.spawn(kind);Object.assign(e,{x,y});return e;}
 test('normalized controls, fixed time ceiling and paused simulation',()=>{const g=new Game(rng());g.step(.05,{x:1,y:1});assert.ok(Math.abs(Math.hypot(g.player.x,g.player.y)-g.speed*.05)<1e-8);g.state='levelup';const snapshot=JSON.stringify(g);g.step(.05,{x:1,y:0});assert.equal(JSON.stringify(g),snapshot);});
@@ -52,8 +52,15 @@ test('spawn cadence creates one enemy at a time instead of burst jumps',()=>{
   g.step(.01);assert.equal(g.enemies.filter(e=>!e.boss).length,1);
 });
 
+test('ferret evolution advances visually at levels 10, 20 and 30 and player shield is removed',()=>{
+  assert.deepEqual([1,9,10,19,20,29,30,99].map(ferretEvolutionFor),[0,0,1,1,2,2,3,3]);
+  const g=new Game(rng());
+  assert.equal('shield' in g.player,false);assert.equal('shieldDelay' in g.player,false);
+  assert.equal('maxShield' in g,false);
+  assert.equal(UPGRADES.some(u=>u.id==='shield'),false);
+});
 test('surface enemies have a single evolution that unlocks their combat abilities',()=>{const g=new Game(rng());const hare=nearby(g,'hare',150,0);const chicken=nearby(g,'chicken',70,0);let old=hare.maxHp;g.level=5;g.mutate();assert.equal(hare.tier,1);assert.ok(hare.maxHp>old);hare.ability=0;g.step(.02);assert.equal(hare.specialAttack.kind,'ram');g.level=20;g.mutate();assert.equal(g.mutation,1);assert.equal(mutationFor(16),1);assert.equal(mutationFor(90),1);chicken.ability=0;g.step(.02);assert.equal(chicken.specialAttack.kind,'burst');});
-test('armor mitigates damage, invulnerability prevents stacked hits and death ends run',()=>{const g=new Game(rng());g.upgrades.armor=2;g.player.shield=0;g.hurt(20);assert.ok(g.player.hp>80);const hp=g.player.hp;g.hurt(20);assert.equal(g.player.hp,hp);g.player.invuln=0;g.hurt(1000);assert.equal(g.state,'dead');assert.equal(g.player.hp,0);});
+test('armor mitigates health damage, invulnerability prevents stacked hits and death ends run',()=>{const g=new Game(rng());g.upgrades.armor=2;g.hurt(20);assert.ok(g.player.hp>80&&g.player.hp<100);const hp=g.player.hp;g.hurt(20);assert.equal(g.player.hp,hp);g.player.invuln=0;g.hurt(1000);assert.equal(g.state,'dead');assert.equal(g.player.hp,0);});
 test('ram knockback only applies when the hit actually lands',()=>{
   const g=new Game(rng());g.worldDepth=2;g.level=23;g.spawnTimer=g.pickupTimer=999;
   const makeRam=()=>{
@@ -98,7 +105,7 @@ test('developer controls set level, selected upgrades, healing and boss level wi
   assert.equal(g.debugSetUpgrade('power',999),8);assert.equal(g.rank('power'),8);
   assert.equal(g.debugSetUpgrade('regen',2),2);assert.equal(g.rank('regen'),2);
   assert.equal(g.debugSetUpgrade('armor',6),false);assert.equal(g.rank('armor'),0);
-  g.player.hp=1;g.player.shield=0;g.debugHeal();assert.equal(g.player.hp,g.player.maxHp);assert.equal(g.player.shield,g.maxShield);
+  g.player.hp=1;g.debugHeal();assert.equal(g.player.hp,g.player.maxHp);
   const boss=g.debugSpawnBoss();assert.ok(boss&&boss.bossLevel===25);assert.equal(g.level,25);
   assert.equal(g.debugSetLevel(120),99);assert.equal(g.debugSetLevel(-5),1);
 });
@@ -143,7 +150,7 @@ test('manual attack rejects rapid taps until 250ms, including twin slashes, and 
 });
 
 function specialScenario(kind,level=6,x=150){
-  const g=new Game(rng());g.player.shield=0;g.player.shieldDelay=999;g.level=level;g.mutate();g.spawnTimer=g.pickupTimer=999;
+  const g=new Game(rng());g.level=level;g.mutate();g.spawnTimer=g.pickupTimer=999;
   const e=nearby(g,kind,x);e.ability=0;return {g,e};
 }
 function advance(g,seconds,input){for(let left=seconds;left>1e-9;left-=.01)g.step(Math.min(.01,left),input);}
