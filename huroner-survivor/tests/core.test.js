@@ -154,15 +154,17 @@ function specialScenario(kind,level=6,x=150){
   const e=nearby(g,kind,x);e.ability=0;return {g,e};
 }
 function advance(g,seconds,input){for(let left=seconds;left>1e-9;left-=.01)g.step(Math.min(.01,left),input);}
-test('ordinary enemies aim imperfectly instead of sharing the exact player pixel',()=>{
+test('ordinary enemies aim imperfectly enough for jump attacks to genuinely miss',()=>{
   const g=new Game(rng(444));g.level=5;g.mutation=1;g.spawnTimer=g.pickupTimer=999;
   const first=g.spawn('rabbit'),second=g.spawn('rabbit');
   Object.assign(first,{x:150,y:0,ability:0,speed:0});
   Object.assign(second,{x:150,y:0,ability:0,speed:0});
   g.stepEnemySpecial(first,.01,150);g.stepEnemySpecial(second,.01,150);
   assert.equal(first.specialAttack.kind,'jump');assert.equal(second.specialAttack.kind,'jump');
-  assert.notDeepEqual([first.specialAttack.x,first.specialAttack.y],[g.player.x,g.player.y]);
-  assert.notDeepEqual([second.specialAttack.x,second.specialAttack.y],[g.player.x,g.player.y]);
+  for(const e of [first,second]){
+    const miss=Math.hypot(e.specialAttack.x-g.player.x,e.specialAttack.y-g.player.y);
+    assert.ok(miss>40,'jump target should be displaced beyond the old near-perfect aim');
+  }
   assert.notDeepEqual([first.specialAttack.x,first.specialAttack.y],[second.specialAttack.x,second.specialAttack.y]);
 });
 test('ordinary enemies cannot repeat the same special forever when a variant is available',()=>{
@@ -195,6 +197,19 @@ test('rabbit warns, jumps to its locked target, damages on landing and can be do
     advance(g,.46);assert.equal(e.specialAttack,null);assert.equal(g.player.hp,dodge?100:100-e.damage);
     assert.ok(g.effects.some(effect=>effect.type==='enemy-impact'));
   }
+});
+test('triple shots use imperfect irregular spread instead of a perfect three-line fan',()=>{
+  const {g,e}=specialScenario('quail',6,240);g.step(.01);
+  assert.ok(e.specialAttack.spread>=.34&&e.specialAttack.spread<=.48);
+  assert.ok(e.specialAttack.jitter>=.055&&e.specialAttack.jitter<=.11);
+  const locked=e.specialAttack.angle;
+  advance(g,.76);
+  assert.equal(g.shots.length,3);
+  const angles=g.shots.map(s=>Math.atan2(s.vy,s.vx));
+  assert.ok(angles.some((angle,i)=>{
+    const perfect=locked+(i-1)*.3;
+    return Math.abs(Math.atan2(Math.sin(angle-perfect),Math.cos(angle-perfect)))>.02;
+  }),'at least one projectile should deviate from the old perfect fan');
 });
 test('quail primary fan pattern keeps three locked feathers',()=>{
   for(const level of [5,11,16,30]){
