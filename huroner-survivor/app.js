@@ -172,7 +172,7 @@ function hud() {
   if (boss) {
     const actor = boss.actor, definition = bossDefinition(actor.bossType), language = preferences.language === 'es' ? 0 : 1;
     $('boss-name').textContent = `${definition ? definition.name[language] : t(actor.finalBoss ? 'finalBoss' : actor.kind)} · ${t('level')} ${actor.bossLevel}`;
-    $('boss-hint').textContent = definition ? (actor.bossType === 'bastion' && !actor.shielded ? t('shieldBroken') : definition.hint[language]) : '';
+    $('boss-hint').textContent = definition ? (actor.bossProfile === 'bastion' && !actor.shielded ? t('shieldBroken') : definition.hint[language]) : '';
     $('boss-count').textContent = bosses.length > 1 ? `${bosses.length} ${t('guardians')}` : '';
     $('boss-hud').dataset.bossId = String(boss.id); $('boss-fill').style.width = `${Math.max(0, boss.hp / boss.maxHp * 100)}%`;
   }
