@@ -105,3 +105,31 @@ test('new and final attacks obey shared hazard and projectile limits',()=>{
     assert.ok(g.hazards.length<=64);assert.ok(g.shots.length<=150);
   }
 });
+
+
+test('final arena king gains HP and escalates into overlapping but warned phases',()=>{
+  const g=new Game(()=>.5);g.level=35;const king=g.debugFinalArena();
+  assert.ok(king.finalBoss);assert.equal(king.bossType,'final_king');assert.equal(king.bossTheme,4);assert.equal(king.finalPhase,1);
+  const direct=new Game(()=>.5);direct.level=35;const base=direct.spawn('chicken',true,35,true);
+  assert.ok(king.maxHp>base.maxHp);
+
+  Object.assign(g.player,{x:100,y:0,shield:0,shieldDelay:999});
+  king.x=0;king.y=0;king.speed=0;king.ability=0;king.attackIndex=0;
+  stepBoss(g,king,.01,100);
+  const phase1Hazards=g.hazards.length;assert.ok(phase1Hazards>=1);
+
+  g.hazards=[];g.shots=[];king.pending=null;king.castLeft=0;king.charge=0;king.hp=king.maxHp*.69;king.ability=0;king.attackIndex=0;
+  stepBoss(g,king,.01,100);assert.equal(king.finalPhase,2);assert.ok(g.hazards.length>phase1Hazards);assert.ok(g.hazards.every(h=>h.age<0));
+
+  g.hazards=[];g.shots=[];king.pending=null;king.castLeft=0;king.charge=0;king.hp=king.maxHp*.34;king.ability=0;king.attackIndex=0;
+  stepBoss(g,king,.01,100);assert.equal(king.finalPhase,3);assert.ok(g.hazards.some(h=>h.kind==='ring'));assert.ok(g.hazards.filter(h=>h.kind==='beam').length>=3);assert.ok(g.hazards.every(h=>h.age<0));
+});
+
+test('final arena limits normal enemies and clamps combatants inside its boundary',()=>{
+  const g=new Game(()=>.5);g.level=35;const king=g.debugFinalArena();g.player.invuln=999;
+  g.spawnTimer=0;
+  for(let i=0;i<1200;i++)g.step(.05,{x:1,y:1});
+  const minions=g.enemies.filter(e=>!e.boss&&!e.shieldOwnerId&&e.hp>0);
+  assert.ok(minions.length<=4);assert.ok(Math.hypot(g.player.x,g.player.y)<=267.000001);
+  assert.ok(Math.hypot(king.x,king.y)<=237.000001);
+});
