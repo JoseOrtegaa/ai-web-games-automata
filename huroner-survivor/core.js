@@ -3,6 +3,7 @@ import { enemyRoster, enemyDefinition, enemyEvolutionTier, enemyAttackStyle } fr
 // Deterministic, rendering-independent simulation. All time is active play time.
 export const BOSS_TIME = 600;
 export const ATTACK_COOLDOWN = .25;
+export const FINAL_ARENA_RADIUS = 285;
 const INITIAL_HP = 100;
 const SHIELD_STEP = INITIAL_HP * .2;
 export const UPGRADES = [
@@ -39,6 +40,7 @@ export class Game {
     this.spawnTimer=.5; this.pickupTimer=5; this.stormTimer=2; this.auraTimer=0;
     this.mutation=0; this.bossSpawned=false; this.boss=null; this.lastLevelBoss=0; this.choices=[];
     this.worldDepth=0; this.descentPlan=[this.random()<.5?5:10,15,30]; this.cave=null; this.defeatedBossLevels=[];
+    this.finalArena=false; this.finalGateOpened=false;
     this.speedBoostTimer=0; this.fireTimer=0; this.events=[]; this.nextId=1; this.shake=0;
   }
   rank(id) {return this.upgrades[id]||0;}
@@ -49,6 +51,7 @@ export class Game {
   get maxShield() {return SHIELD_STEP*(1+this.rank('shield'));}
   get nextDescentLevel() {return this.descentPlan[this.worldDepth]??null;}
   get canEnterCave() {return !!this.cave&&Math.hypot(this.player.x-this.cave.x,this.player.y-this.cave.y)<=70;}
+  get finalBossPhase() {if(!this.boss?.finalBoss)return 0;const ratio=this.boss.hp/this.boss.maxHp;return ratio<=.35?3:ratio<=.7?2:1;}
   openCave(level) {
     if(this.cave||this.worldDepth>=3||level!==this.nextDescentLevel)return false;
     const angle=(level*GOLDEN_ANGLE+this.worldDepth*1.71)%TAU,distance=245,p=this.player;
@@ -59,8 +62,33 @@ export class Game {
     const level=this.nextDescentLevel;
     return level!=null&&this.defeatedBossLevels.includes(level)?this.openCave(level):false;
   }
+  openFinalGate() {
+    if(this.finalArena||this.finalGateOpened||this.bossSpawned)return false;
+    const p=this.player,angle=(this.time*.013+1.7)%TAU,distance=225;
+    this.cave={x:p.x+Math.cos(angle)*distance,y:p.y+Math.sin(angle)*distance,final:true};
+    this.finalGateOpened=true;this.emit('finalGateOpen');return this.cave;
+  }
+  enterFinalArena() {
+    if(this.state!=='playing'||!this.cave?.final||!this.canEnterCave)return false;
+    this.finalArena=true;this.cave=null;
+    this.enemies=[];this.gems=[];this.pickups=[];this.particles=[];this.shots=[];this.effects=[];this.hazards=[];
+    this.boss=null;this.lastBossType=null;this.spawnTimer=3.4;this.pickupTimer=999;
+    this.player.x=0;this.player.y=155;this.player.face=-Math.PI/2;
+    const king=this.spawn('chicken',true,this.level,true);
+    king.x=0;king.y=-95;king.r=54;king.speed=Math.max(36,king.speed*.92);king.damage*=.92;
+    king.maxHp*=1.18;king.hp=king.maxHp;king.bossType='final_king';king.bossProfile='king';king.bossTheme=4;king.bossForm='underworld_king';
+    king.encounterId=king.id;king.encounterMaxHp=king.maxHp;king.ability=1.2;king.attackIndex=0;king.finalPhase=1;
+    this.emit('finalArenaEnter');return king;
+  }
+  debugFinalArena() {
+    if(this.state==='dead'||this.state==='won')return false;
+    this.finalGateOpened=true;this.cave={x:this.player.x,y:this.player.y,final:true};
+    return this.enterFinalArena();
+  }
+
   enterCave() {
     if(this.state!=='playing'||!this.canEnterCave)return false;
+    if(this.cave.final)return this.enterFinalArena();
     this.worldDepth=this.cave.targetDepth;this.cave=null;this.mutation=enemyEvolutionTier(this.worldDepth,this.level);
     this.enemies=[];this.gems=[];this.pickups=[];this.particles=[];this.shots=[];this.effects=[];this.hazards=[];
     this.boss=null;this.lastBossType=null;this.spawnTimer=.15;this.pickupTimer=5;
@@ -71,7 +99,7 @@ export class Game {
     if(this.state==='dead'||this.state==='won')return false;
     const level=clamp(Math.round(Number(value)||1),1,99);
     this.level=level;this.xp=0;this.lastLevelBoss=Math.floor(level/5)*5;
-    this.worldDepth=level>=30?3:level>=15?2:level>=this.descentPlan[0]?1:0;this.mutation=enemyEvolutionTier(this.worldDepth,level);this.cave=null;this.defeatedBossLevels=[];
+    this.worldDepth=level>=30?3:level>=15?2:level>=this.descentPlan[0]?1:0;this.mutation=enemyEvolutionTier(this.worldDepth,level);this.cave=null;this.defeatedBossLevels=[];this.finalArena=false;this.finalGateOpened=false;
     this.choices=[];if(this.state==='levelup')this.state='playing';
     // Level jumps start a clean combat scenario; fresh spawns use the selected tier/world.
     this.enemies=[];this.gems=[];this.pickups=[];this.particles=[];this.effects=[];this.hazards=[];this.shots=[];this.boss=null;this.lastBossType=null;
@@ -288,12 +316,19 @@ export class Game {
     p.hp=Math.min(p.maxHp,p.hp+this.rank('regen')*.7*dt);
     let l=Math.hypot(input.x,input.y),nx=input.x/Math.max(1,l),ny=input.y/Math.max(1,l);
     p.x+=nx*this.speed*dt;p.y+=ny*this.speed*dt;if(l>.08)p.face=Math.atan2(ny,nx);
+    if(this.finalArena){const d=Math.hypot(p.x,p.y);if(d>FINAL_ARENA_RADIUS-18){p.x=p.x/d*(FINAL_ARENA_RADIUS-18);p.y=p.y/d*(FINAL_ARENA_RADIUS-18);}}
     this.pickupTimer-=dt;if(this.pickupTimer<=0){this.pickupTimer=8+this.random()*5;if(this.pickups.length<8)this.spawnPickup();}
-    if(this.time>=BOSS_TIME&&!this.bossSpawned)this.spawn('chicken',true,this.level,true);
+    if(this.time>=BOSS_TIME&&!this.bossSpawned&&!this.finalArena)this.openFinalGate();
     this.spawnTimer-=dt;
     if(this.spawnTimer<=0){
-      this.spawnTimer=spawnIntervalFor(this.level,this.time);
-      if(this.enemies.length<170)this.spawn();
+      if(this.finalArena){
+        this.spawnTimer=4.2;
+        const minions=this.enemies.filter(e=>!e.boss&&!e.shieldOwnerId&&e.hp>0).length;
+        if(minions<4)this.spawn();
+      }else{
+        this.spawnTimer=spawnIntervalFor(this.level,this.time);
+        if(this.enemies.length<170)this.spawn();
+      }
     }
     const crowdNearPlayer=this.enemies.reduce((count,e)=>count+(!e.boss&&!e.shieldOwnerId&&e.hp>0&&Math.hypot(e.x-p.x,e.y-p.y)<180?1:0),0);
     for(const e of this.enemies){
@@ -316,7 +351,8 @@ export class Game {
       if(busy)speed=0;
       if(e.charge>0){e.charge-=dt;e.x+=e.vx*dt;e.y+=e.vy*dt;}
       else{e.x+=moveDx/moveD*speed*dt;e.y+=moveDy/moveD*speed*dt;}
-      if(d>800&&!e.boss){const a=this.chooseSpawnAngle();e.x=p.x+Math.cos(a)*480;e.y=p.y+Math.sin(a)*480;}
+      if(this.finalArena){const ed=Math.hypot(e.x,e.y),limit=e.boss?FINAL_ARENA_RADIUS-48:FINAL_ARENA_RADIUS-25;if(ed>limit){e.x=e.x/ed*limit;e.y=e.y/ed*limit;}}
+      else if(d>800&&!e.boss){const a=this.chooseSpawnAngle();e.x=p.x+Math.cos(a)*480;e.y=p.y+Math.sin(a)*480;}
       if(!busy&&d<e.r+13)this.hurt(e.damage);
       if(this.state!=='playing')return;
       if(this.rank('orbit')&&e.orbitCD<=0){for(let i=0;i<this.rank('orbit');i++){const a=this.time*2.5+i/this.rank('orbit')*Math.PI*2;const ox=p.x+Math.cos(a)*72,oy=p.y+Math.sin(a)*72;if(Math.hypot(e.x-ox,e.y-oy)<e.r+17){this.hit(e,this.damage*.65);if(this.state!=='playing')return;e.orbitCD=.35;break;}}}
