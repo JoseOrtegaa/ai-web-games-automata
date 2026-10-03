@@ -22,6 +22,8 @@ export const UPGRADES = [
 ];
 export const xpNeeded = level => Math.round(6 + level * 3 + level * level * .12);
 export const mutationFor = level => enemyEvolutionTier(0,level);
+export const spawnRateFor = (level,time=0) => Math.min(7.5,.82+Math.max(0,Number(level)-1)*.105+Math.min(600,Math.max(0,Number(time)||0))*.0026);
+export const spawnIntervalFor = (level,time=0) => 1/spawnRateFor(level,time);
 const clamp = (v,a,b) => Math.max(a,Math.min(b,v));
 const TAU = Math.PI * 2;
 const CROWD_SECTORS = 8;
@@ -61,7 +63,7 @@ export class Game {
     if(this.state!=='playing'||!this.canEnterCave)return false;
     this.worldDepth=this.cave.targetDepth;this.cave=null;this.mutation=enemyEvolutionTier(this.worldDepth,this.level);
     this.enemies=[];this.gems=[];this.pickups=[];this.particles=[];this.shots=[];this.effects=[];this.hazards=[];
-    this.boss=null;this.lastBossType=null;this.spawnTimer=.5;this.pickupTimer=5;
+    this.boss=null;this.lastBossType=null;this.spawnTimer=.15;this.pickupTimer=5;
     this.player.x=0;this.player.y=0;this.player.face=-Math.PI/2;
     this.emit('worldDescent',{depth:this.worldDepth});this.tryOpenCave();return this.worldDepth;
   }
@@ -290,9 +292,8 @@ export class Game {
     if(this.time>=BOSS_TIME&&!this.bossSpawned)this.spawn('chicken',true,this.level,true);
     this.spawnTimer-=dt;
     if(this.spawnTimer<=0){
-      this.spawnTimer=Math.max(.24,1.35-this.time*.0018);
-      const count=1+Math.floor(this.time/150);
-      for(let i=0;i<count&&this.enemies.length<170;i++)this.spawn();
+      this.spawnTimer=spawnIntervalFor(this.level,this.time);
+      if(this.enemies.length<170)this.spawn();
     }
     const crowdNearPlayer=this.enemies.reduce((count,e)=>count+(!e.boss&&!e.shieldOwnerId&&e.hp>0&&Math.hypot(e.x-p.x,e.y-p.y)<180?1:0),0);
     for(const e of this.enemies){
