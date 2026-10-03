@@ -251,6 +251,7 @@ export class Game {
     else this.attack();
   }
   chooseEnemySpecialStyle(e,distance) {
+    if(distance>(SPECIAL_RANGES[e.attackStyle]||180))return null;
     const options=enemyAttackOptions(e.kind,e.tier).filter(style=>distance<=(SPECIAL_RANGES[style]||180));
     if(!options.length)return null;
     const primary=e.attackStyle,alternatives=options.filter(style=>style!==primary);
