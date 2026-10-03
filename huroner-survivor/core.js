@@ -22,6 +22,10 @@ export const UPGRADES = [
 export const xpNeeded = level => Math.round(6 + level * 3 + level * level * .12);
 export const mutationFor = level => Math.min(3, Math.floor((level - 1) / 5));
 const clamp = (v,a,b) => Math.max(a,Math.min(b,v));
+const TAU = Math.PI * 2;
+const CROWD_SECTORS = 8;
+const CROWD_CELL = 56;
+const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
 export class Game {
   constructor(random = Math.random) { this.random=random; this.reset(); }
   reset() {
@@ -42,16 +46,32 @@ export class Game {
   gainXp(amount) {this.xp=Math.round((this.xp+amount)*10)/10;}
   emit(type,data={}) {this.events.push({type,...data});}
   addEffect(effect) {if(this.effects.length<140)this.effects.push(effect);}
+  chooseSpawnAngle() {
+    const counts=Array(CROWD_SECTORS).fill(0),p=this.player,sectorWidth=TAU/CROWD_SECTORS;
+    for(const e of this.enemies){
+      if(e.hp<=0||e.boss||e.shieldOwnerId)continue;
+      const dx=e.x-p.x,dy=e.y-p.y,d=Math.hypot(dx,dy);
+      if(d<220||d>620)continue;
+      const angle=(Math.atan2(dy,dx)+TAU)%TAU;
+      counts[Math.floor(angle/sectorWidth)%CROWD_SECTORS]++;
+    }
+    const min=Math.min(...counts);
+    const candidates=[];
+    for(let i=0;i<CROWD_SECTORS;i++)if(counts[i]<=min+1)candidates.push(i);
+    const sector=candidates[Math.floor(this.random()*candidates.length)]??0;
+    return sector*sectorWidth+sectorWidth*.5+(this.random()-.5)*sectorWidth*.7;
+  }
   spawn(kind,boss=false,bossLevel=this.level,finalBoss=false) {
-    const a=this.random()*Math.PI*2, d=430+this.random()*90;
+    const a=boss?this.random()*TAU:this.chooseSpawnAngle(), d=430+this.random()*90;
     const types=['rabbit','hare','quail','chicken'];
     kind=kind||types[Math.floor(this.random()*types.length)];
     const hpBase={rabbit:23,hare:18,quail:14,chicken:35};
     const speedBase={rabbit:29,hare:43,quail:37,chicken:24};
     const tier=this.mutation, growth=1+this.time/340;
     const maxHp=boss?(finalBoss?Math.max(3200,1400+bossLevel*95):520+bossLevel*105)*bossHealthMultiplier(bossLevel):hpBase[kind]*growth*(1+tier*.52);
-    const e={id:this.nextId++,kind,x:this.player.x+Math.cos(a)*d,y:this.player.y+Math.sin(a)*d,
-      hp:maxHp,maxHp,r:boss?43:kind==='quail'?12:17,tier,boss,bossLevel:boss?bossLevel:0,finalBoss,
+    const id=this.nextId++,crowdAngle=id*GOLDEN_ANGLE,crowdRadius=8+(id*17)%23;
+    const e={id,kind,x:this.player.x+Math.cos(a)*d,y:this.player.y+Math.sin(a)*d,
+      hp:maxHp,maxHp,r:boss?43:kind==='quail'?12:17,tier,boss,bossLevel:boss?bossLevel:0,finalBoss,crowdAngle,crowdRadius,
       speed:boss?34+Math.min(10,bossLevel*.35):speedBase[kind]*(1+tier*.14),
       damage:boss?(finalBoss?Math.max(26,16+bossLevel):14+bossLevel*1.15):9+tier*3+this.time/120,
       flash:0,slow:0,orbitCD:0,ability:2+this.random()*3,charge:0,vx:0,vy:0,specialAttack:null,
@@ -214,7 +234,17 @@ export class Game {
     for(const e of this.enemies){
       if(e.hp<=0)continue;
       e.flash=Math.max(0,e.flash-dt);e.orbitCD=Math.max(0,e.orbitCD-dt);e.slow=Math.max(0,e.slow-dt);
-      const dx=p.x-e.x,dy=p.y-e.y,d=Math.hypot(dx,dy)||1;let speed=e.speed*(e.slow>0?.48:1);
+      const dx=p.x-e.x,dy=p.y-e.y,d=Math.hypot(dx,dy)||1;
+      let moveDx=dx,moveDy=dy,moveD=d;
+      if(!e.boss&&!e.shieldOwnerId){
+        const influence=clamp((220-d)/160,0,1);
+        if(influence>0){
+          const radius=(e.crowdRadius||0)*influence;
+          const tx=p.x+Math.cos(e.crowdAngle||0)*radius,ty=p.y+Math.sin(e.crowdAngle||0)*radius;
+          moveDx=tx-e.x;moveDy=ty-e.y;moveD=Math.hypot(moveDx,moveDy)||1;
+        }
+      }
+      let speed=e.speed*(e.slow>0?.48:1);
       const usesSpecial=!e.boss&&!e.shieldOwnerId&&e.kind!=='hare';
       const busy=e.bossType||e.finalBoss?stepBoss(this,e,dt,d):usesSpecial&&this.stepEnemySpecial(e,dt,d);
       if(this.state!=='playing')return;
@@ -236,14 +266,31 @@ export class Game {
         }
       }
       if(e.charge>0){e.charge-=dt;e.x+=e.vx*dt;e.y+=e.vy*dt;}
-      else{e.x+=dx/d*speed*dt;e.y+=dy/d*speed*dt;}
+      else{e.x+=moveDx/moveD*speed*dt;e.y+=moveDy/moveD*speed*dt;}
       if(d>800&&!e.boss){const a=this.random()*Math.PI*2;e.x=p.x+Math.cos(a)*480;e.y=p.y+Math.sin(a)*480;}
       if(!busy&&d<e.r+13)this.hurt(e.damage);
       if(this.state!=='playing')return;
       if(this.rank('orbit')&&e.orbitCD<=0){for(let i=0;i<this.rank('orbit');i++){const a=this.time*2.5+i/this.rank('orbit')*Math.PI*2;const ox=p.x+Math.cos(a)*72,oy=p.y+Math.sin(a)*72;if(Math.hypot(e.x-ox,e.y-oy)<e.r+17){this.hit(e,this.damage*.65);if(this.state!=='playing')return;e.orbitCD=.35;break;}}}
     }
-    // A sparse spatial grid keeps crowd separation approximately linear.
-    const grid=new Map();for(const e of this.enemies){if(e.hp<=0)continue;const gx=Math.floor(e.x/48),gy=Math.floor(e.y/48);for(let x=gx-1;x<=gx+1;x++)for(let y=gy-1;y<=gy+1;y++)for(const o of grid.get(x+','+y)||[]){let dx=e.x-o.x,dy=e.y-o.y,d=Math.hypot(dx,dy),min=(e.r+o.r)*.7;if(d>0&&d<min){let f=(min-d)*.2;e.x+=dx/d*f;e.y+=dy/d*f;o.x-=dx/d*f;o.y-=dy/d*f;}}let key=gx+','+gy;if(!grid.has(key))grid.set(key,[]);grid.get(key).push(e);}
+    // Soft crowd steering keeps hordes dense without letting sprites collapse into one stack.
+    const grid=new Map();
+    for(const e of this.enemies){
+      if(e.hp<=0)continue;
+      const gx=Math.floor(e.x/CROWD_CELL),gy=Math.floor(e.y/CROWD_CELL);
+      for(let x=gx-1;x<=gx+1;x++)for(let y=gy-1;y<=gy+1;y++)for(const o of grid.get(x+','+y)||[]){
+        const protectedE=!!(e.boss||e.shieldOwnerId),protectedO=!!(o.boss||o.shieldOwnerId);
+        if(protectedE&&protectedO)continue;
+        let dx=e.x-o.x,dy=e.y-o.y,d=Math.hypot(dx,dy);
+        const min=e.r+o.r+(protectedE||protectedO?6:12);
+        if(d>=min)continue;
+        if(d<.001){const a=(e.id-o.id)*GOLDEN_ANGLE;dx=Math.cos(a);dy=Math.sin(a);d=1;}
+        const push=Math.min(8,(min-d)*.35),ux=dx/d,uy=dy/d;
+        if(protectedE){o.x-=ux*push;o.y-=uy*push;}
+        else if(protectedO){e.x+=ux*push;e.y+=uy*push;}
+        else{const half=push*.5;e.x+=ux*half;e.y+=uy*half;o.x-=ux*half;o.y-=uy*half;}
+      }
+      const key=gx+','+gy;if(!grid.has(key))grid.set(key,[]);grid.get(key).push(e);
+    }
     this.stormTimer-=dt;if(this.rank('lightning')&&this.stormTimer<=0){this.stormTimer=2.8;let targets=this.enemies.filter(e=>e.hp>0&&Math.hypot(e.x-p.x,e.y-p.y)<350).sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y)).slice(0,this.rank('lightning')+1);for(const e of targets){this.addEffect({type:'bolt',x:e.x,y:e.y,life:.3,max:.3});this.hit(e,this.damage*2.1);if(this.state!=='playing')return;}if(targets.length)this.emit('storm');}
     this.auraTimer-=dt;if(this.rank('frost')&&this.auraTimer<=0){this.auraTimer=.6;let radius=65+this.rank('frost')*15;for(const e of this.enemies)if(Math.hypot(e.x-p.x,e.y-p.y)<radius){e.slow=1;this.hit(e,this.damage*.25*this.rank('frost'));if(this.state!=='playing')return;}}
     for(const s of this.shots){stepBossShot(this,s,dt);if(s.life<=0)continue;s.life-=dt;s.x+=s.vx*dt;s.y+=s.vy*dt;if(Math.hypot(s.x-p.x,s.y-p.y)<17){this.hurt(s.damage||14);if(this.state!=='playing')return;s.life=0;}}
