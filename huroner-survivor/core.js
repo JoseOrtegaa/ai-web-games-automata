@@ -48,8 +48,8 @@ export class Game {
     const level=clamp(Math.round(Number(value)||1),1,99);
     this.level=level;this.xp=0;this.mutation=mutationFor(level);this.lastLevelBoss=Math.floor(level/5)*5;
     this.choices=[];if(this.state==='levelup')this.state='playing';
-    // Remove stale ordinary enemies so fresh spawns use the selected mutation tier.
-    this.enemies=this.enemies.filter(e=>e.boss||e.shieldOwnerId);
+    // Level jumps start a clean combat scenario; fresh spawns use the selected tier.
+    this.enemies=[];this.hazards=[];this.shots=[];this.boss=null;this.lastBossType=null;
     return level;
   }
   debugSetUpgrade(id,value) {
