@@ -231,12 +231,13 @@ export class Game {
       const count=1+Math.floor(this.time/150);
       for(let i=0;i<count&&this.enemies.length<170;i++)this.spawn();
     }
+    const crowdNearPlayer=this.enemies.reduce((count,e)=>count+(!e.boss&&!e.shieldOwnerId&&e.hp>0&&Math.hypot(e.x-p.x,e.y-p.y)<180?1:0),0);
     for(const e of this.enemies){
       if(e.hp<=0)continue;
       e.flash=Math.max(0,e.flash-dt);e.orbitCD=Math.max(0,e.orbitCD-dt);e.slow=Math.max(0,e.slow-dt);
       const dx=p.x-e.x,dy=p.y-e.y,d=Math.hypot(dx,dy)||1;
       let moveDx=dx,moveDy=dy,moveD=d;
-      if(!e.boss&&!e.shieldOwnerId){
+      if(!e.boss&&!e.shieldOwnerId&&crowdNearPlayer>=6){
         const influence=clamp((220-d)/160,0,1);
         if(influence>0){
           const radius=(e.crowdRadius||0)*influence;
