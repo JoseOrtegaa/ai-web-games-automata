@@ -146,13 +146,106 @@ function bird(c, tier, chicken, phase) {
   c.restore();
 }
 
+
+function boneSkull(c, explosive, phase) {
+  c.save();c.translate(0,phase*.35);
+  oval(c,0,2,14,12,'#d8c9a4',INK,1.5);oval(c,-5,0,3.2,4,'#1b2423');oval(c,5,0,3.2,4,'#1b2423');
+  shape(c,'M-6 8L-4 14L-1 11L2 14L5 10L6 7Z','#c9b892',INK,1);
+  line(c,'M-8-8L-4-13M7-8L11-13','#bfae8d',2);
+  if(explosive){
+    line(c,'M-2-10L1-4L-2 0L3 5L0 11','#e96a37',2.4);
+    oval(c,0,2,5,5,'#e96a3738',null);
+    shape(c,'M-10-6L-16-12L-13-3L-20 1L-11 4Z','#7c3d2f');
+  }
+  c.restore();
+}
+function boneHuman(c, archer, evolved, phase) {
+  c.save();c.translate(0,phase*.22);
+  oval(c,0,-20,7.5,8.5,'#d8c9a4',INK,1.2);oval(c,-2.5,-21,1.8,2.4,'#27302d');oval(c,3,-21,1.8,2.4,'#27302d');
+  line(c,'M0-12L0 8','#d8c9a4',4);line(c,'M-9-8L9-8M-7-3L7-3M-6 2L6 2','#d8c9a4',2.3);
+  line(c,'M-8-7L-13 5L-10 14M8-7L13 5L10 14','#d8c9a4',3);
+  line(c,'M-3 8L-8 20M3 8L8 20','#d8c9a4',3);
+  oval(c,-8,20,5,2.2,'#bfae8d',INK,.8);oval(c,8,20,5,2.2,'#bfae8d',INK,.8);
+  if(evolved){shape(c,'M-11-10L-18-16L-15-7L-21-4L-10-3Z','#a9997e');shape(c,'M11-10L18-16L15-7L21-4L10-3Z','#a9997e');line(c,'M-5-27L-9-33M5-27L9-33','#d8c9a4',2);}
+  if(archer){
+    line(c,'M13-6Q24 4 13 15','#7f6548',2);line(c,'M13-6L13 15','#d9c6a5',1);line(c,'M1 1L16 5','#cdbd9c',2);
+  }else{
+    shape(c,'M13 9L17-10L20-15L22-9L18 10Z','#ddd9c7','#6f7670',1);line(c,'M12 8L21 10','#9a7647',3);
+  }
+  c.restore();
+}
+function boneRabbit(c, evolved, phase) {
+  c.save();c.translate(0,phase*.3);
+  line(c,'M-7-8L-12-30M4-9L8-31','#d8c9a4',4);oval(c,0,-7,10,9,'#d8c9a4',INK,1);
+  oval(c,-3,-9,2,2.8,'#27302d');oval(c,4,-9,2,2.8,'#27302d');
+  line(c,'M-7 1Q0 10 8 2M-5 3L-11 15M5 3L11 15','#d8c9a4',3);
+  line(c,'M-5 2L5 2M-4 6L4 6','#bfae8d',1.4);
+  if(evolved)line(c,'M-10-18L-16-23M7-20L14-24','#b75c55',2.5);
+  c.restore();
+}
+function stoneHuman(c, archer, evolved, phase, ash=false) {
+  c.save();c.translate(0,phase*.15);
+  const body=ash?'#332724':'#69645f',edge=ash?'#5b3b31':'#91877c',glow=ash?'#e96732':'#b99562';
+  shape(c,'M-10-14L-5-26L7-28L13-16L10-8L15 6L8 15L-8 14L-15 5L-10-8Z',body,INK,1.4);
+  shape(c,'M-8-12L0-17L9-11L7 6L-6 7Z',edge,INK,.8);
+  line(c,'M-11-5L-18 8L-13 18M11-5L18 8L13 18',edge,5);
+  line(c,'M-5 14L-9 22M5 14L9 22',edge,5);
+  line(c,'M-4-22L2-15L-1-7L5 2',glow,evolved?2.4:1.2);
+  if(evolved){shape(c,'M-12-17L-20-22L-17-11L-23-7L-12-5Z',body);shape(c,'M11-18L19-23L17-11L23-8L12-5Z',body);}
+  if(archer){
+    line(c,'M15-7Q27 4 15 16',ash?'#7a4b35':'#887157',2.4);line(c,'M15-7L15 16','#d3b88c',1);
+    line(c,'M2 3L18 6',ash?'#e96732':'#aaa099',2);
+  }else{
+    shape(c,'M14 10L18-11L21-16L23-9L19 12Z',ash?'#5a3a2f':'#979087','#c7b88c',1);
+    line(c,'M12 9L22 12',ash?'#e96732':'#9a7647',3);
+  }
+  c.restore();
+}
+function stoneRabbit(c, evolved, phase) {
+  c.save();c.translate(0,phase*.25);
+  shape(c,'M-11-10L-13-31L-5-34L-2-12L3-13L6-35L13-31L11-9Z','#716b64',INK,1.2);
+  shape(c,'M-14 2L-9-9L7-12L15-2L12 13L-10 14Z','#66615c',INK,1.4);
+  line(c,'M-4-7L1-2L-2 4L5 9','#b99562',evolved?2.2:1);
+  oval(c,-6,-7,2,2.8,'#262b2a');oval(c,6,-7,2,2.8,'#262b2a');
+  line(c,'M-8 11L-13 19M8 11L13 19','#777068',4);
+  c.restore();
+}
+function stoneBoar(c, evolved, phase) {
+  c.save();c.translate(0,phase*.18);
+  shape(c,'M-20-4L-12-15L7-17L20-8L21 8L11 15L-15 13L-23 5Z','#615b57',INK,1.4);
+  shape(c,'M8-13L21-13L25-6L18 2L7-1Z','#746d65',INK,1);
+  shape(c,'M18-2L29 3L20 6Z','#ddd2b0',INK,.8);shape(c,'M16 2L27 9L18 10Z','#cfc3a3',INK,.8);
+  oval(c,15,-8,2.4,2.8,'#222a29');
+  line(c,'M-8-12L-2-5L-5 1L2 8','#b99562',evolved?2.2:1);
+  line(c,'M-13 12L-15 20M8 13L10 20','#716a62',4);
+  c.restore();
+}
+function lavaBeast(c, evolved, phase) {
+  c.save();c.translate(0,phase*.24);
+  shape(c,'M-17 2L-11-15L2-20L15-12L19 4L10 15L-11 14Z','#2c211f',INK,1.5);
+  shape(c,'M-9-14L-6-32L0-36L3-17L8-19L13-30L17-26L13-11Z','#332522',INK,1);
+  line(c,'M-8-8L-1-3L-5 5L4 11M4-18L8-11L5-5L12 2','#ef6c30',evolved?2.8:1.7);
+  oval(c,-5,-14,2.1,2.7,'#ffb04b');oval(c,7,-14,2.1,2.7,'#ffb04b');
+  line(c,'M-11 13L-16 21M10 13L15 21','#4b3029',4);
+  c.restore();
+}
+
 /** Approx. 40 × 56 units. Caller controls scale, including boss scale. */
 export function drawAnimal(c, { kind = 'rabbit', x = 0, y = 0, scale = 1, tier = 0, boss = false, time = 0, flash = 0, id = 0 } = {}) {
   c.save(); c.translate(x, y); c.scale(scale, scale); c.lineJoin = 'round'; c.lineCap = 'round';
   const phase = Math.sin(time * (kind === 'hare' ? 12 : 8) + id * 1.73) * 1.3;
   oval(c, 0, 18, 18, 4.5, '#07171b66');
   // Flat vector colors avoid expensive per-enemy Canvas filters.
-  if (kind === 'quail' || kind === 'chicken') bird(c, tier, kind === 'chicken', phase);
+  if(kind==='bone_skull')boneSkull(c,tier>=1,phase);
+  else if(kind==='bone_swordsman'||kind==='bone_archer')boneHuman(c,kind==='bone_archer',tier>=1,phase);
+  else if(kind==='bone_rabbit')boneRabbit(c,tier>=1,phase);
+  else if(kind==='stone_swordsman'||kind==='stone_archer')stoneHuman(c,kind==='stone_archer',tier>=1,phase,false);
+  else if(kind==='stone_rabbit')stoneRabbit(c,tier>=1,phase);
+  else if(kind==='stone_boar')stoneBoar(c,tier>=1,phase);
+  else if(kind==='ash_swordsman'||kind==='ember_archer')stoneHuman(c,kind==='ember_archer',tier>=1,phase,true);
+  else if(kind==='lava_beast')lavaBeast(c,tier>=1,phase);
+  else if(kind==='magma_skull')boneSkull(c,true,phase);
+  else if (kind === 'quail' || kind === 'chicken') bird(c, tier, kind === 'chicken', phase);
   else rabbit(c, tier, kind === 'hare', phase);
   if (boss) {
     // Thorn circlet, distinct from normal mutation protrusions.
