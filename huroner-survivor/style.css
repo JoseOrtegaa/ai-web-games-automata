@@ -5,3 +5,5 @@
 @media(prefers-reduced-motion:reduce){*{transition:none!important}.hero-illustration img{filter:none}}
 
 .shield-caption{display:flex;justify-content:space-between;align-items:center;font-size:9px;color:#8ec7f5;margin-bottom:4px}.shield-caption b{font-weight:500;font-variant-numeric:tabular-nums}.shield{height:4px;margin-bottom:6px}.shield i{background:#75b6ee}
+
+#boss-hint{font-size:9px;line-height:1.4;color:#e3ccb0;margin-top:5px;text-align:center;text-wrap:balance}#boss-name{line-height:1.4}#boss-count{flex-shrink:0}#buffs{top:calc(215px + env(safe-area-inset-top))}

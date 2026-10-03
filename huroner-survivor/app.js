@@ -1,3 +1,4 @@
+import { bossEncounters, bossDefinition } from './bosses.js';
 import { Game, xpNeeded, ATTACK_COOLDOWN } from './core.js';
 import { createRenderer } from './render.js';
 import { createInput } from './input.js';
@@ -142,11 +143,13 @@ function hud() {
   $('mutation-label').textContent = `${t('mutation')} ${['I', 'II', 'III', 'IV'][game.mutation]}`;
   $('kills').textContent = `${game.kills} ${t('kills').toLowerCase()}`;
   $('equipment').textContent = '⚔' + (game.rank('armor') ? '⬡' : '') + (game.rank('orbit') ? '✧' : '') + (game.rank('lightning') ? 'ϟ' : '') + (game.rank('frost') ? '❄' : '');
-  const bosses = game.enemies.filter(enemy => enemy.boss && enemy.hp > 0);
-  const boss = bosses.find(enemy => enemy.id === shownBossId) ?? bosses.find(enemy => enemy.finalBoss) ?? bosses[0];
+  const bosses = bossEncounters(game);
+  const boss = bosses.find(enemy => enemy.id === shownBossId) ?? bosses.find(enemy => enemy.actor.finalBoss) ?? bosses[0];
   shownBossId = boss?.id ?? null; $('boss-hud').hidden = !boss;
   if (boss) {
-    $('boss-name').textContent = `${t(boss.finalBoss ? 'finalBoss' : boss.kind)} · ${t('level')} ${boss.bossLevel}`;
+    const actor = boss.actor, definition = bossDefinition(actor.bossType), language = preferences.language === 'es' ? 0 : 1;
+    $('boss-name').textContent = `${definition ? definition.name[language] : t(actor.finalBoss ? 'finalBoss' : actor.kind)} · ${t('level')} ${actor.bossLevel}`;
+    $('boss-hint').textContent = definition ? (actor.bossType === 'bastion' && !actor.shielded ? t('shieldBroken') : definition.hint[language]) : '';
     $('boss-count').textContent = bosses.length > 1 ? `${bosses.length} ${t('guardians')}` : '';
     $('boss-hud').dataset.bossId = String(boss.id); $('boss-fill').style.width = `${Math.max(0, boss.hp / boss.maxHp * 100)}%`;
   }
@@ -159,6 +162,7 @@ function hud() {
 function consumeEvents() {
   const events = game.events.splice(0); audio.handleEvents(events);
   for (const event of events) {
+    if (event.type === 'shieldBreak') toast(t('shieldBroken'));
     if (event.type === 'mutation') toast(`${t('mutation')} ${['I', 'II', 'III', 'IV'][event.tier]} · ${t('mutationToast')}`);
     if (event.type === 'item') toast(t(`${event.kind}Toast`));
     if (event.type === 'boss') toast(event.final ? t('finalToast') : `${t('bossToast')} · ${event.level}`);

@@ -1,0 +1,58 @@
+[
+  {
+    "browser": "chromium",
+    "version": "134.0.6998.35",
+    "result": "PASS",
+    "bosses": [
+      "twins",
+      "prism",
+      "bastion",
+      "antler",
+      "mortar",
+      "weaver",
+      "bell",
+      "reaper",
+      "ember",
+      "storm"
+    ],
+    "checks": [
+      "all ten warning/active scenes",
+      "twin grouped bar and reward",
+      "shield rabbit unlock and hint",
+      "real pause",
+      "ES/EN names/hints",
+      "small/desktop HUD",
+      "12 silhouettes",
+      "renderer immutable"
+    ],
+    "errors": []
+  },
+  {
+    "browser": "webkit",
+    "version": "18.4",
+    "result": "PASS",
+    "bosses": [
+      "twins",
+      "prism",
+      "bastion",
+      "antler",
+      "mortar",
+      "weaver",
+      "bell",
+      "reaper",
+      "ember",
+      "storm"
+    ],
+    "checks": [
+      "all ten warning/active scenes",
+      "twin grouped bar and reward",
+      "shield rabbit unlock and hint",
+      "real pause",
+      "ES/EN names/hints",
+      "small/desktop HUD",
+      "12 silhouettes",
+      "renderer immutable"
+    ],
+    "errors": []
+  }
+]

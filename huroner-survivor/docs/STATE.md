@@ -1,19 +1,19 @@
 # Huroner Survivor — estado vigente
 
-## Objetivo y fase
-XP 30% directa/70% en gemas, escudo recargable/mejorable, mejoras máximas ocultas y escudo visible en la silueta. Implementado, integrado y publicación verificada; QA local y humo público PASS.
+## Objetivo / fase
+Diez encuentros de boss diferentes física y mecánicamente, uno aleatorio cada cinco niveles. Implementación y QA local PASS; publicación pendiente. No repetir diseño ni revisión de XP/escudo previa.
 
-## Revisión y archivos
-Código publicado en `7903e2b3b5415df74a4d1eb777906fff6546b857`, integrado en main. Cambios en core, app/HUD, i18n, art/render y pruebas `progression.test.js` / `progression-qa.cjs`. Contratos y balance en DESIGN/ARCHITECTURE.
+## Revisión / archivos
+Base `2a788f2`, rama `feature/ten-bosses`. Nuevos `bosses.js`, `boss-art.js`, `docs/BOSSES.md`, `tests/bosses.test.js`, `tests/bosses-qa.cjs`; integración acotada en core/render/app/HUD. Evidencia `bosses-local.json` y QA.
 
-## Decisiones duraderas
-Radio de gemas 56; atracción persistente a max(300, velocidad×1,25), XP con precisión de décimas y sin agregar a gemas curativas. Escudo lleno 20; +20 capacidad/carga por rango, cinco rangos, máximo 120. Daño mitigado por armadura consume escudo y desborda a vida; espera 6 s sin daño, recarga 10% de capacidad/s. Pausa/elección congelan. Vida máxima no escala escudo. Menú filtra máximos y core rechaza selección obsoleta. Escudo azul/cobre en pata libre, emblema apagado sin carga; sin partículas nuevas.
+## Decisiones
+Catálogo: gemelos espada/magia; codorniz láser + cura tras 3 s sin golpes; pollo protegido por conejo azul; liebre cornuda; sapo bombardero; araña; tortuga campanera; cuervo con guadaña de retorno; zorro con cono de fuego; búho con rayos. Evitar repetición inmediata. Gemelos: HP repartida, máximo de barra estable, una baja y 20 XP al morir ambos. Conejo auxiliar no es boss y romper escudo es permanente/sólo para su dueño. Avisos ≥0,75 s, direcciones/puntos fijados, 64 peligros y 150 disparos máximo. Atacan/curan sólo en tiempo activo; muerte cancela peligros del dueño. Final de 600 s conservado. Arte vectorial propio, sin dependencias nuevas.
 
-## Completado y verificación
-35 pruebas de reglas PASS. Chromium/WebKit PASS: HUD, XP al matar, mejoras máximas, escudo, pausa/elección, reset, ES/EN, layouts móvil/pequeño/escritorio, dibujo reflejado/con armadura y renderer inmutable. Evidencia en QA y progression-local.json. Sin pruebas físicas; permanece limitación de rendimiento extremo previa.
+## Completado / QA
+51 pruebas (5 archivos) PASS. Chromium/WebKit: diez escenas, gemelos/escudo/HUD, pausa, ES/EN, móvil/pequeño/escritorio, siluetas e inmutabilidad del renderer. Simulación de coexistencia de dos minutos con límites intactos. Sin errores bloqueantes; no dispositivos físicos. Balance subjetivo se ajustará según partidas reales.
 
 ## Contexto preservado
-Ruta `huroner-survivor/`, Pages desde main. Legacy en `feature/huroner-survivor-legacy`; claves `huroner-survivor-2:*` conservadas. Mundos por cada 5 niveles previamente terminados, sin cambios en esta entrega. No reabrir fases anteriores.
+Ruta canónica `huroner-survivor/`, Pages desde main. XP 30/70; escudo del jugador 20→120, recarga 6 s + 10%/s; mejoras máximas filtradas. Mundos cada 5 niveles, ataque compartido 0,25 s y zoom bloqueado. Claves `huroner-survivor-2:*` y legacy conservados.
 
 ## Siguiente paso
-Entrega completada. Pages [37117269702](https://github.com/JoseOrtegaa/ai-web-games-automata/actions/runs/37117269702) success; siete archivos públicos idénticos a los probados y humo Chromium/WebKit PASS (arranque, escudo 20/20, pausa/reanudar, sin errores). Evidencia `progression-public.json`. Esperar siguiente petición; sin defectos abiertos.
+Integrar sin pisar cambios ajenos; comprobar Pages y humo público. Sin defectos abiertos.

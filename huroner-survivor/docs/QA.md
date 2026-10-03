@@ -65,3 +65,15 @@ URL verificada: https://joseortegaa.github.io/ai-web-games-automata/huroner-surv
 - No se han realizado pruebas físicas de iPhone/Android. Sin cambios en cadencia, enemigos ni mundos.
 
 Publicación verificada: commit `7903e2b3b5415df74a4d1eb777906fff6546b857`, Pages `37117269702` success. Siete archivos desplegados coinciden byte por byte con los probados. Humo público Chromium/WebKit PASS: arranque, escudo 20/20, pausa/reanudación y carga sin errores. Ver `progression-public.json`.
+
+
+## 2026-10-03 — Diez bosses distintos
+
+**PASS local** sobre base `2a788f2`, implementación en `feature/ten-bosses`; revisión propia, sin delegación.
+
+- `node --test tests/*.test.js`: 5 archivos PASS (51 casos, incluidos 16 nuevos). Pruebas del catálogo entero, aleatoriedad/umbrales, scaling y coexistencia. Gemelos: dos órdenes de muerte, HP sumada con máximo estable, un evento/una recompensa. Codorniz: aviso láser/dirección, daño/escape, espera de cura y reinicio al recibir golpes. Pollo: inmunidad, auxiliar correcto, desbloqueo permanente y sin desbloquear otro pollo.
+- Ataques diferenciados: espada/magia, carga dirigida, bombas escalonadas, telarañas persistentes, anillo con centro seguro, guadaña de retorno, cono sostenido y rayos. Impacto real y esquiva de embestida/proyectiles; peligros no dañan durante aviso. Pausa/elección, cancelación por muerte, terminal irreversible, reset y límites 64 peligros/150 disparos. Simulación de dos minutos con diez encuentros coexistentes sin estados no finitos.
+- `tests/bosses-qa.cjs`, Playwright 1.51.1 externo: Chromium 134.0.6998.35 y WebKit 18.4 PASS. Diez escenas de aviso/ataque, barra única de gemelos al morir uno, feedback de escudo roto, pausa real, nombres/consejos ES/EN, HUD a 320×568 y 1440×1000, catálogo de doce cuerpos y renderer inmutable. Sin errores de página/recursos.
+- Revisión de capturas: siluetas diferenciadas (caballero/mago, cristal, gran escudo y conejo azul, cornamenta, mortero, ocho patas, campana, guadaña, tres colas, alas/corona); avisos coral discontinuos y daño sólido. Capturas temporales `/tmp/huroner-bosses-qa/`, resultados duraderos `bosses-local.json`. No pruebas físicas iPhone/Android; balance subjetivo pendiente de partidas del usuario.
+
+Pendiente publicación y humo público.

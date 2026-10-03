@@ -70,3 +70,11 @@ Fuente y artefacto coinciden en `huroner-survivor/`; no hay build ni dist. `inde
 ## XP y escudo (2026-10-03)
 
 `Game.hit` reparte XP 30/70; `gainXp` conserva décimas. Al saturar gemas, agregar sólo a XP viva, nunca a curación. `player.shield` y `shieldDelay` pertenecen a core; `maxShield` deriva de rango, base 20 y +20 hasta cinco mejoras. `hurt` mitiga con armadura, absorbe escudo y resta excedente de HP; `step` recarga sólo el tiempo posterior a 6 s sin daño (10% capacidad/s). `choose` valida también el máximo. UI sólo lee y muestra barra azul; `drawFerret` recibe `shield` normalizado para colorear el emblema del escudo en la pata libre, sin mutar Game.
+
+## Encuentros de nivel (2026-10-03)
+
+`bosses.js`: catálogo de diez definiciones ES/EN; `spawnBoss` crea encuentros aleatorios (salvo último tipo), `bossEncounters` suma HP de cuerpos vivos con máximo estable por `encounterId`. Core invoca creación únicamente desde niveles múltiples de cinco. Final de 600 s continúa en `spawn` original. `bossHit` reinicia cura, cancela ataques del cuerpo muerto, rompe protección del dueño correcto y aplaza recompensa del dúo hasta morir ambos. Una baja y 20 XP por encuentro; auxiliar azul usa recompensa normal. No borrar otros encuentros vivos.
+
+`stepBoss` controla casteo/avisos, regeneración y ataques específicos; `stepHazards` resuelve daño tras proyectiles y antes de pickups respetando primer terminal. `hazards` máximo 64, `ownerId`, forma y geometría fija compartidas conceptualmente con dibujo. `stepBossShot` guía retorno de guadaña; el límite global de disparos sigue en 150. Pausa/elección no llaman step; reset vacía peligro y selección anterior. Auxiliar no recibe mutaciones ni habilidades de conejo común.
+
+`boss-art.js` dibuja doce cuerpos (dos gemelos + nueve jefes restantes + auxiliar), siluetas/equipo propios, fases de aviso/activo y proyectiles, sin RNG ni mutación. HUD muestra nombre y consejo ES/EN, cuenta encuentros y mantiene identidad cuando cae un gemelo. `shieldBreak` es feedback visual; no cambia el sistema de audio. Reglas en BOSSES.md, pruebas reproducibles en tests/bosses*.

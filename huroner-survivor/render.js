@@ -1,3 +1,4 @@
+import { drawBoss, drawShieldKey, drawBossHazards, drawBossProjectile } from './boss-art.js';
 import { drawFerret, drawAnimal } from './art.js';
 import { createWorldLayer } from './world.js';
 function ellipse(c,x,y,rx,ry,color,stroke){c.beginPath();c.ellipse(x,y,rx,ry,0,0,Math.PI*2);c.fillStyle=color;c.fill();if(stroke){c.strokeStyle=stroke;c.lineWidth=1.8;c.stroke();}}
@@ -34,7 +35,8 @@ function draw(game, {active = true, moving = false, reducedMotion = false} = {})
  if(game.rank('frost')){const r=65+game.rank('frost')*15;ellipse(ctx,p.x,p.y,r,r,'#87d8d610');ctx.strokeStyle='#b1e8e44a';ctx.lineWidth=1;ctx.beginPath();ctx.arc(p.x,p.y,r,0,6.28);ctx.stroke();}
  for(const e of game.effects){if(e.type==='enemy-impact'){ctx.save();ctx.globalAlpha=e.life/e.max;ellipse(ctx,e.x,e.y,e.r,e.r,'#f49c5555','#f0dfbf');ctx.restore();}}
  const entities=[...game.enemies,{player:true,y:p.y}].sort((a,b)=>a.y-b.y);
- for(const e of entities){if(e.player){ctx.globalAlpha=p.invuln>0?.5+Math.sin(game.time*45)*.3:1;drawFerret(ctx,{x:p.x,y:p.y,scale:1,face:Math.cos(p.face)<-.05?-1:1,walk:reducedMotion?0:game.time*(moving?14:3),armor:game.rank('armor'),shield:p.shield/game.maxShield});ctx.globalAlpha=1;}else{if(Math.abs(e.x-cx)>viewW/2+80||Math.abs(e.y-cy)>viewH*.6+80)continue;if((e.kind==='hare'&&e.tier>=1||e.boss&&e.special==='charge')&&e.ability<.65){ctx.setLineDash([4,6]);line(ctx,[[e.x,e.y],[p.x,p.y]],'#e9ae7a65',2);ctx.setLineDash([]);}const jump=e.specialAttack?.phase==='jump'?Math.sin(Math.PI*(1-e.specialAttack.time/e.specialAttack.duration))*32:0;drawAnimal(ctx,{...e,x:e.x,y:e.y-jump,scale:e.boss?2.15:1+e.tier*.1,time:reducedMotion?0:game.time});if(e.hp<e.maxHp&&!e.boss){ctx.fillStyle='#071410';ctx.fillRect(e.x-13,e.y-40,26,3);ctx.fillStyle='#dba77a';ctx.fillRect(e.x-13,e.y-40,26*e.hp/e.maxHp,3);}}}
+ drawBossHazards(ctx,game);
+ for(const e of entities){if(e.player){ctx.globalAlpha=p.invuln>0?.5+Math.sin(game.time*45)*.3:1;drawFerret(ctx,{x:p.x,y:p.y,scale:1,face:Math.cos(p.face)<-.05?-1:1,walk:reducedMotion?0:game.time*(moving?14:3),armor:game.rank('armor'),shield:p.shield/game.maxShield});ctx.globalAlpha=1;}else{if(Math.abs(e.x-cx)>viewW/2+80||Math.abs(e.y-cy)>viewH*.6+80)continue;if((e.kind==='hare'&&e.tier>=1||e.boss&&e.special==='charge')&&e.ability<.65){ctx.setLineDash([4,6]);line(ctx,[[e.x,e.y],[p.x,p.y]],'#e9ae7a65',2);ctx.setLineDash([]);}const jump=e.specialAttack?.phase==='jump'?Math.sin(Math.PI*(1-e.specialAttack.time/e.specialAttack.duration))*32:0;if(e.bossType)drawBoss(ctx,e,reducedMotion?0:game.time);else if(e.shieldOwnerId)drawShieldKey(ctx,e,reducedMotion?0:game.time);else drawAnimal(ctx,{...e,x:e.x,y:e.y-jump,scale:e.boss?2.15:1+e.tier*.1,time:reducedMotion?0:game.time});if(e.hp<e.maxHp&&!e.boss){ctx.fillStyle='#071410';ctx.fillRect(e.x-13,e.y-40,26,3);ctx.fillStyle='#dba77a';ctx.fillRect(e.x-13,e.y-40,26*e.hp/e.maxHp,3);}}}
  for(let i=0;i<game.rank('orbit');i++){let a=game.time*2.5+i/game.rank('orbit')*Math.PI*2;sword(ctx,p.x+Math.cos(a)*72,p.y+Math.sin(a)*72,a,.65);}
  for(const e of game.effects){let life=e.life/e.max;if(e.type==='slash'){ctx.save();ctx.translate(e.x,e.y);ctx.globalAlpha=life;ctx.beginPath();ctx.arc(0,0,e.r,e.angle-e.half,e.angle+e.half);ctx.strokeStyle=e.fire?'#e56f36b5':'#dcecc873';ctx.lineWidth=19;ctx.stroke();ctx.beginPath();ctx.arc(0,0,e.r+8,e.angle-e.half,e.angle+e.half);ctx.strokeStyle=e.fire?'#ffd36f':'#fff5c3';ctx.lineWidth=3;ctx.stroke();ctx.restore();}if(e.type==='bolt'){ctx.globalAlpha=life;line(ctx,[[e.x+15,e.y-200],[e.x-12,e.y-90],[e.x+15,e.y-95],[e.x,e.y]],'#d6edff',4);ellipse(ctx,e.x,e.y,17,8,'#c8e5ef80');ctx.globalAlpha=1;}}
  for(const q of game.particles){ctx.globalAlpha=Math.min(1,q.life*2);ellipse(ctx,q.x,q.y,q.size,q.size*.7,'#a35453');}ctx.globalAlpha=1;
@@ -47,7 +49,7 @@ function draw(game, {active = true, moving = false, reducedMotion = false} = {})
    line(ctx,[[a.x-7,a.y],[a.x+7,a.y]],'#ffe4ad',2);line(ctx,[[a.x,a.y-7],[a.x,a.y+7]],'#ffe4ad',2);
   }ctx.restore();
  }
- for(const s of game.shots){if(s.kind==='feather'){ctx.save();ctx.translate(s.x,s.y);ctx.rotate(Math.atan2(s.vy,s.vx));ellipse(ctx,0,0,9,3,'#f0dfbf','#cb6555');line(ctx,[[-7,0],[8,0]],'#fff2cf',1);ctx.restore();}else{ellipse(ctx,s.x,s.y,4,7,'#f0dfbf');ellipse(ctx,s.x,s.y,2,3,'#cb6555');}}
+ for(const s of game.shots){if(s.kind==='scythe'||s.kind==='magic'){drawBossProjectile(ctx,s);}else if(s.kind==='feather'){ctx.save();ctx.translate(s.x,s.y);ctx.rotate(Math.atan2(s.vy,s.vx));ellipse(ctx,0,0,9,3,'#f0dfbf','#cb6555');line(ctx,[[-7,0],[8,0]],'#fff2cf',1);ctx.restore();}else{ellipse(ctx,s.x,s.y,4,7,'#f0dfbf');ellipse(ctx,s.x,s.y,2,3,'#cb6555');}}
  }ctx.restore();fog();}
 
   const observer=new ResizeObserver(resize);observer.observe(canvas.parentElement);resize();

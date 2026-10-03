@@ -28,6 +28,7 @@ export const strings = {
   new: ['NUEVO', 'NEW'],
   rank: ['RANGO', 'RANK'],
   shield: ['ESCUDO', 'SHIELD'],
+  shieldBroken: ['Escudo roto · ¡ataca al pollo!', 'Shield broken · attack the chicken!'],
   paused: ['Un respiro entre sombras', 'A breath between shadows'],
   pauseText: ['El tiempo se detiene. Tu historia continúa.', 'Time stands still. Your story continues.'],
   resume: ['CONTINUAR', 'RESUME'],

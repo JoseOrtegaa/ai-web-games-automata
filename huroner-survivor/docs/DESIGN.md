@@ -73,8 +73,8 @@ Mutaciones en niveles 6, 11 y 16. Avisos de ataques especiales fijan posición/d
 - Gallina desde nivel 6: aviso de 0,8 s del círculo de radio 65 y golpe; desde nivel 11 el radio aumenta un 15%.
 - Los tres especiales anteriores tienen recarga de 5–7 s; desde nivel 16 se divide por 1,15. Conservan los rangos de activación del original: conejo 220, codorniz 280, gallina radio + 35. El daño de especial usa las estadísticas actuales del enemigo.
 - Liebre desde nivel 6: embestida de 0,65 s a velocidad 230, tras preparación de 0,65 s; recarga 4,5–6,5 s. No incorporar los especiales de los otros animales a la liebre.
-- Jefe intermedio del nivel `n`: HP `520 + 105n`, daño `14 + 1,15n`. Final: HP `max(3200, 1400 + 95n)`, daño `max(26, 16 + n)`. Velocidad de ambos `34 + min(10, 0,35n)`, radio 43.
-- Conservar selección de ataques de jefe entre embestida, anillo y ráfaga; intervalos 3,8 s (intermedio) y 3,1 s (final), velocidades, proyectiles y daños actuales. Las hordas siguen apareciendo durante los jefes y después de los 600 s hasta ganar o morir.
+- Jefe intermedio aleatorio del [catálogo de 10 encuentros](BOSSES.md), sin repetición inmediata, cada 5 niveles. Gemelos reparten su vida entre dos cuerpos y conservan una barra/recompensa; auxiliares no cuentan como jefes. Jefe intermedio del nivel `n`: HP `520 + 105n`, daño `14 + 1,15n`. Final: HP `max(3200, 1400 + 95n)`, daño `max(26, 16 + n)`. Velocidad de ambos `34 + min(10, 0,35n)`, radio 43.
+- El jefe final conserva selección de ataques entre embestida, anillo y ráfaga; los diez encuentros de nivel usan las mecánicas, avisos y recargas de `bosses.js` y BOSSES.md. Para el jefe final, intervalos 3,8 s (intermedio) y 3,1 s (final), velocidades, proyectiles y daños actuales. Las hordas siguen apareciendo durante los jefes y después de los 600 s hasta ganar o morir.
 
 ### Claridad y feedback sin cambio de mecánicas
 

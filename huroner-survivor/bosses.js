@@ -1,0 +1,147 @@
+// Encounter rules only: no canvas, DOM or wall-clock time.
+export const BOSSES = [
+  {id:'twins',kind:'rabbit',name:['Hermanos del eclipse','Eclipse brothers'],hint:['Espada y magia · derrota a los dos','Sword and magic · defeat both']},
+  {id:'prism',kind:'quail',name:['Codorniz prismática','Prismatic quail'],hint:['Esquiva el láser · golpéala para frenar su cura','Dodge the laser · hit to stop healing']},
+  {id:'bastion',kind:'chicken',name:['Pollo bastión','Bastion chicken'],hint:['Mata al conejo azul para romper el escudo','Kill the blue rabbit to break the shield']},
+  {id:'antler',kind:'hare',name:['Liebre cornuda','Antlered hare'],hint:['Apártate de la trayectoria de embestida','Step away from the charge path']},
+  {id:'mortar',kind:'chicken',name:['Sapo bombardero','Bombardier toad'],hint:['Sal de los círculos de las bombas','Leave the bomb circles']},
+  {id:'weaver',kind:'quail',name:['Viuda de espinas','Thorn widow'],hint:['Rodea sus telarañas · dañan al pisarlas','Go around the webs · they hurt on contact']},
+  {id:'bell',kind:'chicken',name:['Tortuga campanera','Bell tortoise'],hint:['Onda expansiva · el centro queda libre','Expanding wave · the center becomes safe']},
+  {id:'reaper',kind:'quail',name:['Cuervo segador','Reaper crow'],hint:['La guadaña también golpea al volver','The scythe also strikes on its return']},
+  {id:'ember',kind:'hare',name:['Zorro de brasas','Ember fox'],hint:['Rodea su abanico de fuego','Circle around its fan of fire']},
+  {id:'storm',kind:'quail',name:['Búho de la tormenta','Storm owl'],hint:['Tres rayos marcados · sigue moviéndote','Three marked lightning strikes · keep moving']},
+];
+export const bossDefinition = id => BOSSES.find(b => b.id === id);
+export function bossEncounters(game) {
+  const groups = new Map();
+  for (const e of game.enemies) {
+    if (!e.boss || e.hp <= 0) continue;
+    const id = e.encounterId ?? e.id;
+    if (!groups.has(id)) groups.set(id, {id,actor:e,hp:0,maxHp:e.encounterMaxHp ?? e.maxHp});
+    groups.get(id).hp += e.hp;
+  }
+  return [...groups.values()];
+}
+export function spawnBoss(game, type = null, level = game.level) {
+  const pool = BOSSES.filter(b => b.id !== game.lastBossType);
+  const def = type ? bossDefinition(type) : pool[Math.floor(game.random() * pool.length)];
+  if (!def) throw new Error(`Unknown boss: ${type}`);
+  game.lastBossType = def.id;
+  const e = game.spawn(def.kind, true, level, false);
+  Object.assign(e, {bossType:def.id,encounterId:e.id,encounterMaxHp:e.maxHp,bossPart:'main',ability:1.5,castLeft:0,pending:null,sinceHit:0,shielded:false});
+  if (def.id === 'twins') {
+    e.hp = e.maxHp = e.encounterMaxHp / 2; e.r = 30; e.bossPart = 'blade';
+    const mage = game.spawn('rabbit');
+    Object.assign(mage, {boss:true,bossType:'twins',bossPart:'mage',bossLevel:level,encounterId:e.id,encounterMaxHp:e.encounterMaxHp,hp:e.maxHp,maxHp:e.maxHp,r:30,x:e.x+75,y:e.y+20,speed:e.speed*.8,damage:e.damage*.8,ability:2.2,castLeft:0,pending:null,sinceHit:0});
+  }
+  if (def.id === 'bastion') {
+    e.shielded = true;
+    const key = game.spawn('rabbit'), dx=game.player.x-e.x, dy=game.player.y-e.y, d=Math.hypot(dx,dy)||1;
+    Object.assign(key, {shieldOwnerId:e.id,x:e.x+dx/d*100,y:e.y+dy/d*100,hp:55+level*7,maxHp:55+level*7,speed:48,damage:e.damage*.4,tier:0});
+    e.shieldKeyId = key.id;
+  }
+  return e;
+}
+export function bossHit(game, e) {
+  e.sinceHit = 0;
+  if (e.hp > 0) return true;
+  e.hp = 0;
+  game.hazards = game.hazards.filter(h => h.ownerId !== e.id);
+  game.shots = game.shots.filter(s => s.ownerId !== e.id);
+  if (e.shieldOwnerId) {
+    const owner = game.enemies.find(o => o.id === e.shieldOwnerId && o.hp > 0);
+    if (owner) { owner.shielded = false; owner.flash = .3; game.emit('shieldBreak'); }
+  }
+  // Two targets constitute one encounter, one kill and one reward.
+  const survivor = e.encounterId && game.enemies.find(o => o !== e && o.encounterId === e.encounterId && o.hp > 0);
+  if (game.boss === e) game.boss = survivor || null;
+  return !survivor;
+}
+function hazard(game, e, kind, data = {}) {
+  if (game.hazards.length >= 64) return;
+  game.hazards.push({ownerId:e.id,kind,x:e.x,y:e.y,angle:Math.atan2(game.player.y-e.y,game.player.x-e.x),age:-.85,duration:.25,damage:e.damage,color:e.bossType,...data});
+}
+function projectile(game, e, angle, kind='magic', speed=145) {
+  if (game.shots.length >= 150) return;
+  game.shots.push({ownerId:e.id,kind,x:e.x,y:e.y,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,life:3,age:0,damage:e.damage*.75});
+}
+function release(game, e, action) {
+  if (action.kind === 'magic') for(let i=-1;i<=1;i++)projectile(game,e,action.angle+i*.26);
+  if (action.kind === 'scythe') projectile(game,e,action.angle,'scythe',210);
+  if (action.kind === 'charge') {e.charge=.75;e.vx=Math.cos(action.angle)*285;e.vy=Math.sin(action.angle)*285;}
+}
+export function stepBoss(game, e, dt, distance) {
+  const p=game.player;
+  if(e.bossType==='prism') {
+    const before=e.sinceHit;e.sinceHit+=dt;
+    const healTime=Math.max(0,e.sinceHit-Math.max(3,before));
+    e.hp=Math.min(e.maxHp,e.hp+e.maxHp*.018*healTime);
+  }
+  if(e.pending) {e.pending.time-=dt;if(e.pending.time<=0){release(game,e,e.pending);e.pending=null;}}
+  e.castLeft=Math.max(0,e.castLeft-dt);
+  if(e.charge>0)return false;
+  if(e.castLeft>0)return true;
+  e.ability-=dt;
+  const melee=e.bossType==='bastion'||(e.bossType==='twins'&&e.bossPart==='blade');
+  if(e.ability>0||distance>(melee?135:330))return false;
+  const angle=Math.atan2(p.y-e.y,p.x-e.x);
+  e.ability=3.4;e.castLeft=1.1;
+  switch(e.bossType) {
+    case 'twins':
+      if(e.bossPart==='blade')hazard(game,e,'sector',{range:115,half:1.05,angle});
+      else {hazard(game,e,'beam',{range:390,width:7,damage:0,duration:.1,angle});e.pending={kind:'magic',time:.85,angle};}
+      break;
+    case 'prism':
+      hazard(game,e,'beam',{range:420,width:12,age:-1,duration:.7,angle});e.castLeft=1.7;e.ability=3.8;
+      break;
+    case 'bastion':
+      hazard(game,e,'circle',{radius:100,duration:.22});e.ability=3;
+      break;
+    case 'antler':
+      hazard(game,e,'beam',{range:250,width:32,damage:0,age:-.9,duration:.75,angle});
+      e.pending={kind:'charge',time:.9,angle};e.castLeft=.9;e.ability=3.2;
+      break;
+    case 'mortar':
+      for(let i=0;i<3;i++)hazard(game,e,'circle',{x:p.x+(i-1)*70,y:p.y+(i%2)*55,radius:44,age:-1.1-i*.22,duration:.3});
+      e.castLeft=1.8;e.ability=4.4;break;
+    case 'weaver':
+      for(let i=0;i<3;i++){const a=angle+(i-1)*1.4;hazard(game,e,'web',{x:p.x+Math.cos(a)*65,y:p.y+Math.sin(a)*65,radius:39,age:-1,duration:3,damage:e.damage*.65});}
+      e.castLeft=1;e.ability=4.6;break;
+    case 'bell':
+      hazard(game,e,'ring',{radius:48,rate:100,width:12,age:-1,duration:2.4});e.castLeft=1.2;e.ability=4.3;break;
+    case 'reaper':
+      hazard(game,e,'beam',{range:270,width:16,damage:0,age:-.85,duration:.1,angle});e.pending={kind:'scythe',time:.85,angle};e.ability=3.8;break;
+    case 'ember':
+      hazard(game,e,'sector',{range:180,half:.62,age:-1,duration:1.3,angle,damage:e.damage*.7});e.castLeft=2.3;e.ability=3.6;break;
+    case 'storm':
+      for(let i=0;i<3;i++)hazard(game,e,'lightning',{x:p.x+(i-1)*68,y:p.y-(i%2)*60,radius:33,age:-.9-i*.35,duration:.25});
+      e.castLeft=1.9;e.ability=4;break;
+  }
+  return true;
+}
+export function hazardContains(h, p) {
+  const dx=p.x-h.x,dy=p.y-h.y,d=Math.hypot(dx,dy);
+  if(h.kind==='beam') {const along=dx*Math.cos(h.angle)+dy*Math.sin(h.angle),side=-dx*Math.sin(h.angle)+dy*Math.cos(h.angle);return along>=-13&&along<=h.range+13&&Math.abs(side)<h.width+13;}
+  if(h.kind==='sector') {const angle=Math.atan2(Math.sin(Math.atan2(dy,dx)-h.angle),Math.cos(Math.atan2(dy,dx)-h.angle));return d<h.range+13&&(d<13||Math.abs(angle)<h.half);}
+  if(h.kind==='ring')return Math.abs(d-(h.radius+Math.max(0,h.age)*h.rate))<h.width+13;
+  return d<h.radius+13;
+}
+export function stepHazards(game, dt) {
+  game.hazards=game.hazards.filter(h=>game.enemies.some(e=>e.id===h.ownerId&&e.hp>0));
+  for(const h of game.hazards) {
+    h.age+=dt;
+    if(h.age>=0&&h.age<=h.duration&&h.damage>0&&hazardContains(h,game.player))game.hurt(h.damage);
+    if(game.state!=='playing')return;
+  }
+  game.hazards=game.hazards.filter(h=>h.age<=h.duration);
+}
+export function stepBossShot(game,s,dt) {
+  if(!s.ownerId)return;
+  const owner=game.enemies.find(e=>e.id===s.ownerId&&e.hp>0);
+  if(!owner){s.life=0;return;}
+  s.age+=dt;
+  if(s.kind==='scythe'&&s.age>.8) {
+    const dx=owner.x-s.x,dy=owner.y-s.y,d=Math.hypot(dx,dy)||1;
+    s.vx=dx/d*230;s.vy=dy/d*230;if(d<owner.r)s.life=0;
+  }
+}

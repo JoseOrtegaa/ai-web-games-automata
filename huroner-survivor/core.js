@@ -1,3 +1,4 @@
+import { spawnBoss, bossHit, stepBoss, stepHazards, stepBossShot } from './bosses.js';
 // Deterministic, rendering-independent simulation. All time is active play time.
 export const BOSS_TIME = 600;
 export const ATTACK_COOLDOWN = .25;
@@ -27,7 +28,7 @@ export class Game {
     this.state='playing'; this.time=0; this.level=1; this.xp=0; this.kills=0;
     this.player={x:0,y:0,hp:INITIAL_HP,maxHp:INITIAL_HP,shield:SHIELD_STEP,shieldDelay:0,face:-Math.PI/2,invuln:0};
     this.upgrades={}; this.enemies=[]; this.gems=[]; this.pickups=[]; this.particles=[]; this.shots=[]; this.effects=[];
-    this.manualAttackCooldown=0;
+    this.manualAttackCooldown=0; this.hazards=[]; this.lastBossType=null;
     this.spawnTimer=.5; this.pickupTimer=5; this.stormTimer=2; this.auraTimer=0;
     this.mutation=0; this.bossSpawned=false; this.boss=null; this.lastLevelBoss=0; this.choices=[];
     this.speedBoostTimer=0; this.fireTimer=0; this.events=[]; this.nextId=1; this.shake=0;
@@ -73,13 +74,15 @@ export class Game {
     const tier=mutationFor(this.level);
     if(tier<=this.mutation)return;
     this.mutation=tier;
-    for(const e of this.enemies){if(e.boss)continue;const ratio=e.hp/e.maxHp;e.maxHp*=1.42;e.hp=e.maxHp*ratio;e.speed*=1.14;e.tier=tier;e.damage+=3;}
+    for(const e of this.enemies){if(e.boss||e.shieldOwnerId)continue;const ratio=e.hp/e.maxHp;e.maxHp*=1.42;e.hp=e.maxHp*ratio;e.speed*=1.14;e.tier=tier;e.damage+=3;}
     this.emit('mutation',{tier});
   }
   hit(e,damage,kx=0,ky=0) {
     if(this.state==='dead'||this.state==='won'||e.hp<=0)return;
+    if(e.shielded){e.flash=.1;return;}
     e.hp-=damage;e.flash=.13;e.x+=kx;e.y+=ky;
-    if(e.hp>0)return;
+    const rewarded=bossHit(this,e);
+    if(e.hp>0||!rewarded)return;
     this.kills++;this.emit('kill');
     const value=e.finalBoss?100:e.boss?20:e.kind==='chicken'?3:2;
     this.gainXp(value*.3);
@@ -176,7 +179,7 @@ export class Game {
     if(this.state!=='playing')return;
     if(this.xp>=xpNeeded(this.level)){
       this.xp-=xpNeeded(this.level);this.level++;this.mutate();
-      if(this.level%5===0&&this.level>this.lastLevelBoss){this.lastLevelBoss=this.level;this.spawn(null,true,this.level,false);}
+      if(this.level%5===0&&this.level>this.lastLevelBoss){this.lastLevelBoss=this.level;spawnBoss(this,null,this.level);}
       this.offer();
     }
   }
@@ -212,11 +215,11 @@ export class Game {
       if(e.hp<=0)continue;
       e.flash=Math.max(0,e.flash-dt);e.orbitCD=Math.max(0,e.orbitCD-dt);e.slow=Math.max(0,e.slow-dt);
       const dx=p.x-e.x,dy=p.y-e.y,d=Math.hypot(dx,dy)||1;let speed=e.speed*(e.slow>0?.48:1);
-      const usesSpecial=!e.boss&&e.kind!=='hare';
-      const busy=usesSpecial&&this.stepEnemySpecial(e,dt,d);
+      const usesSpecial=!e.boss&&!e.shieldOwnerId&&e.kind!=='hare';
+      const busy=e.bossType?stepBoss(this,e,dt,d):usesSpecial&&this.stepEnemySpecial(e,dt,d);
       if(this.state!=='playing')return;
       if(busy)speed=0;
-      if(!usesSpecial){
+      if(!usesSpecial&&!e.bossType&&!e.shieldOwnerId){
         e.ability-=dt;
         if(((e.boss&&e.special==='charge')||(!e.boss&&e.kind==='hare'&&e.tier>=1))&&e.ability<.65&&e.charge<=0)speed=0;
         if(e.ability<=0){
@@ -243,8 +246,9 @@ export class Game {
     const grid=new Map();for(const e of this.enemies){if(e.hp<=0)continue;const gx=Math.floor(e.x/48),gy=Math.floor(e.y/48);for(let x=gx-1;x<=gx+1;x++)for(let y=gy-1;y<=gy+1;y++)for(const o of grid.get(x+','+y)||[]){let dx=e.x-o.x,dy=e.y-o.y,d=Math.hypot(dx,dy),min=(e.r+o.r)*.7;if(d>0&&d<min){let f=(min-d)*.2;e.x+=dx/d*f;e.y+=dy/d*f;o.x-=dx/d*f;o.y-=dy/d*f;}}let key=gx+','+gy;if(!grid.has(key))grid.set(key,[]);grid.get(key).push(e);}
     this.stormTimer-=dt;if(this.rank('lightning')&&this.stormTimer<=0){this.stormTimer=2.8;let targets=this.enemies.filter(e=>e.hp>0&&Math.hypot(e.x-p.x,e.y-p.y)<350).sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y)).slice(0,this.rank('lightning')+1);for(const e of targets){this.addEffect({type:'bolt',x:e.x,y:e.y,life:.3,max:.3});this.hit(e,this.damage*2.1);if(this.state!=='playing')return;}if(targets.length)this.emit('storm');}
     this.auraTimer-=dt;if(this.rank('frost')&&this.auraTimer<=0){this.auraTimer=.6;let radius=65+this.rank('frost')*15;for(const e of this.enemies)if(Math.hypot(e.x-p.x,e.y-p.y)<radius){e.slow=1;this.hit(e,this.damage*.25*this.rank('frost'));if(this.state!=='playing')return;}}
-    for(const s of this.shots){s.life-=dt;s.x+=s.vx*dt;s.y+=s.vy*dt;if(Math.hypot(s.x-p.x,s.y-p.y)<17){this.hurt(s.damage||14);if(this.state!=='playing')return;s.life=0;}}
+    for(const s of this.shots){stepBossShot(this,s,dt);if(s.life<=0)continue;s.life-=dt;s.x+=s.vx*dt;s.y+=s.vy*dt;if(Math.hypot(s.x-p.x,s.y-p.y)<17){this.hurt(s.damage||14);if(this.state!=='playing')return;s.life=0;}}
     this.shots=this.shots.filter(s=>s.life>0).slice(-150);
+    stepHazards(this,dt);if(this.state!=='playing')return;
     for(const item of this.pickups){if(item.taken)continue;const d=Math.hypot(item.x-p.x,item.y-p.y);if(d<18){if(item.type==='meat')p.hp=Math.min(p.maxHp,p.hp+3);if(item.type==='oil')this.speedBoostTimer=Math.max(this.speedBoostTimer,20);if(item.type==='fire')this.fireTimer=Math.max(this.fireTimer,15);item.taken=true;this.emit('item',{kind:item.type});}}
     this.pickups=this.pickups.filter(item=>!item.taken);
     for(const g of this.gems){let dx=p.x-g.x,dy=p.y-g.y,d=Math.hypot(dx,dy);if(d<this.pickup||g.attract){g.attract=true;const travel=Math.min(d,Math.max(300,this.speed*1.25)*dt);g.x+=dx/(d||1)*travel;g.y+=dy/(d||1)*travel;if(d-travel<16){if(g.heal)p.hp=Math.min(p.maxHp,p.hp+g.value);else this.gainXp(g.value);g.taken=true;this.emit('pickup');}}}
