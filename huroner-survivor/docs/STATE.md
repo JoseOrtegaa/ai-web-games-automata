@@ -1,7 +1,7 @@
 # Huroner Survivor — estado vigente
 
 ## Objetivo / fase
-Suavizar y aumentar progresivamente la generación de enemigos para evitar que el mundo 2 se sienta vacío y eliminar saltos bruscos de densidad. Implementación y QA lógico completados en `fix/gradual-enemy-spawn-scaling`; pendiente integración/publicación.
+Suavizar y aumentar progresivamente la generación de enemigos para evitar que el mundo 2 se sienta vacío y eliminar saltos bruscos de densidad. Implementación, QA lógico e integración en `main` completados.
 
 ## Generación normal
 - Antes: intervalo dependiente casi solo del tiempo y tandas de 1/2/3/4/5 enemigos que saltaban cada 150 s.
@@ -27,8 +27,11 @@ PASS lógico:
 
 No se afirma prueba física en iPhone ni ejecución de la suite Node desde checkout local en esta sesión.
 
+## Integración
+PR #9 fusionado en `main` el 2026-10-03. Merge squash: `e1473f7c40e8dcfa422bc4f7a33e3e04639e24b9`.
+
 ## Contexto preservado
 20 bosses normales: 5 por mundo, más rey final de 600 s. Familias normales distintas por mundo. Cuevas: primera bajada tras boss 5/10 aleatorio, siguientes tras 15/30. Modo DEV `?dev=1`. Ataque automático por defecto. XP 30/70 con remanente redondeado; escudo 20→120; ataque 0,25 s; zoom bloqueado.
 
 ## Siguiente paso
-Revisar diff, integrar en `main`, comprobar GitHub Pages y validar sensación de densidad en móvil, especialmente tras la primera bajada.
+Validar sensación de densidad en móvil, especialmente tras la primera bajada y en los niveles 20–35; ajustar solo la pendiente si hiciera falta.
