@@ -14,6 +14,16 @@ test('enemy spawn pressure rises smoothly with every level and active time',()=>
   assert.ok(spawnRateFor(10,181)>spawnRateFor(10,180));
   assert.ok(spawnIntervalFor(15,220)<spawnIntervalFor(5,60));
 });
+test('midgame spawn slope is slightly softer from level 16 through 30',()=>{
+  const oldFormula=(level,time)=>Math.min(7.5,.82+Math.max(0,level-1)*.105+Math.min(600,Math.max(0,time))*.0026);
+  assert.equal(spawnRateFor(15,220),oldFormula(15,220),'level 15 must stay unchanged');
+  const current23=spawnRateFor(23,300),old23=oldFormula(23,300);
+  assert.ok(current23<old23&&current23>old23*.94,'level 23 should be only modestly reduced');
+  assert.ok(Math.abs(current23/old23-.9488)<.003);
+  const delta30=oldFormula(30,450)-spawnRateFor(30,450);
+  const delta35=oldFormula(35,520)-spawnRateFor(35,520);
+  assert.ok(Math.abs(delta30-delta35)<1e-9,'after level 30 the original slope resumes');
+});
 test('spawn cadence creates one enemy at a time instead of burst jumps',()=>{
   const g=new Game(()=>.1);g.level=20;g.time=300;g.spawnTimer=0;g.pickupTimer=999;g.enemies=[];
   g.step(.01);assert.equal(g.enemies.filter(e=>!e.boss).length,1);

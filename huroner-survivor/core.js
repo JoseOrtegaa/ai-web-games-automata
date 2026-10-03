@@ -23,7 +23,11 @@ export const UPGRADES = [
 ];
 export const xpNeeded = level => Math.round(6 + level * 3 + level * level * .12);
 export const mutationFor = level => enemyEvolutionTier(0,level);
-export const spawnRateFor = (level,time=0) => Math.min(7.5,.82+Math.max(0,Number(level)-1)*.105+Math.min(600,Math.max(0,Number(time)||0))*.0026);
+export const spawnRateFor = (level,time=0) => {
+  const l=Math.max(1,Number(level)||1);
+  const early=Math.min(14,l-1),mid=Math.min(15,Math.max(0,l-15)),late=Math.max(0,l-30);
+  return Math.min(7.5,.82+early*.105+mid*.08+late*.105+Math.min(600,Math.max(0,Number(time)||0))*.0026);
+};
 export const spawnIntervalFor = (level,time=0) => 1/spawnRateFor(level,time);
 const clamp = (v,a,b) => Math.max(a,Math.min(b,v));
 const TAU = Math.PI * 2;
