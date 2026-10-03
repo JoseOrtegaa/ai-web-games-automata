@@ -1,12 +1,26 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {Game,UPGRADES,xpNeeded,mutationFor,BOSS_TIME} from '../core.js';
+import {Game,UPGRADES,xpNeeded,mutationFor,spawnRateFor,spawnIntervalFor,BOSS_TIME} from '../core.js';
 function rng(seed=123){return()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};}
 function nearby(g,kind='rabbit',x=40,y=0){const e=g.spawn(kind);Object.assign(e,{x,y});return e;}
 test('normalized controls, fixed time ceiling and paused simulation',()=>{const g=new Game(rng());g.step(.05,{x:1,y:1});assert.ok(Math.abs(Math.hypot(g.player.x,g.player.y)-g.speed*.05)<1e-8);g.state='levelup';const snapshot=JSON.stringify(g);g.step(.05,{x:1,y:0});assert.equal(JSON.stringify(g),snapshot);});
 test('manual slash targets enemies and drops collectible experience',()=>{const g=new Game(rng());g.player.face=0;let e=nearby(g);g.manualAttack();for(let i=0;i<10;i++)g.step(.05);g.manualAttack();assert.ok(e.hp<=0);assert.equal(g.kills,1);assert.ok(g.gems.length);g.gems=[{x:g.player.x,y:g.player.y,value:3}];g.step(.02);assert.equal(g.xp,3.6);});
 test('level up offers three distinct valid choices and carries over XP',()=>{const g=new Game(rng());g.xp=xpNeeded(1)+xpNeeded(2)+2;g.checkLevel();assert.equal(g.level,2);assert.equal(g.state,'levelup');assert.equal(g.choices.length,3);assert.equal(new Set(g.choices.map(x=>x.id)).size,3);assert.equal(g.choose('invalid'),false);let id=g.choices[0].id;assert.equal(g.choose(id),true);assert.equal(g.rank(id),1);assert.equal(g.level,3);assert.equal(g.state,'levelup');assert.equal(g.xp,2);g.choose(g.choices[0].id);assert.equal(g.state,'playing');});
 test('level-up XP remainder stays rounded to one decimal',()=>{const g=new Game(rng());g.level=10;g.xp=xpNeeded(10)+.2;g.checkLevel();assert.equal(g.level,11);assert.equal(g.xp,.2);assert.equal(String(g.xp),'0.2');});
+test('enemy spawn pressure rises smoothly with every level and active time',()=>{
+  const early=spawnRateFor(1,0),world2=spawnRateFor(5,60),mid=spawnRateFor(15,220),deep=spawnRateFor(25,380),late=spawnRateFor(35,520);
+  assert.ok(early<world2&&world2<mid&&mid<deep&&deep<late);
+  for(let level=1;level<40;level++)assert.ok(spawnRateFor(level+1,180)>spawnRateFor(level,180),`level ${level}`);
+  assert.ok(spawnRateFor(10,181)>spawnRateFor(10,180));
+  assert.ok(spawnIntervalFor(15,220)<spawnIntervalFor(5,60));
+});
+test('spawn cadence creates one enemy at a time instead of burst jumps',()=>{
+  const g=new Game(()=>.1);g.level=20;g.time=300;g.spawnTimer=0;g.pickupTimer=999;g.enemies=[];
+  g.step(.01);assert.equal(g.enemies.filter(e=>!e.boss).length,1);
+  const interval=g.spawnTimer;assert.ok(interval>0&&interval<.35);
+  g.step(.01);assert.equal(g.enemies.filter(e=>!e.boss).length,1);
+});
+
 test('surface enemies have a single evolution that unlocks their combat abilities',()=>{const g=new Game(rng());const hare=nearby(g,'hare',150,0);const chicken=nearby(g,'chicken',70,0);let old=hare.maxHp;g.level=5;g.mutate();assert.equal(hare.tier,1);assert.ok(hare.maxHp>old);hare.ability=0;g.step(.02);assert.equal(hare.specialAttack.kind,'ram');g.level=20;g.mutate();assert.equal(g.mutation,1);assert.equal(mutationFor(16),1);assert.equal(mutationFor(90),1);chicken.ability=0;g.step(.02);assert.equal(chicken.specialAttack.kind,'burst');});
 test('armor mitigates damage, invulnerability prevents stacked hits and death ends run',()=>{const g=new Game(rng());g.upgrades.armor=2;g.player.shield=0;g.hurt(20);assert.ok(g.player.hp>80);const hp=g.player.hp;g.hurt(20);assert.equal(g.player.hp,hp);g.player.invuln=0;g.hurt(1000);assert.equal(g.state,'dead');assert.equal(g.player.hp,0);});
 test('new weapons damage foes; vitality heals and upgrades stop at caps',()=>{const g=new Game(rng());g.upgrades={lightning:1,frost:1};g.stormTimer=0;g.auraTimer=0;const e=nearby(g,'chicken',20,0);const hp=e.hp;g.step(.02);assert.ok(e.hp<hp);g.player.hp=10;g.offer();g.choices=[UPGRADES.find(u=>u.id==='vitality')];g.choose('vitality');assert.equal(g.player.maxHp,125);assert.equal(g.player.hp,45);for(const u of UPGRADES)g.upgrades[u.id]=u.max;g.offer();assert.deepEqual(g.choices.map(x=>x.id),['heal']);g.choose('heal');assert.equal(g.player.hp,125);});
