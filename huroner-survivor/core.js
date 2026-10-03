@@ -35,11 +35,11 @@ const CROWD_CELL = 56;
 const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
 const SPECIAL_RANGES = {jump:220,fan:280,burst:110,lunge:175,shot:330,ram:195,explode:115};
 const AIM_ERROR = {
-  jump:{min:46,max:92},
-  fan:{min:38,max:96},
-  lunge:{min:16,max:42},
-  shot:{min:24,max:70},
-  ram:{min:22,max:56},
+  jump:{near:[8,30],miss:[52,92],missChance:.68},
+  fan:{near:[12,34],miss:[52,104],missChance:.62},
+  lunge:{near:[8,24],miss:[26,48],missChance:.34},
+  shot:{near:[10,28],miss:[38,76],missChance:.5},
+  ram:{near:[10,30],miss:[34,60],missChance:.4},
 };
 export class Game {
   constructor(random = Math.random) { this.random=random; this.reset(); }
@@ -278,10 +278,11 @@ export class Game {
   imperfectEnemyAim(e,p,style) {
     const error=AIM_ERROR[style];
     if(!error)return {x:p.x,y:p.y,angle:Math.atan2(p.y-e.y,p.x-e.x)};
+    const clumsy=this.random()<error.missChance,range=clumsy?error.miss:error.near;
     const personality=.85+(e.id%7)*.045;
-    const radius=(error.min+(error.max-error.min)*this.random())*personality,offset=this.random()*TAU;
+    const radius=(range[0]+(range[1]-range[0])*this.random())*personality,offset=this.random()*TAU;
     const x=p.x+Math.cos(offset)*radius,y=p.y+Math.sin(offset)*radius;
-    return {x,y,angle:Math.atan2(y-e.y,x-e.x)};
+    return {x,y,angle:Math.atan2(y-e.y,x-e.x),clumsy};
   }
   stepEnemySpecial(e,dt,distance) {
     const p=this.player;
