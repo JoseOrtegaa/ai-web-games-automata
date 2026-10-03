@@ -1,7 +1,7 @@
 # Huroner Survivor — estado vigente
 
 ## Objetivo / fase
-Corregir el jitter de cámara observado alrededor del nivel 23 cuando varios enemigos con embestida coinciden. Implementación y QA localizado completados en fix/ram-camera-jitter; pendiente integración/publicación.
+Corregir el jitter de cámara observado alrededor del nivel 23 cuando varios enemigos con embestida coinciden. Implementación, QA localizado e integración en `main` completados.
 
 ## Causa
 En Profundidades el stone_boar usa ram. Cada embestida aplicaba un empujón físico de 34 px antes de comprobar si el jugador seguía invulnerable por otro golpe. Con varios jabalíes, golpes que no causaban daño seguían desplazando al jugador; como la cámara lo sigue, la escena parecía temblar/saltar repetidamente.
@@ -20,8 +20,11 @@ PASS lógico localizado:
 - hurt() distingue impacto aplicado (true) de impacto bloqueado (false);
 - core.js parsea correctamente.
 
+## Integración
+PR #11 fusionado en `main` el 2026-10-03. Merge squash: `210deee1560aa35de04d79f56a78d064e1c1d3a4`.
+
 ## Contexto preservado
 Arena final del inframundo integrada; 20 bosses normales (5 por mundo); generación gradual por nivel/tiempo; familias de enemigos por mundo; cuevas 5/10→15→30; ataque automático por defecto; XP 30/70; escudo 20→120; ataque 0,25 s; zoom bloqueado.
 
 ## Siguiente paso
-Revisar diff, integrar en main y comprobar Pages; validar en móvil alrededor del nivel 23 que la cámara ya no entra en efecto pinball con varios jabalíes.
+Validar en móvil alrededor del nivel 23 que la cámara ya no entra en efecto pinball con varios jabalíes; mantener el shake de impactos válidos.
