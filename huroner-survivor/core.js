@@ -1,4 +1,4 @@
-import { spawnBoss, bossHit, stepBoss, stepHazards, stepBossShot } from './bosses.js';
+import { spawnBoss, bossHit, stepBoss, stepHazards, stepBossShot, bossHealthMultiplier } from './bosses.js';
 // Deterministic, rendering-independent simulation. All time is active play time.
 export const BOSS_TIME = 600;
 export const ATTACK_COOLDOWN = .25;
@@ -49,7 +49,7 @@ export class Game {
     const hpBase={rabbit:23,hare:18,quail:14,chicken:35};
     const speedBase={rabbit:29,hare:43,quail:37,chicken:24};
     const tier=this.mutation, growth=1+this.time/340;
-    const maxHp=boss?(finalBoss?Math.max(3200,1400+bossLevel*95):520+bossLevel*105):hpBase[kind]*growth*(1+tier*.52);
+    const maxHp=boss?(finalBoss?Math.max(3200,1400+bossLevel*95):520+bossLevel*105)*bossHealthMultiplier(bossLevel):hpBase[kind]*growth*(1+tier*.52);
     const e={id:this.nextId++,kind,x:this.player.x+Math.cos(a)*d,y:this.player.y+Math.sin(a)*d,
       hp:maxHp,maxHp,r:boss?43:kind==='quail'?12:17,tier,boss,bossLevel:boss?bossLevel:0,finalBoss,
       speed:boss?34+Math.min(10,bossLevel*.35):speedBase[kind]*(1+tier*.14),
@@ -216,10 +216,10 @@ export class Game {
       e.flash=Math.max(0,e.flash-dt);e.orbitCD=Math.max(0,e.orbitCD-dt);e.slow=Math.max(0,e.slow-dt);
       const dx=p.x-e.x,dy=p.y-e.y,d=Math.hypot(dx,dy)||1;let speed=e.speed*(e.slow>0?.48:1);
       const usesSpecial=!e.boss&&!e.shieldOwnerId&&e.kind!=='hare';
-      const busy=e.bossType?stepBoss(this,e,dt,d):usesSpecial&&this.stepEnemySpecial(e,dt,d);
+      const busy=e.bossType||e.finalBoss?stepBoss(this,e,dt,d):usesSpecial&&this.stepEnemySpecial(e,dt,d);
       if(this.state!=='playing')return;
       if(busy)speed=0;
-      if(!usesSpecial&&!e.bossType&&!e.shieldOwnerId){
+      if(!usesSpecial&&!e.bossType&&!e.finalBoss&&!e.shieldOwnerId){
         e.ability-=dt;
         if(((e.boss&&e.special==='charge')||(!e.boss&&e.kind==='hare'&&e.tier>=1))&&e.ability<.65&&e.charge<=0)speed=0;
         if(e.ability<=0){

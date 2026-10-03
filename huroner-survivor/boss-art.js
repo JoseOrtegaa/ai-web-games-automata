@@ -101,16 +101,23 @@ export function drawShieldKey(c,e,time=0){
 export function drawBossHazards(c,game){
   for(const h of game.hazards){
     c.save();c.translate(h.x,h.y);const active=h.age>=0;
-    c.fillStyle=active?'#f0906555':'#ca665426';c.strokeStyle=active?'#ffe4b4':'#f2bf99';c.lineWidth=active?2.5:1.5;c.setLineDash(active?[]:[5,5]);
+    const acid=h.color==='mortar'&&h.kind==='web',fire=h.color==='ember'&&h.kind==='web';
+    c.fillStyle=active?(acid?'#9cce6855':'#f0906555'):'#ca665426';c.strokeStyle=active?(acid?'#d3f4a2':'#ffe4b4'):'#f2bf99';c.lineWidth=active?2.5:1.5;c.setLineDash(active?[]:[5,5]);
     c.beginPath();
     if(h.kind==='beam'){c.rotate(h.angle);c.rect(0,-h.width,h.range,h.width*2);}
     else if(h.kind==='sector'){c.moveTo(0,0);c.arc(0,0,h.range,h.angle-h.half,h.angle+h.half);c.closePath();}
     else if(h.kind==='ring'){const r=h.radius+Math.max(0,h.age)*h.rate;c.arc(0,0,r,0,Math.PI*2);c.lineWidth=active?h.width*2:2;}
     else c.arc(0,0,h.radius,0,Math.PI*2);
     if(h.kind!=='ring')c.fill();c.stroke();c.setLineDash([]);
-    if(h.kind==='web'){
+    if(h.kind==='web'&&!acid&&!fire){
       for(let i=0;i<6;i++){const a=i*Math.PI/3;line(c,`M0 0L${Math.cos(a)*h.radius} ${Math.sin(a)*h.radius}`,active?'#d8b8d0':'#ad8b9d',1);}
       c.beginPath();c.arc(0,0,h.radius*.5,0,Math.PI*2);c.stroke();
+    }
+    if(acid){for(const [x,y,r] of [[-15,8,6],[12,-12,8],[19,16,4]]){c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.stroke();}}
+    if(fire)line(c,'M-18 15Q-25 0-10-15L-8 0L6-23Q26 0 14 15Z',active?'#ffd28a':'#f2bf99',2);
+    if(h.kind==='ring'&&h.rate<0){
+      const r=h.radius+Math.max(0,h.age)*h.rate;
+      for(let i=0;i<4;i++){c.save();c.rotate(i*Math.PI/2);line(c,`M${r+9} -6L${r} 0L${r+9} 6`,c.strokeStyle,1.5);c.restore();}
     }
     if(h.kind==='lightning')line(c,active?'M10-85L-6-36L10-39L-3 2':'M-7-7L7 7M7-7L-7 7',active?'#d7f3ff':'#f4c997',active?4:1.4);
     if(active&&h.kind==='beam'&&h.damage>0)line(c,`M0 0L${h.range} 0`,'#fff0d8',4);
@@ -120,6 +127,8 @@ export function drawBossHazards(c,game){
 export function drawBossProjectile(c,s){
   c.save();c.translate(s.x,s.y);
   if(s.kind==='scythe'){c.rotate(s.age*10);line(c,'M-12 0L12 0',GOLD,3);shape(c,'M10-2Q5-18-10-11Q3-13 6 2Z',IVORY,GOLD);}
+  else if(s.kind==='crystal'){c.rotate(Math.atan2(s.vy,s.vx));shape(c,'M-9 0L0-5L9 0L0 5Z','#7acbd4','#dbffef');}
+  else if(s.kind==='venom'){oval(c,0,0,5,7,'#87ab5e','#e0efab');oval(c,-1,-2,1.5,2,'#f2facd',null);}
   else{oval(c,0,0,6,6,'#8565a2','#d9bbef');shape(c,'M0-4L3 0L0 4L-3 0Z','#f3d7fa',null);}
   c.restore();
 }
