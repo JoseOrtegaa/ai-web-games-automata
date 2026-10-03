@@ -29,6 +29,17 @@ const DEFINITIONS = {
 
 const EVOLUTION_LEVELS = [5,12,25,35];
 
+const ALTERNATE_ATTACKS = {
+  rabbit:['lunge'],hare:['jump'],quail:['shot'],chicken:['lunge'],
+  bone_skull:['lunge'],bone_swordsman:['ram'],bone_archer:['fan'],bone_rabbit:['lunge'],
+  stone_swordsman:['ram'],stone_archer:['fan'],stone_rabbit:['ram'],stone_boar:['burst'],
+  ash_swordsman:['ram'],ember_archer:['fan'],lava_beast:['ram'],magma_skull:['ram'],
+};
+
+const EVOLVED_ALTERNATE_ATTACKS = {
+  bone_skull:['ram'],
+};
+
 export function enemyRoster(depth=0) {
   const index=Math.max(0,Math.min(3,Math.round(Number(depth)||0)));
   return ENEMY_ROSTERS[index];
@@ -46,6 +57,14 @@ export function enemyEvolutionTier(depth=0,level=1) {
 export function enemyAttackStyle(kind,tier=0) {
   const def=enemyDefinition(kind);
   return tier>=1&&def.evolvedAttack?def.evolvedAttack:def.attack;
+}
+
+export function enemyAttackOptions(kind,tier=0) {
+  const primary=enemyAttackStyle(kind,tier);
+  const alternates=tier>=1&&EVOLVED_ALTERNATE_ATTACKS[kind]
+    ?EVOLVED_ALTERNATE_ATTACKS[kind]
+    :(ALTERNATE_ATTACKS[kind]||[]);
+  return [primary,...alternates.filter(attack=>attack!==primary)];
 }
 
 export function isSurfaceEnemy(kind) {

@@ -154,6 +154,31 @@ function specialScenario(kind,level=6,x=150){
   const e=nearby(g,kind,x);e.ability=0;return {g,e};
 }
 function advance(g,seconds,input){for(let left=seconds;left>1e-9;left-=.01)g.step(Math.min(.01,left),input);}
+test('ordinary enemies aim imperfectly instead of sharing the exact player pixel',()=>{
+  const g=new Game(rng(444));g.level=5;g.mutation=1;g.spawnTimer=g.pickupTimer=999;
+  const first=g.spawn('rabbit'),second=g.spawn('rabbit');
+  Object.assign(first,{x:150,y:0,ability:0,speed:0});
+  Object.assign(second,{x:150,y:0,ability:0,speed:0});
+  g.stepEnemySpecial(first,.01,150);g.stepEnemySpecial(second,.01,150);
+  assert.equal(first.specialAttack.kind,'jump');assert.equal(second.specialAttack.kind,'jump');
+  assert.notDeepEqual([first.specialAttack.x,first.specialAttack.y],[g.player.x,g.player.y]);
+  assert.notDeepEqual([second.specialAttack.x,second.specialAttack.y],[g.player.x,g.player.y]);
+  assert.notDeepEqual([first.specialAttack.x,first.specialAttack.y],[second.specialAttack.x,second.specialAttack.y]);
+});
+test('ordinary enemies cannot repeat the same special forever when a variant is available',()=>{
+  const g=new Game(rng(555));g.level=5;g.mutation=1;g.spawnTimer=g.pickupTimer=999;
+  const e=g.spawn('rabbit');Object.assign(e,{x:150,y:0,ability:0,speed:0,specialCount:2,lastAttackKind:'jump',attackRepeat:2});
+  g.stepEnemySpecial(e,.01,150);
+  assert.equal(e.specialAttack.kind,'lunge');
+  assert.equal(e.lastAttackKind,'lunge');assert.equal(e.attackRepeat,1);
+});
+test('some clones open with their secondary pattern so packs do not act in lockstep',()=>{
+  const g=new Game(rng(777));g.level=5;g.mutation=1;g.spawnTimer=g.pickupTimer=999;
+  const enemies=Array.from({length:4},()=>g.spawn('rabbit'));
+  for(const e of enemies)Object.assign(e,{x:150,y:0,ability:0,speed:0});
+  for(const e of enemies)g.stepEnemySpecial(e,.01,150);
+  assert.deepEqual(enemies.map(e=>e.specialAttack.kind),['jump','jump','jump','lunge']);
+});
 test('surface specials unlock at the single level-5 evolution and wait until in range',()=>{
   for(const [kind,attack] of [['rabbit','jump'],['quail','fan'],['chicken','burst']]){
     const {g,e}=specialScenario(kind,4,60);g.step(.01);assert.equal(e.specialAttack,null);
@@ -171,7 +196,7 @@ test('rabbit warns, jumps to its locked target, damages on landing and can be do
     assert.ok(g.effects.some(effect=>effect.type==='enemy-impact'));
   }
 });
-test('quail keeps one evolved fan pattern with three locked feathers',()=>{
+test('quail primary fan pattern keeps three locked feathers',()=>{
   for(const level of [5,11,16,30]){
     const {g,e}=specialScenario('quail',level,240);g.step(.01);const angle=e.specialAttack.angle;
     advance(g,.74,{x:0,y:1});assert.equal(g.shots.length,0);advance(g,.02);assert.equal(g.shots.length,3);

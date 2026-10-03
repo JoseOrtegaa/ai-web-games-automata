@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Game } from '../core.js';
-import { ENEMY_ROSTERS, enemyRoster, enemyEvolutionTier, enemyAttackStyle } from '../enemies.js';
+import { ENEMY_ROSTERS, enemyRoster, enemyEvolutionTier, enemyAttackStyle, enemyAttackOptions } from '../enemies.js';
 
 function game(depth=0,level=1,random=()=>.01){
   const g=new Game(random);g.worldDepth=depth;g.level=level;g.mutation=enemyEvolutionTier(depth,level);
@@ -30,6 +30,13 @@ test('surface mutation is capped once and later worlds use their own evolution t
   assert.equal(enemyEvolutionTier(1,11),0);assert.equal(enemyEvolutionTier(1,12),1);
   assert.equal(enemyEvolutionTier(2,24),0);assert.equal(enemyEvolutionTier(2,25),1);
   assert.equal(enemyEvolutionTier(3,34),0);assert.equal(enemyEvolutionTier(3,35),1);
+});
+
+test('enemy families expose coherent secondary attacks without replacing their primary identity',()=>{
+  assert.deepEqual(enemyAttackOptions('rabbit',1),['jump','lunge']);
+  assert.deepEqual(enemyAttackOptions('quail',1),['fan','shot']);
+  assert.deepEqual(enemyAttackOptions('bone_archer',0),['shot','fan']);
+  assert.deepEqual(enemyAttackOptions('bone_skull',1),['explode','ram']);
 });
 
 test('bone humans keep their attacks while the skull evolves from ram to explosion',()=>{
@@ -68,4 +75,17 @@ test('rock and magma ranged families use world-specific projectiles',()=>{
   const rock=game(2,20).spawn('stone_archer'),ember=game(3,30).spawn('ember_archer');
   assert.equal(rock.attackStyle,'shot');assert.equal(rock.projectileKind,'rock');
   assert.equal(ember.attackStyle,'shot');assert.equal(ember.projectileKind,'ember');
+});
+
+
+test('ranged secondary patterns keep each worlds projectile material',()=>{
+  for(const [depth,level,kind,projectile] of [[1,12,'bone_archer','bone'],[2,25,'stone_archer','rock'],[3,35,'ember_archer','ember']]){
+    const g=game(depth,level,()=>.2);
+    g.nextId=4;
+    const e=g.spawn(kind);Object.assign(e,{x:150,y:0,ability:0,speed:0});
+    g.stepEnemySpecial(e,.01,150);assert.equal(e.specialAttack.kind,'fan');
+    advance(g,.76);
+    assert.equal(g.shots.length,3);
+    assert.ok(g.shots.every(shot=>shot.kind===projectile));
+  }
 });
