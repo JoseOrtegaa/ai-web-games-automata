@@ -1,17 +1,46 @@
 // Encounter rules only: no canvas, DOM or wall-clock time.
-export const BOSSES = [
-  {id:'twins',kind:'rabbit',name:['Hermanos del eclipse','Eclipse brothers'],hint:['Espada y magia · derrota a los dos','Sword and magic · defeat both']},
-  {id:'prism',kind:'quail',name:['Codorniz prismática','Prismatic quail'],hint:['Esquiva el láser · golpéala para frenar su cura','Dodge the laser · hit to stop healing']},
-  {id:'bastion',kind:'chicken',name:['Pollo bastión','Bastion chicken'],hint:['Mata al conejo azul para romper el escudo','Kill the blue rabbit to break the shield']},
-  {id:'antler',kind:'hare',name:['Liebre cornuda','Antlered hare'],hint:['Apártate de la trayectoria de embestida','Step away from the charge path']},
-  {id:'mortar',kind:'chicken',name:['Sapo bombardero','Bombardier toad'],hint:['Sal de los círculos de las bombas','Leave the bomb circles']},
-  {id:'weaver',kind:'quail',name:['Viuda de espinas','Thorn widow'],hint:['Rodea sus telarañas · dañan al pisarlas','Go around the webs · they hurt on contact']},
-  {id:'bell',kind:'chicken',name:['Tortuga campanera','Bell tortoise'],hint:['Onda expansiva · el centro queda libre','Expanding wave · the center becomes safe']},
-  {id:'reaper',kind:'quail',name:['Cuervo segador','Reaper crow'],hint:['La guadaña también golpea al volver','The scythe also strikes on its return']},
-  {id:'ember',kind:'hare',name:['Zorro de brasas','Ember fox'],hint:['Rodea su abanico de fuego','Circle around its fan of fire']},
-  {id:'storm',kind:'quail',name:['Búho de la tormenta','Storm owl'],hint:['Tres rayos marcados · sigue moviéndote','Three marked lightning strikes · keep moving']},
+export const BOSS_POOLS = [
+  ['twins','prism','bastion','antler','weaver'],
+  ['reaper','storm','mortar','bell','grave_hound'],
+  ['granite','crystal','quarry','obsidian','stone_mortar'],
+  ['ember','ash_reaper','lava_colossus','pyro_oracle','magma_ram'],
 ];
+
+export const BOSSES = [
+  // Surface
+  {id:'twins',depth:0,profile:'twins',kind:'rabbit',form:'twins',name:['Hermanos del eclipse','Eclipse brothers'],hint:['Espada y magia · derrota a los dos','Sword and magic · defeat both']},
+  {id:'prism',depth:0,profile:'prism',kind:'quail',form:'prism',name:['Codorniz prismática','Prismatic quail'],hint:['Esquiva sus haces · golpéala para frenar su cura','Dodge its beams · hit it to stop healing']},
+  {id:'bastion',depth:0,profile:'bastion',kind:'chicken',form:'bastion',name:['Pollo bastión','Bastion chicken'],hint:['Mata al conejo azul para romper el escudo','Kill the blue rabbit to break the shield']},
+  {id:'antler',depth:0,profile:'antler',kind:'hare',form:'antler',name:['Liebre cornuda','Antlered hare'],hint:['Apártate de la trayectoria de embestida','Step away from the charge path']},
+  {id:'weaver',depth:0,profile:'weaver',kind:'quail',form:'weaver',name:['Viuda de espinas','Thorn widow'],hint:['Rodea sus telarañas · dañan al pisarlas','Go around its webs · they hurt on contact']},
+
+  // Ossuary / underground
+  {id:'reaper',depth:1,profile:'reaper',kind:'bone_swordsman',form:'bone_knight',name:['Caballero del osario','Ossuary knight'],hint:['Su hoja de hueso vuelve hacia él · esquiva ida y vuelta','Its bone blade returns · dodge both passes']},
+  {id:'storm',depth:1,profile:'storm',kind:'bone_archer',form:'bone_oracle',name:['Oráculo de médula','Marrow oracle'],hint:['Marca el suelo con magia ósea · sigue moviéndote','Bone magic marks the ground · keep moving']},
+  {id:'mortar',depth:1,profile:'mortar',kind:'bone_skull',form:'bone_skull',name:['Bombardero de cráneos','Skull bombardier'],hint:['Lanza cráneos malditos sobre zonas marcadas','Cursed skulls fall on marked zones']},
+  {id:'bell',depth:1,profile:'bell',kind:'bone_swordsman',form:'bone_bell',name:['Campanero del sepulcro','Grave bell keeper'],hint:['Sus ondas dejan seguro el centro ya atravesado','Its waves leave the crossed center safe']},
+  {id:'grave_hound',depth:1,profile:'antler',kind:'bone_rabbit',form:'bone_hound',name:['Sabueso del osario','Ossuary hound'],hint:['Carga en línea recta · rompe su trayectoria','It charges in a straight line · break its path']},
+
+  // Deep rock
+  {id:'granite',depth:2,profile:'bell',kind:'stone_boar',form:'rock_colossus',name:['Coloso de granito','Granite colossus'],hint:['Golpea la roca y crea ondas expansivas','It pounds the rock and creates shockwaves']},
+  {id:'crystal',depth:2,profile:'prism',kind:'stone_archer',form:'rock_seer',name:['Vidente de cristal','Crystal seer'],hint:['Cristales y haces fijan su dirección antes de disparar','Crystals and beams lock direction before firing']},
+  {id:'quarry',depth:2,profile:'antler',kind:'stone_boar',form:'rock_ram',name:['Carnero de cantera','Quarry ram'],hint:['Su embestida pétrea atraviesa un carril completo','Its stone charge crosses a full lane']},
+  {id:'obsidian',depth:2,profile:'weaver',kind:'stone_rabbit',form:'rock_weaver',name:['Tejedora de obsidiana','Obsidian weaver'],hint:['Deja grietas oscuras persistentes · rodéalas','It leaves persistent dark cracks · go around them']},
+  {id:'stone_mortar',depth:2,profile:'mortar',kind:'stone_swordsman',form:'rock_mortar',name:['Artillero de la falla','Rift artillery'],hint:['Bombardea posiciones fijadas con fragmentos de roca','It bombards locked positions with rock fragments']},
+
+  // Magma
+  {id:'ember',depth:3,profile:'ember',kind:'lava_beast',form:'magma_hound',name:['Sabueso del infierno','Inferno hound'],hint:['Su fuego cubre sectores · rodéalo por los costados','Its fire covers sectors · circle around its sides']},
+  {id:'ash_reaper',depth:3,profile:'reaper',kind:'ash_swordsman',form:'magma_reaper',name:['Segador de ceniza','Ash reaper'],hint:['Guadañas ardientes regresan hacia su dueño','Burning scythes return to their owner']},
+  {id:'lava_colossus',depth:3,profile:'bell',kind:'lava_beast',form:'magma_colossus',name:['Coloso de lava','Lava colossus'],hint:['Anillos de magma se expanden desde sus golpes','Magma rings expand from its blows']},
+  {id:'pyro_oracle',depth:3,profile:'storm',kind:'ember_archer',form:'magma_oracle',name:['Oráculo piromante','Pyromancer oracle'],hint:['Invoca marcas mágicas y rayos de fuego','It summons magical marks and fire bolts']},
+  {id:'magma_ram',depth:3,profile:'antler',kind:'lava_beast',form:'magma_ram',name:['Ariete volcánico','Volcanic ram'],hint:['Su carga deja muy poco margen frontal · muévete lateralmente','Its charge leaves little frontal room · move sideways']},
+];
+
 export const bossDefinition = id => BOSSES.find(b => b.id === id);
+export const bossPool = depth => {
+  const index=Math.max(0,Math.min(3,Math.round(Number(depth)||0)));
+  return BOSS_POOLS[index].map(bossDefinition);
+};
 // The existing level formula remains; the additional bonus rises from 30% to 50%.
 // Snapshot at spawn: leveling up never refills a boss that is already being fought.
 export const bossHealthMultiplier = level => 1.3 + Math.min(.2, Math.max(0, level - 5) * .01);
@@ -34,21 +63,29 @@ export function bossEncounters(game) {
   return [...groups.values()];
 }
 export function spawnBoss(game, type = null, level = game.level) {
-  const pool = BOSSES.filter(b => b.id !== game.lastBossType);
-  const def = type ? bossDefinition(type) : pool[Math.floor(game.random() * pool.length)];
+  const fullPool = type ? null : bossPool(game.worldDepth);
+  const pool = type ? null : fullPool.filter(b => b.id !== game.lastBossType);
+  const def = type ? bossDefinition(type) : (pool.length ? pool : fullPool)[Math.floor(game.random() * (pool.length ? pool.length : fullPool.length))];
   if (!def) throw new Error(`Unknown boss: ${type}`);
   game.lastBossType = def.id;
   const e = game.spawn(def.kind, true, level, false);
-  Object.assign(e, {bossType:def.id,encounterId:e.id,encounterMaxHp:e.maxHp,bossPart:'main',ability:1.5,castLeft:0,pending:null,sinceHit:0,shielded:false});
-  if (def.id === 'twins') {
+  Object.assign(e, {
+    bossType:def.id,bossProfile:def.profile,bossTheme:def.depth,bossForm:def.form,
+    encounterId:e.id,encounterMaxHp:e.maxHp,bossPart:'main',ability:1.5,castLeft:0,pending:null,sinceHit:0,shielded:false
+  });
+  if (def.profile === 'twins') {
     e.hp = e.maxHp = e.encounterMaxHp / 2; e.r = 30; e.bossPart = 'blade';
     const mage = game.spawn('rabbit');
-    Object.assign(mage, {boss:true,bossType:'twins',bossPart:'mage',bossLevel:level,encounterId:e.id,encounterMaxHp:e.encounterMaxHp,hp:e.maxHp,maxHp:e.maxHp,r:30,x:e.x+75,y:e.y+20,speed:e.speed*.8,damage:e.damage*.8,ability:2.2,castLeft:0,pending:null,sinceHit:0});
+    Object.assign(mage, {
+      boss:true,bossType:def.id,bossProfile:def.profile,bossTheme:def.depth,bossForm:def.form,bossPart:'mage',bossLevel:level,
+      encounterId:e.id,encounterMaxHp:e.encounterMaxHp,hp:e.maxHp,maxHp:e.maxHp,r:30,x:e.x+75,y:e.y+20,
+      speed:e.speed*.8,damage:e.damage*.8,ability:2.2,castLeft:0,pending:null,sinceHit:0
+    });
   }
-  if (def.id === 'bastion') {
+  if (def.profile === 'bastion') {
     e.shielded = true;
     const key = game.spawn('rabbit'), dx=game.player.x-e.x, dy=game.player.y-e.y, d=Math.hypot(dx,dy)||1;
-    Object.assign(key, {shieldOwnerId:e.id,x:e.x+dx/d*100,y:e.y+dy/d*100,hp:55+level*7,maxHp:55+level*7,speed:48,damage:e.damage*.4,tier:0});
+    Object.assign(key, {shieldOwnerId:e.id,bossTheme:def.depth,x:e.x+dx/d*100,y:e.y+dy/d*100,hp:55+level*7,maxHp:55+level*7,speed:48,damage:e.damage*.4,tier:0});
     e.shieldKeyId = key.id;
   }
   return e;
@@ -70,11 +107,11 @@ export function bossHit(game, e) {
 }
 function hazard(game, e, kind, data = {}) {
   if (game.hazards.length >= 64) return;
-  game.hazards.push({ownerId:e.id,kind,x:e.x,y:e.y,angle:Math.atan2(game.player.y-e.y,game.player.x-e.x),age:-.85,duration:.25,damage:e.damage,color:e.bossType,...data});
+  game.hazards.push({ownerId:e.id,kind,x:e.x,y:e.y,angle:Math.atan2(game.player.y-e.y,game.player.x-e.x),age:-.85,duration:.25,damage:e.damage,color:e.bossTheme??0,effect:e.bossProfile,...data});
 }
 function projectile(game, e, angle, kind='magic', speed=145, damage=e.damage*.75) {
   if (game.shots.length >= 150) return;
-  game.shots.push({ownerId:e.id,kind,x:e.x,y:e.y,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,life:3,age:0,damage});
+  game.shots.push({ownerId:e.id,kind,x:e.x,y:e.y,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,life:3,age:0,damage,theme:e.bossTheme??0,effect:e.bossProfile});
 }
 function volley(game, e, angles, kind='magic', speed=145, damage=e.damage*.75) {
   for(const angle of angles)hazard(game,e,'beam',{angle,range:kind==='scythe'?270:320,width:7,damage:0,age:-1,duration:.12});
@@ -164,7 +201,7 @@ export function stepBoss(game, e, dt, distance) {
     if(t>=1)e.leap=null;
     return true;
   }
-  if(e.bossType==='prism') {
+  if(e.bossProfile==='prism') {
     const before=e.sinceHit;e.sinceHit+=dt;
     const healTime=Math.max(0,e.sinceHit-Math.max(3,before));
     e.hp=Math.min(e.maxHp,e.hp+e.maxHp*.018*healTime);
@@ -175,11 +212,11 @@ export function stepBoss(game, e, dt, distance) {
   if(e.castLeft>0)return true;
   e.ability-=dt;
   const index=e.attackIndex||0;
-  const melee=index===0&&(e.bossType==='bastion'||(e.bossType==='twins'&&e.bossPart==='blade'));
+  const melee=index===0&&(e.bossProfile==='bastion'||(e.bossProfile==='twins'&&e.bossPart==='blade'));
   if(e.ability>0||distance>(melee?135:330))return false;
   const angle=Math.atan2(p.y-e.y,p.x-e.x);
   e.ability=3.4;e.castLeft=1.1;
-  const key=e.finalBoss?'king':e.bossType==='twins'?e.bossPart:e.bossType;
+  const key=e.finalBoss?'king':e.bossProfile==='twins'?e.bossPart:e.bossProfile;
   const originalCount=e.finalBoss?3:1;
   e.attackIndex=(index+1)%(originalCount+2);
   if(index>=originalCount){
@@ -198,7 +235,7 @@ export function stepBoss(game, e, dt, distance) {
     }else volley(game,e,[-2,-1,0,1,2].map(i=>angle+i*.16),'magic',145,Math.max(14,e.damage*.72));
     e.ability=3.1;return true;
   }
-  switch(e.bossType) {
+  switch(e.bossProfile) {
     case 'twins':
       if(e.bossPart==='blade')hazard(game,e,'sector',{range:115,half:1.05,angle});
       else {hazard(game,e,'beam',{range:390,width:7,damage:0,duration:.1,angle});e.pending={kind:'magic',time:.85,angle};}
