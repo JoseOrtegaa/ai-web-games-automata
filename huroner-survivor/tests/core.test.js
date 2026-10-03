@@ -26,15 +26,15 @@ test('armor mitigates damage, invulnerability prevents stacked hits and death en
 test('ram knockback only applies when the hit actually lands',()=>{
   const g=new Game(rng());g.worldDepth=2;g.level=23;g.spawnTimer=g.pickupTimer=999;
   const makeRam=()=>{
-    const e=g.spawn('stone_boar');Object.assign(e,{x:-8,y:0,speed:0,ability:999});
-    e.specialAttack={kind:'ram',phase:'dash',time:.2,duration:.36,fromX:-8,fromY:0,x:20,y:0,hit:false};
+    const px=g.player.x,e=g.spawn('stone_boar');Object.assign(e,{x:px-8,y:0,speed:0,ability:999});
+    e.specialAttack={kind:'ram',phase:'dash',time:.2,duration:.36,fromX:px-8,fromY:0,x:px+20,y:0,hit:false};
     return e;
   };
-  g.player.invuln=.4;const blocked=makeRam();g.stepEnemySpecial(blocked,.01,8);
-  assert.equal(g.player.x,0,'invulnerable ram must not shove the player');
+  g.player.invuln=.4;const blocked=makeRam(),blockedX=g.player.x;g.stepEnemySpecial(blocked,.01,8);
+  assert.equal(g.player.x,blockedX,'invulnerable ram must not shove the player');
   assert.equal(blocked.specialAttack.hit,true);
-  g.player.invuln=0;const landed=makeRam();g.stepEnemySpecial(landed,.01,8);
-  assert.ok(g.player.x>30,'a real ram hit should still knock the player back');
+  g.player.invuln=0;const landed=makeRam(),before=g.player.x;g.stepEnemySpecial(landed,.01,8);
+  assert.ok(Math.abs(g.player.x-before)>30,'a real ram hit should still knock the player back');
   assert.equal(g.shake,5,'real hits keep impact feedback');
 });
 
