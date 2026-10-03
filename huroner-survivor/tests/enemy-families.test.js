@@ -53,7 +53,7 @@ test('bone skull ram pushes the player before its explosive evolution',()=>{
   g.step(.01);assert.equal(e.specialAttack.kind,'ram');
   advance(g,.9);
   assert.ok(g.player.x<0,'ram should push the player away from the skull');
-  assert.ok(g.player.hp<g.player.maxHp||g.player.shield<g.maxShield);
+  assert.ok(g.player.hp<g.player.maxHp);
 });
 
 test('evolved bone skull and magma skull explode instead of using contact-only attacks',()=>{
