@@ -1,37 +1,38 @@
 # Huroner Survivor — estado vigente
 
 ## Objetivo / fase
-Añadir números de daño y curación sutiles sin saturar la pantalla. Implementación, QA e integración en `main` completados.
+Eliminar completamente el escudo del jugador, hacer que el hurón evolucione visualmente con el nivel y alejar la cámara para mostrar más arena. Implementación y QA lógico completados en feature/ferret-evolution-zoomout; pendiente integración/publicación.
 
-## Diseño
-- Daño: número pequeño crema sobre el enemigo, asciende ~16 px y desaparece en 0,68 s.
-- Curación: mismo tratamiento en verde y con prefijo + cerca del hurón.
-- Golpes al mismo objetivo dentro de 0,22 s se agrupan en un único número (por ejemplo, Colmillo gemelo).
-- Máximo 10 textos simultáneos; si se alcanza el límite se sustituye el más antiguo.
-- Regeneración se acumula y se muestra aproximadamente cada 0,9 s, evitando un número por frame.
-- Curas discretas (carne, gema de cura, sanguijuela, vitalidad/Segundo aliento) muestran la vida realmente recuperada, respetando el máximo de HP.
+## Escudo del jugador
+- Eliminados estado shield/shieldDelay/maxShield, mejora Escudo del claro, absorción/recarga, barra HUD y arte del escudo en la pata libre.
+- El daño mitigado por armadura va directamente a HP; invulnerabilidad de 0,65 s se conserva.
+- debugHeal cura únicamente HP.
+- Los escudos propios de bosses (Bastión/conejo llave) permanecen intactos y separados.
 
-## Implementación
-core.js: cola combatTexts, agrupación/cap, helper heal(), throttling de regen y registro de daño real.
-render.js: texto flotante pequeño con contorno oscuro, crema para daño y verde para curación.
-tests/core.test.js: agregación, cap y throttling/cura real.
+## Evolución del hurón
+- Etapa I: niveles 1–9, apariencia base.
+- Etapa II: 10–19, primeras protecciones y detalles.
+- Etapa III: 20–29, armadura/espada más desarrolladas.
+- Etapa IV: 30+, detalles infernales/rúnicos y espada con mayor presencia.
+- Evolución puramente visual: no altera daño, hitbox, alcance ni velocidad.
+- La espada queda como única arma sostenida; la pata libre ya no porta escudo ni otra arma.
 
-## QA
-PASS lógico localizado:
-- Colmillo gemelo agrega dos golpes simultáneos en un solo número por enemigo;
-- al expirar la ventana de 0,22 s, un golpe posterior crea un número nuevo;
-- máximo global de 10 textos simultáneos;
-- regeneración produce como máximo un texto visible por ciclo de ~0,9 s;
-- curación muestra HP real recuperado y no el valor nominal si hay overheal;
-- overkill muestra como máximo el HP restante del enemigo;
-- cada texto desaparece en menos de 1 s;
-- core.js y render.js parsean correctamente.
+## Cámara
+- Nuevo cameraZoomFor(width): mismo mundo/hitboxes, encuadre ~16% más lejano respecto al anterior.
+- Referencias: 390 px → 0,84; 430 px → 0,926; 540 px → 0,99.
 
-## Integración
-PR #13 fusionado en `main` el 2026-10-04. Merge squash: `f3011637021d6330ec7d2e4d77de93ef47038565`.
+## QA lógico
+- jugador no contiene shield/shieldDelay/maxShield ni existe upgrade shield;
+- daño de 15 resta 15 HP directamente sin armadura;
+- mecánica de escudo del boss Bastión sigue rompiéndose correctamente;
+- ferretEvolutionFor devuelve 0/1/2/3 en los hitos 1–9/10–19/20–29/30+;
+- las cuatro etapas generan firmas de dibujo distintas;
+- dibujo antiguo del escudo de mano eliminado;
+- HUD/app/index/style sin referencias de escudo del jugador;
+- core.js, art.js, render.js y app.js parsean.
 
 ## Contexto preservado
-Spawn midgame suavizado; jitter de embestidas corregido; arena final del inframundo integrada; 20 bosses normales; ataque automático por defecto; XP 30/70; escudo 20→120; ataque 0,25 s; zoom bloqueado.
+Números de daño/curación sutiles; spawn midgame suavizado; jitter de embestidas corregido; arena final del inframundo; 20 bosses normales; ataque automático por defecto; XP 30/70; ataque 0,25 s; zoom del navegador bloqueado.
 
 ## Siguiente paso
-Validar visualmente en móvil que tamaño/contraste sean suficientemente sutiles y ajustar solo presentación si hiciera falta.
+Integrar en main, comprobar Pages y validar visualmente en iPhone el tamaño de cámara y que las cuatro evoluciones se distingan bien durante partida.
