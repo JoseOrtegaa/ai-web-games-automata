@@ -1,38 +1,34 @@
 # Huroner Survivor — estado vigente
 
 ## Objetivo / fase
-Reemplazar el pool global de bosses por cinco bosses temáticos y aleatorios para cada mundo. Implementación, QA lógico e integración en `main` completados.
+Suavizar y aumentar progresivamente la generación de enemigos para evitar que el mundo 2 se sienta vacío y eliminar saltos bruscos de densidad. Implementación y QA lógico completados en `fix/gradual-enemy-spawn-scaling`; pendiente integración/publicación.
 
-## Bosses por mundo
-- Superficie: Hermanos del eclipse, Codorniz prismática, Pollo bastión, Liebre cornuda, Viuda de espinas.
-- Subsuelo: Caballero del osario, Oráculo de médula, Bombardero de cráneos, Campanero del sepulcro, Sabueso del osario.
-- Profundidades: Coloso de granito, Vidente de cristal, Carnero de cantera, Tejedora de obsidiana, Artillero de la falla.
-- Magma: Sabueso del infierno, Segador de ceniza, Coloso de lava, Oráculo piromante, Ariete volcánico.
-- Rey final de 600 s permanece separado.
+## Generación normal
+- Antes: intervalo dependiente casi solo del tiempo y tandas de 1/2/3/4/5 enemigos que saltaban cada 150 s.
+- Ahora: `spawnRateFor(level,time)` aumenta ligeramente con **cada nivel** y también de forma continua con el tiempo activo.
+- Se genera un enemigo por tick de spawn, eliminando saltos de tamaño de tanda.
+- Referencias aproximadas: lvl 1 = 0,82 enemigos/s; lvl 5 @60 s = 1,40/s; lvl 10 @150 s = 2,16/s; lvl 15 @220 s = 2,86/s; lvl 20 @300 s = 3,60/s; lvl 25 @380 s = 4,33/s; lvl 30 @450 s = 5,04/s; lvl 35 @520 s = 5,74/s.
+- Al entrar en una cueva se limpian las entidades del mundo anterior como antes, pero el primer spawn pasa de 0,5 s a 0,15 s para evitar una pausa artificial.
+- No hay bonus discreto por mundo: la presión depende de nivel/tiempo, por lo que descender no produce un salto ni una caída artificial.
 
 ## Implementación
-`bosses.js`: `BOSS_POOLS` (4×5), 20 definiciones, selección por `worldDepth`, separación `bossType` / `bossProfile` / `bossTheme` / `bossForm`.
-`boss-art.js`: 15 siluetas nuevas para capas inferiores, paletas de hueso/roca/magma y hazards/proyectiles temáticos.
-`app.js`: HUD consulta mecánica Bastión por perfil.
-Tests de bosses adaptados a catálogo y pools.
+`core.js`: nuevas `spawnRateFor` / `spawnIntervalFor`; reemplazo de tandas por cadencia continua; reanudación rápida tras cueva.
+`tests/core.test.js`: monotonicidad por nivel/tiempo y ausencia de burst.
+`tests/world-progression.test.js`: reanudación de spawn tras descenso.
 
 ## QA
 PASS lógico:
-- 20 bosses, 5 perfiles y 5 formas distintas por mundo;
-- selección aleatoria restringida a la capa y sin repetición inmediata;
-- los 20 bosses ejecutan su perfil asignado;
-- ataques extra siguen alcanzables por perfil;
-- cinco bosses simultáneos por mundo respetan 64 hazards / 150 proyectiles y estado finito;
-- rey final de 10 minutos sigue separado;
-- bosses.js, boss-art.js y app.js parsean.
+- tasa aumenta en cada nivel del 1 al 40;
+- el tiempo activo también aumenta la presión de forma continua;
+- simulaciones de 10 s en tramos 5/10/15/25/35 producen presión creciente y acotada;
+- un tick de spawn crea un solo enemigo, sin ráfagas por umbral;
+- descenso reanuda spawn en ≤0,15 s;
+- `core.js` parsea correctamente.
 
-No se afirma prueba física en iPhone ni ejecución de la suite Node desde checkout local: el contenedor de esta sesión no pudo resolver github.com.
-
-## Integración
-PR #8 fusionado en `main` el 2026-10-03. Merge squash: `aff246fa4fe948c7af9e8bab242652405aa9e0ac`.
+No se afirma prueba física en iPhone ni ejecución de la suite Node desde checkout local en esta sesión.
 
 ## Contexto preservado
-Familias normales por mundo ya integradas. Cuevas: primera bajada tras boss 5/10 aleatorio, siguientes tras 15/30. Modo DEV `?dev=1`. Ataque automático por defecto. XP 30/70 con remanente redondeado; escudo 20→120; ataque 0,25 s; zoom bloqueado.
+20 bosses normales: 5 por mundo, más rey final de 600 s. Familias normales distintas por mundo. Cuevas: primera bajada tras boss 5/10 aleatorio, siguientes tras 15/30. Modo DEV `?dev=1`. Ataque automático por defecto. XP 30/70 con remanente redondeado; escudo 20→120; ataque 0,25 s; zoom bloqueado.
 
 ## Siguiente paso
-Probar visualmente bosses de las cuatro capas en móvil y ajustar tamaño/contraste/telegráficos si alguno lo necesita.
+Revisar diff, integrar en `main`, comprobar GitHub Pages y validar sensación de densidad en móvil, especialmente tras la primera bajada.
