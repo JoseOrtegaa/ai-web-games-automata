@@ -36,6 +36,7 @@ function syncControls() {
   input.setEnabled(active);
   $('attack-button').hidden = !active || preferences.attackMode !== 'button';
   $('enter-cave').hidden = !active || !game.canEnterCave;
+  $('enter-cave').textContent = t(game.cave?.final ? 'descendUnderworld' : 'descend');
   $('attack-button').classList.toggle('left', preferences.attackSide === 'left');
   const readiness = Math.max(0, 1 - game.manualAttackCooldown / ATTACK_COOLDOWN);
   $('attack-button').classList.toggle('cooling', readiness < 1);
@@ -156,7 +157,7 @@ function levelMenu() {
 function hud() {
   const player = game.player;
   $('level').textContent = game.level; $('timer').textContent = formatTime(game.time);
-  $('timer-label').textContent = t(game.bossSpawned ? 'defeatBoss' : 'survive');
+  $('timer-label').textContent = t(game.finalGateOpened&&!game.finalArena ? 'enterUnderworld' : game.bossSpawned ? 'defeatBoss' : 'survive');
   $('shield-label').textContent = `${Math.ceil(player.shield)} / ${game.maxShield}`;
   $('shield-fill').style.width = `${Math.max(0, player.shield / game.maxShield * 100)}%`;
   $('hp-label').textContent = `${Math.ceil(player.hp)} / ${player.maxHp}`;
@@ -192,6 +193,9 @@ function consumeEvents() {
     if (event.type === 'boss') toast(event.final ? t('finalToast') : `${t('bossToast')} · ${event.level}`);
     if (event.type === 'caveOpen') toast(t('caveOpenToast'));
     if (event.type === 'worldDescent') toast(t('descentToast'));
+    if (event.type === 'finalGateOpen') toast(t('finalGateToast'));
+    if (event.type === 'finalArenaEnter') toast(t('finalArenaToast'));
+    if (event.type === 'finalPhase') toast(t(event.phase===3?'finalPhase3':'finalPhase2'));
   }
   if (mode === 'playing' && (game.state === 'dead' || game.state === 'won')) end();
   else if (mode === 'playing' && game.state === 'levelup' && visibleChoices !== game.choices) levelMenu();
@@ -241,6 +245,11 @@ if (devMode) {
     const boss = game.debugSpawnBoss();
     if (boss) shownBossId = boss.encounterId ?? boss.id;
     hud();
+  };
+  $('dev-final').onclick = () => {
+    const boss = game.debugFinalArena();
+    if (boss) shownBossId = boss.encounterId ?? boss.id;
+    input.reset();syncControls();hud();focusArena();
   };
 }
 function loseFocus() { input.reset(); pause(); last = performance.now(); audio.suspend(); }
