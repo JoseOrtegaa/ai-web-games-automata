@@ -1,27 +1,24 @@
 # Huroner Survivor — estado vigente
 
 ## Objetivo / fase
-Aumentar la HP de todos los bosses entre 30% y 50% según el nivel del hurón y añadir dos ataques distintos a cada boss, incluido el rey final. Implementación, QA lógico, QA visual Chromium e integración en `main` completados.
+Evitar que las hordas numerosas colapsen visualmente en una sola pila de sprites sin reducir el límite global ni rebajar la presión del juego. Implementación en rama completada; QA e integración pendientes.
 
-## Integración
-PR #1 fusionado en `main` el 2026-10-03. Merge commit: `e2c61df4856606d953d40ddf6f2e7baea1f37253`.
-Rama de trabajo: `feature/boss-health-attacks`.
-El juego público usa `main` como fuente de GitHub Pages.
+## Revisión
+Rama `feature/horde-spacing` sobre `main`. Archivos afectados: `core.js`, `tests/core.test.js` y este STATE.
 
 ## Decisiones
-10 encuentros aleatorios cada 5 niveles + rey final a 600 s. 24 ataques añadidos: dos por cada hermano gemelo, dos por los otros nueve encuentros y dos del rey. Ciclo original → nuevo 1 → nuevo 2; rey conserva sus tres ataques originales antes de los dos nuevos.
+Se mantienen el límite ordinario de 170 enemigos, vida, daño, XP, bosses y cadencia de spawn. La solución combina tres reglas localizadas:
+- spawn ponderado por 8 sectores alrededor del jugador, evitando sectores localmente saturados;
+- objetivo cercano desplazado por enemigo al aproximarse al jugador, para que no todos persigan el mismo píxel;
+- separación suave mediante grid espacial, con prioridad para bosses/auxiliares para no desplazar sus mecánicas.
 
-Bonus HP sobre la fórmula anterior: +30% en nivel 5, +1 punto porcentual por nivel hasta +50% desde nivel 25. El valor se fija al aparecer el boss; subir de nivel durante el combate no lo cura. Los gemelos comparten el total y el conejo auxiliar del Pollo Bastión conserva su HP propia.
+No hay colisiones rígidas ni límite artificial de densidad. El sistema queda preparado para que futuros arquetipos puedan reutilizar o sustituir sus preferencias de distancia.
 
-Sin cambios en XP, recompensas, escudo del jugador ni cadencia de ataque. Avisos de ataques y límites de hazards/proyectiles conservados.
-
-## Completado / QA
-57 pruebas lógicas PASS. Chromium móvil PASS con 24 escenas de aviso/ataque, pausa real y renderer inmutable; sin errores de página/recursos. Evidencia en `docs/boss-expansion-local.json`.
-
-WebKit/iPhone físico no quedaron validados por las dependencias del entorno de pruebas; el balance subjetivo queda para partidas reales.
+## QA previsto
+Pruebas nuevas: distribución de spawn lejos de sectores saturados y dispersión de una pila melee densa. Mantener suite existente, incluido stress de 10 minutos y límites de entidades. Después revisar diff, integrar en `main` y verificar Pages.
 
 ## Contexto preservado
-Ruta canónica `huroner-survivor/`. XP 30/70; escudo jugador 20→120, recarga 6 s + 10%/s; máximos filtrados. Mundos cada 5 niveles, ataque 0,25 s, zoom bloqueado y claves históricas conservadas.
+Bosses: HP +30→50% y dos ataques nuevos por actor ya integrados. XP 30/70; escudo 20→120; ataque 0,25 s; mundos cada 5 niveles; zoom bloqueado. Ruta canónica `huroner-survivor/`.
 
 ## Siguiente paso
-No repetir implementación ni merge. Probar balance en partida real, especialmente niveles 15–25+, y ajustar únicamente si los bosses quedan demasiado fáciles o demasiado duros.
+Ejecutar QA de la rama. Si pasa, fusionar/publicar y hacer humo remoto del enlace jugable. No repetir análisis ni cambiar balance ajeno a la densidad de horda.
