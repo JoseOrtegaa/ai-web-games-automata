@@ -39,13 +39,13 @@ export class Game {
   reset() {
     this.state='playing'; this.time=0; this.level=1; this.xp=0; this.kills=0;
     this.player={x:0,y:0,hp:INITIAL_HP,maxHp:INITIAL_HP,shield:SHIELD_STEP,shieldDelay:0,face:-Math.PI/2,invuln:0};
-    this.upgrades={}; this.enemies=[]; this.gems=[]; this.pickups=[]; this.particles=[]; this.shots=[]; this.effects=[];
+    this.upgrades={}; this.enemies=[]; this.gems=[]; this.pickups=[]; this.particles=[]; this.shots=[]; this.effects=[]; this.combatTexts=[];
     this.manualAttackCooldown=0; this.hazards=[]; this.lastBossType=null;
     this.spawnTimer=.5; this.pickupTimer=5; this.stormTimer=2; this.auraTimer=0;
     this.mutation=0; this.bossSpawned=false; this.boss=null; this.lastLevelBoss=0; this.choices=[];
     this.worldDepth=0; this.descentPlan=[this.random()<.5?5:10,15,30]; this.cave=null; this.defeatedBossLevels=[];
     this.finalArena=false; this.finalGateOpened=false;
-    this.speedBoostTimer=0; this.fireTimer=0; this.events=[]; this.nextId=1; this.shake=0;
+    this.speedBoostTimer=0; this.fireTimer=0; this.healTextPending=0; this.healTextTimer=0; this.events=[]; this.nextId=1; this.shake=0;
   }
   rank(id) {return this.upgrades[id]||0;}
   get damage() {return 20*(1+.22*this.rank('power'))*(this.fireTimer>0?1.35:1);}
@@ -75,7 +75,8 @@ export class Game {
   enterFinalArena() {
     if(this.state!=='playing'||!this.cave?.final||!this.canEnterCave)return false;
     this.finalArena=true;this.cave=null;
-    this.enemies=[];this.gems=[];this.pickups=[];this.particles=[];this.shots=[];this.effects=[];this.hazards=[];
+    this.enemies=[];this.gems=[];this.pickups=[];this.particles=[];this.shots=[];this.effects=[];this.combatTexts=[];this.hazards=[];
+    this.healTextPending=0;this.healTextTimer=0;
     this.boss=null;this.lastBossType=null;this.spawnTimer=3.4;this.pickupTimer=999;
     this.player.x=0;this.player.y=155;this.player.face=-Math.PI/2;
     const king=this.spawn('chicken',true,this.level,true);
@@ -94,7 +95,8 @@ export class Game {
     if(this.state!=='playing'||!this.canEnterCave)return false;
     if(this.cave.final)return this.enterFinalArena();
     this.worldDepth=this.cave.targetDepth;this.cave=null;this.mutation=enemyEvolutionTier(this.worldDepth,this.level);
-    this.enemies=[];this.gems=[];this.pickups=[];this.particles=[];this.shots=[];this.effects=[];this.hazards=[];
+    this.enemies=[];this.gems=[];this.pickups=[];this.particles=[];this.shots=[];this.effects=[];this.combatTexts=[];this.hazards=[];
+    this.healTextPending=0;this.healTextTimer=0;
     this.boss=null;this.lastBossType=null;this.spawnTimer=.15;this.pickupTimer=5;
     this.player.x=0;this.player.y=0;this.player.face=-Math.PI/2;
     this.emit('worldDescent',{depth:this.worldDepth});this.tryOpenCave();return this.worldDepth;
@@ -106,7 +108,7 @@ export class Game {
     this.worldDepth=level>=30?3:level>=15?2:level>=this.descentPlan[0]?1:0;this.mutation=enemyEvolutionTier(this.worldDepth,level);this.cave=null;this.defeatedBossLevels=[];this.finalArena=false;this.finalGateOpened=false;
     this.choices=[];if(this.state==='levelup')this.state='playing';
     // Level jumps start a clean combat scenario; fresh spawns use the selected tier/world.
-    this.enemies=[];this.gems=[];this.pickups=[];this.particles=[];this.effects=[];this.hazards=[];this.shots=[];this.boss=null;this.lastBossType=null;
+    this.enemies=[];this.gems=[];this.pickups=[];this.particles=[];this.effects=[];this.combatTexts=[];this.hazards=[];this.shots=[];this.boss=null;this.lastBossType=null;this.healTextPending=0;this.healTextTimer=0;
     return level;
   }
   debugSetUpgrade(id,value) {
@@ -119,6 +121,33 @@ export class Game {
   gainXp(amount) {this.xp=Math.round((this.xp+amount)*10)/10;}
   emit(type,data={}) {this.events.push({type,...data});}
   addEffect(effect) {if(this.effects.length<140)this.effects.push(effect);}
+  addCombatText(kind,amount,x,y,targetId=null) {
+    amount=Math.max(0,Number(amount)||0);if(amount<=0)return false;
+    const existing=this.combatTexts.find(t=>t.kind===kind&&t.targetId===targetId&&t.merge>0);
+    if(existing){
+      existing.amount+=amount;existing.x=x;existing.y=y;existing.life=existing.max;existing.merge=.22;return existing;
+    }
+    if(this.combatTexts.length>=10){
+      let oldest=0;
+      for(let i=1;i<this.combatTexts.length;i++)if(this.combatTexts[i].life<this.combatTexts[oldest].life)oldest=i;
+      this.combatTexts.splice(oldest,1);
+    }
+    const text={kind,amount,x,y,targetId,life:.68,max:.68,merge:.22};
+    this.combatTexts.push(text);return text;
+  }
+  flushHealText() {
+    if(this.healTextPending<=.05)return false;
+    const amount=this.healTextPending;this.healTextPending=0;this.healTextTimer=0;
+    return this.addCombatText('heal',amount,this.player.x,this.player.y-22,'player');
+  }
+  heal(amount,immediate=false) {
+    const p=this.player,actual=Math.max(0,Math.min(Number(amount)||0,p.maxHp-p.hp));
+    if(actual<=0)return 0;
+    p.hp+=actual;this.healTextPending+=actual;
+    if(immediate)this.flushHealText();
+    else if(this.healTextTimer<=0)this.healTextTimer=.9;
+    return actual;
+  }
   chooseSpawnAngle() {
     const counts=Array(CROWD_SECTORS).fill(0),p=this.player,sectorWidth=TAU/CROWD_SECTORS;
     for(const e of this.enemies){
@@ -178,7 +207,9 @@ export class Game {
   hit(e,damage,kx=0,ky=0) {
     if(this.state==='dead'||this.state==='won'||e.hp<=0)return;
     if(e.shielded){e.flash=.1;return;}
+    const applied=Math.max(0,Math.min(Number(damage)||0,e.hp));
     e.hp-=damage;e.flash=.13;e.x+=kx;e.y+=ky;
+    this.addCombatText('damage',applied,e.x,e.y-e.r-8,e.id);
     const rewarded=bossHit(this,e);
     if(e.hp>0||!rewarded)return;
     this.kills++;this.emit('kill');
@@ -189,7 +220,7 @@ export class Game {
     if(this.gems.length<350||!xpGem)this.gems.push({x:e.x,y:e.y,value:dropped,heal:false});
     else xpGem.value=Math.round((xpGem.value+dropped)*10)/10;
     if(this.random()<.035)this.gems.push({x:e.x+7,y:e.y+5,value:15,heal:true});
-    if(this.rank('leech')&&this.random()<.2)this.player.hp=Math.min(this.player.maxHp,this.player.hp+2*this.rank('leech'));
+    if(this.rank('leech')&&this.random()<.2)this.heal(2*this.rank('leech'),true);
     for(let i=0;i<8;i++){if(this.particles.length>=200)break;let a=this.random()*6.28;this.particles.push({x:e.x,y:e.y,vx:Math.cos(a)*(15+this.random()*65),vy:Math.sin(a)*(15+this.random()*65),life:.6+this.random()*.5,max:1.1,size:2+this.random()*4,color:e.deathColor});}
     this.addEffect({type:'blood',x:e.x,y:e.y,r:e.r,life:5,max:5,color:e.stainColor});
     if(e.boss&&!e.finalBoss){
@@ -307,8 +338,8 @@ export class Game {
     if(this.state!=='levelup'||!this.choices.some(u=>u.id===id))return false;
     const upgrade=UPGRADES.find(u=>u.id===id);
     if(id!=='heal'&&(!upgrade||this.rank(id)>=upgrade.max))return false;
-    if(id==='heal')this.player.hp=this.player.maxHp;
-    else{this.upgrades[id]=this.rank(id)+1;if(id==='vitality'){this.player.maxHp+=25;this.player.hp=Math.min(this.player.maxHp,this.player.hp+35);}if(id==='shield')this.player.shield+=SHIELD_STEP;}
+    if(id==='heal')this.heal(this.player.maxHp,true);
+    else{this.upgrades[id]=this.rank(id)+1;if(id==='vitality'){this.player.maxHp+=25;this.heal(35,true);}if(id==='shield')this.player.shield+=SHIELD_STEP;}
     this.choices=[];this.state='playing';this.checkLevel();return true;
   }
   step(dt,input={x:0,y:0}) {
@@ -320,7 +351,8 @@ export class Game {
     p.shieldDelay=Math.max(0,p.shieldDelay-dt);
     p.shield=Math.min(this.maxShield,p.shield+this.maxShield*.1*rechargeTime);
     this.speedBoostTimer=Math.max(0,this.speedBoostTimer-dt);this.fireTimer=Math.max(0,this.fireTimer-dt);
-    p.hp=Math.min(p.maxHp,p.hp+this.rank('regen')*.7*dt);
+    this.heal(this.rank('regen')*.7*dt);
+    this.healTextTimer=Math.max(0,this.healTextTimer-dt);if(this.healTextTimer<=0&&this.healTextPending>.05)this.flushHealText();
     let l=Math.hypot(input.x,input.y),nx=input.x/Math.max(1,l),ny=input.y/Math.max(1,l);
     p.x+=nx*this.speed*dt;p.y+=ny*this.speed*dt;if(l>.08)p.face=Math.atan2(ny,nx);
     if(this.finalArena){const d=Math.hypot(p.x,p.y);if(d>FINAL_ARENA_RADIUS-18){p.x=p.x/d*(FINAL_ARENA_RADIUS-18);p.y=p.y/d*(FINAL_ARENA_RADIUS-18);}}
@@ -388,11 +420,12 @@ export class Game {
     for(const s of this.shots){stepBossShot(this,s,dt);if(s.life<=0)continue;s.life-=dt;s.x+=s.vx*dt;s.y+=s.vy*dt;if(Math.hypot(s.x-p.x,s.y-p.y)<17){this.hurt(s.damage||14);if(this.state!=='playing')return;s.life=0;}}
     this.shots=this.shots.filter(s=>s.life>0).slice(-150);
     stepHazards(this,dt);if(this.state!=='playing')return;
-    for(const item of this.pickups){if(item.taken)continue;const d=Math.hypot(item.x-p.x,item.y-p.y);if(d<18){if(item.type==='meat')p.hp=Math.min(p.maxHp,p.hp+3);if(item.type==='oil')this.speedBoostTimer=Math.max(this.speedBoostTimer,20);if(item.type==='fire')this.fireTimer=Math.max(this.fireTimer,15);item.taken=true;this.emit('item',{kind:item.type});}}
+    for(const item of this.pickups){if(item.taken)continue;const d=Math.hypot(item.x-p.x,item.y-p.y);if(d<18){if(item.type==='meat')this.heal(3,true);if(item.type==='oil')this.speedBoostTimer=Math.max(this.speedBoostTimer,20);if(item.type==='fire')this.fireTimer=Math.max(this.fireTimer,15);item.taken=true;this.emit('item',{kind:item.type});}}
     this.pickups=this.pickups.filter(item=>!item.taken);
-    for(const g of this.gems){let dx=p.x-g.x,dy=p.y-g.y,d=Math.hypot(dx,dy);if(d<this.pickup||g.attract){g.attract=true;const travel=Math.min(d,Math.max(300,this.speed*1.25)*dt);g.x+=dx/(d||1)*travel;g.y+=dy/(d||1)*travel;if(d-travel<16){if(g.heal)p.hp=Math.min(p.maxHp,p.hp+g.value);else this.gainXp(g.value);g.taken=true;this.emit('pickup');}}}
+    for(const g of this.gems){let dx=p.x-g.x,dy=p.y-g.y,d=Math.hypot(dx,dy);if(d<this.pickup||g.attract){g.attract=true;const travel=Math.min(d,Math.max(300,this.speed*1.25)*dt);g.x+=dx/(d||1)*travel;g.y+=dy/(d||1)*travel;if(d-travel<16){if(g.heal)this.heal(g.value,true);else this.gainXp(g.value);g.taken=true;this.emit('pickup');}}}
     this.gems=this.gems.filter(g=>!g.taken);this.enemies=this.enemies.filter(e=>e.hp>0);
     for(const e of this.effects)e.life-=dt;this.effects=this.effects.filter(e=>e.life>0);
+    for(const t of this.combatTexts){t.life-=dt;t.merge=Math.max(0,t.merge-dt);}this.combatTexts=this.combatTexts.filter(t=>t.life>0);
     for(const q of this.particles){q.life-=dt;q.x+=q.vx*dt;q.y+=q.vy*dt;q.vx*=.95;q.vy*=.95;}this.particles=this.particles.filter(q=>q.life>0);
     if(this.state==='playing')this.checkLevel();
   }
