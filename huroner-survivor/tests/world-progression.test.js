@@ -74,3 +74,13 @@ test('developer level jumps place the run in the representative world layer', ()
     assert.equal(game.cave, null);
   }
 });
+
+
+test('final gate reuses cave interaction but enters a separate underworld arena',()=>{
+  const game=new Game(()=>.5);game.time=600;game.step(.01);
+  assert.ok(game.cave?.final);assert.equal(game.finalArena,false);
+  Object.assign(game.player,{x:game.cave.x,y:game.cave.y});
+  const king=game.enterCave();
+  assert.ok(king?.finalBoss);assert.equal(game.finalArena,true);assert.equal(game.cave,null);
+  assert.equal(game.worldDepth,0,'final arena is a separate state, not a fifth progression depth');
+});
