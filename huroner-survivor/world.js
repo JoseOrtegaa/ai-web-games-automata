@@ -4,11 +4,13 @@ const THEMES = [
   { name: 'underground', soil: '#241d18', patches: ['#342820', '#2d241f'], ink: '#665443', stone: '#51443a', bone: '#b2a080', magma: '#9f4025', oil: '#0a0a0b' },
   { name: 'deep', soil: '#1d1716', patches: ['#2e201c', '#281b19'], ink: '#6b4d43', stone: '#4b3a36', bone: '#b49b7d', magma: '#c44b24', oil: '#070708' },
   { name: 'magma', soil: '#170d0d', patches: ['#281313', '#321712'], ink: '#6d3930', stone: '#442b29', bone: '#8f7765', magma: '#e55a27', oil: '#050506' },
+  { name: 'underworld', soil: '#090607', patches: ['#13090b', '#190b0c'], ink: '#542329', stone: '#25171a', bone: '#705c55', magma: '#ff4d25', oil: '#020203' },
 ];
 const hash = (x, y) => { const n = Math.sin(x * 127.1 + y * 311.7) * 43758.5453; return n - Math.floor(n); };
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
-export function worldStage(depth, level) {
+export function worldStage(depth, level, finalArena = false) {
+  if(finalArena)return 40;
   const d = clamp(Math.round(Number(depth) || 0), 0, 3), l = Math.max(1, Number(level) || 1);
   if (d === 0) return 0;
   if (d === 1) return 10;
@@ -45,7 +47,7 @@ function oilPool(c, x, y, theme, scale = 1) {
   ellipse(c,x-7*scale,y-2*scale,12*scale,4*scale,'#2c2927a0');
 }
 function tileFor(stage) {
-  const depth = stage >= 30 ? 3 : stage >= 20 ? 2 : stage >= 10 ? 1 : 0;
+  const depth = stage >= 40 ? 4 : stage >= 30 ? 3 : stage >= 20 ? 2 : stage >= 10 ? 1 : 0;
   const phase = depth === 2 ? stage - 20 : depth === 3 ? stage - 30 : 0;
   const theme = THEMES[depth];
   const tile = document.createElement('canvas'); tile.width = tile.height = SIZE;
@@ -68,7 +70,7 @@ function tileFor(stage) {
     }
   }
 
-  const decor = depth === 0 ? 18 : depth === 1 ? 28 : depth === 2 ? 34 : 40;
+  const decor = depth === 0 ? 18 : depth === 1 ? 28 : depth === 2 ? 34 : depth === 3 ? 40 : 46;
   for (let i = 0; i < decor; i++) {
     const x = hash(i + stage * 41, 33) * SIZE, y = hash(i + stage * 47, 61) * SIZE;
     for (const dx of [-SIZE,0,SIZE]) for (const dy of [-SIZE,0,SIZE]) {
@@ -101,7 +103,7 @@ function tileFor(stage) {
           for(let j=-2;j<=2;j++)line(c,[[j*7,-7],[j*7,7]],theme.bone+'70',2);
           c.restore();
         }
-      } else {
+      } else if (depth === 3) {
         if (i % 5 === 0) skull(c,x,y,.85+hash(i,3)*.45,theme,true);
         if (i % 4 === 0) bones(c,x,y,theme,phase>=1?'6b':'4f');
         if (i % (phase>=1?2:3) === 0) magmaCrack(c,x,y,theme,2+phase);
@@ -113,13 +115,27 @@ function tileFor(stage) {
           c.save();c.translate(x,y);c.rotate((hash(i,19)-.5)*1.4);
           line(c,[[-20,0],[19,0]],'#392522',7);line(c,[[-5,-7],[7,6]],'#241615',5);c.restore();
         }
+      } else {
+        if(i%2===0)magmaCrack(c,x,y,theme,3.5);
+        if(i%5===0){
+          c.save();c.shadowColor=theme.magma;c.shadowBlur=22;
+          ellipse(c,x,y,36+hash(i,8)*30,11+hash(i,12)*9,theme.magma+'8c');c.restore();
+        }
+        if(i%4===0)skull(c,x+12,y-8,.72+hash(i,5)*.35,theme,true);
+        if(i%7===0){
+          const r=22+hash(i,13)*18;
+          c.save();c.translate(x,y);c.rotate(hash(i,17)*Math.PI);
+          c.strokeStyle=theme.magma+'78';c.lineWidth=2;c.beginPath();c.arc(0,0,r,0,Math.PI*2);c.stroke();
+          for(let j=0;j<6;j++){const a=j*Math.PI/3;line(c,[[Math.cos(a)*8,Math.sin(a)*8],[Math.cos(a)*r,Math.sin(a)*r]],theme.magma+'55',1);}
+          c.restore();
+        }
       }
       c.restore();
     }
   }
 
   if (depth >= 1) {
-    const shade = depth === 1 ? .08 : depth === 2 ? .16 : .23;
+    const shade = depth === 1 ? .08 : depth === 2 ? .16 : depth === 3 ? .23 : .34;
     c.fillStyle = `rgba(4,2,3,${shade})`; c.fillRect(0,0,SIZE,SIZE);
   }
   return tile;
@@ -134,8 +150,8 @@ export function createWorldLayer() {
     for (let x = -ox; x < w; x += SIZE) for (let y = -oy; y < h; y += SIZE) ctx.drawImage(tile, x, y);
   }
   return {
-    draw(ctx, w, h, cx, cy, { depth = 0, level = 1, time = 0, reducedMotion = false }) {
-      const next = worldStage(depth, level);
+    draw(ctx, w, h, cx, cy, { depth = 0, level = 1, time = 0, reducedMotion = false, finalArena = false }) {
+      const next = worldStage(depth, level, finalArena);
       if (next !== stage) {
         previous = stage === null ? null : current;
         current = getTile(next); stage = next; changedAt = time;
