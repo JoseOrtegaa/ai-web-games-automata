@@ -1,7 +1,7 @@
 # Huroner Survivor — estado vigente
 
 ## Objetivo / fase
-Estado vigente: escudo del jugador eliminado, evolución visual del hurón activa y cámara de combate alejada de nuevo para mostrar ~30% más campo por eje respecto a la revisión anterior. Implementación, QA lógico localizado e integración en `main` completados.
+Estado vigente: escudo del jugador eliminado, evolución visual del hurón activa, cámara ~30% más amplia y enemigos normales menos robóticos mediante puntería imperfecta y variantes de ataque. Implementación, QA lógico localizado e integración en `main` completados.
 
 ## Escudo del jugador
 - Eliminados estado shield/shieldDelay/maxShield, mejora Escudo del claro, absorción/recarga, barra HUD y arte del escudo en la pata libre.
@@ -33,10 +33,17 @@ Estado vigente: escudo del jugador eliminado, evolución visual del hurón activ
 - core.js, art.js, render.js y app.js parsean.
 
 ## Integración
-PR #14 fusionado en `main` el 2026-10-04 para evolución/sin escudo/cámara inicial. PR #15 fusionado en `main` el 2026-10-04 para el alejamiento adicional de cámara. Último squash: `ed7d597ace7be7543761913c0853df57d1738d26`.
+PR #14 fusionado en `main` el 2026-10-04 para evolución/sin escudo/cámara inicial. PR #15 para el alejamiento adicional de cámara. PR #16 para IA enemiga menos robótica. Último squash de gameplay: `712208aa6e9d9348a8f6cf5e11a40661090d3c22`.
+
+## IA de enemigos normales
+- Los especiales ya no apuntan todos al píxel exacto del jugador: salto, disparo, abanico, lunge y ram aplican una desviación pequeña por enemigo/ataque.
+- Cada familia conserva un ataque principal y dispone de un secundario coherente.
+- Algunos enemigos usan el secundario ya desde su primer especial; con alternativa disponible no pueden repetir el mismo patrón más de dos veces seguidas.
+- Los rangos de activación originales se conservan y los arqueros mantienen el proyectil propio de su mundo.
+- Bosses sin cambios.
 
 ## Contexto preservado
 Números de daño/curación sutiles; spawn midgame suavizado; jitter de embestidas corregido; arena final del inframundo; 20 bosses normales; ataque automático por defecto; XP 30/70; ataque 0,25 s; zoom del navegador bloqueado.
 
 ## Siguiente paso
-Validar visualmente en iPhone si el nuevo encuadre ~30% más amplio tiene la distancia deseada; si hiciera falta, ajustar únicamente `cameraZoomFor`, sin tocar gameplay.
+Probar en iPhone la sensación de hordas: confirmar que la torpeza se perciba natural sin volver a los enemigos demasiado fáciles; ajustar solo margen de puntería o probabilidad de variantes si hiciera falta.
