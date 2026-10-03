@@ -158,8 +158,6 @@ function hud() {
   const player = game.player;
   $('level').textContent = game.level; $('timer').textContent = formatTime(game.time);
   $('timer-label').textContent = t(game.finalGateOpened&&!game.finalArena ? 'enterUnderworld' : game.bossSpawned ? 'defeatBoss' : 'survive');
-  $('shield-label').textContent = `${Math.ceil(player.shield)} / ${game.maxShield}`;
-  $('shield-fill').style.width = `${Math.max(0, player.shield / game.maxShield * 100)}%`;
   $('hp-label').textContent = `${Math.ceil(player.hp)} / ${player.maxHp}`;
   $('hp-fill').style.width = `${Math.max(0, player.hp / player.maxHp * 100)}%`;
   $('xp-fill').style.width = `${Math.min(100, game.xp / xpNeeded(game.level) * 100)}%`;
