@@ -5,6 +5,19 @@ function ellipse(c,x,y,rx,ry,color,stroke){c.beginPath();c.ellipse(x,y,rx,ry,0,0
 function line(c,points,color,width=2){c.strokeStyle=color;c.lineWidth=width;c.lineCap='round';c.lineJoin='round';c.beginPath();points.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.stroke();}
 function sword(c,x,y,angle,scale=1){c.save();c.translate(x,y);c.rotate(angle);c.scale(scale,scale);c.fillStyle='#dce9ce';c.beginPath();c.moveTo(-4,0);c.lineTo(-5,-35);c.lineTo(0,-47);c.lineTo(5,-35);c.lineTo(4,0);c.closePath();c.fill();line(c,[[0,-40],[0,-1]],'#86afa1',1.3);line(c,[[-10,0],[10,0]],'#d6ad57',4);line(c,[[0,2],[0,13]],'#8a5e3c',5);ellipse(c,0,14,3,3,'#e5be70');c.restore();}
 
+export function bossIndicatorGeometry(targetX,targetY,originX,originY,width,height){
+  const side=Math.min(36,width*.1),top=Math.min(124,height*.2),right=width-side,bottom=height-Math.min(68,height*.11);
+  if(targetX>=side&&targetX<=right&&targetY>=top&&targetY<=bottom)return null;
+  const dx=targetX-originX,dy=targetY-originY;
+  if(Math.hypot(dx,dy)<1)return null;
+  let t=Infinity;
+  if(dx>0)t=Math.min(t,(right-originX)/dx);else if(dx<0)t=Math.min(t,(side-originX)/dx);
+  if(dy>0)t=Math.min(t,(bottom-originY)/dy);else if(dy<0)t=Math.min(t,(top-originY)/dy);
+  if(!Number.isFinite(t)||t<=0)return null;
+  t=Math.min(1,t);
+  return {x:originX+dx*t,y:originY+dy*t,angle:Math.atan2(dy,dx)};
+}
+
 export function createRenderer({canvas, heroCanvas}) {
   const ctx=canvas.getContext('2d',{alpha:false});
   let W=440,H=780,DPR=1, mist;
@@ -16,7 +29,19 @@ export function createRenderer({canvas, heroCanvas}) {
     mist.addColorStop(0,'#07192000');mist.addColorStop(.65,'#789b9c08');mist.addColorStop(1,'#06171b77');
   }
   function fog(){ctx.fillStyle=mist;ctx.fillRect(0,0,W,H);}
-function draw(game, {active = true, moving = false, reducedMotion = false} = {}) {const p=game.player;const zoom=Math.min(1.18,W/390);const viewW=W/zoom,viewH=H/zoom;const cx=active?p.x:0,cy=active?p.y:0;const shake=active&&!reducedMotion?game.shake:0;const camX=cx-viewW/2+Math.sin(game.time*83)*shake,camY=cy-viewH*.51+Math.cos(game.time*71)*shake;
+  function drawBossIndicator(game,boss,camX,camY,zoom){
+    const targetX=(boss.x-camX)*zoom,targetY=(boss.y-camY)*zoom;
+    const originX=(game.player.x-camX)*zoom,originY=(game.player.y-camY)*zoom;
+    const marker=bossIndicatorGeometry(targetX,targetY,originX,originY,W,H);
+    if(!marker)return;
+    ctx.save();ctx.translate(marker.x,marker.y);ctx.rotate(marker.angle);
+    const pulse=1+Math.sin(game.time*5)*.08;ctx.scale(pulse,pulse);
+    ctx.fillStyle='#071410cc';ctx.beginPath();ctx.arc(0,0,17,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#f0cf78';ctx.strokeStyle='#fff1bd';ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.moveTo(12,0);ctx.lineTo(-7,-9);ctx.lineTo(-2,0);ctx.lineTo(-7,9);ctx.closePath();ctx.fill();ctx.stroke();
+    ctx.restore();
+  }
+function draw(game, {active = true, moving = false, reducedMotion = false, bossId = null} = {}) {const p=game.player;const zoom=Math.min(1.18,W/390);const viewW=W/zoom,viewH=H/zoom;const cx=active?p.x:0,cy=active?p.y:0;const shake=active&&!reducedMotion?game.shake:0;const camX=cx-viewW/2+Math.sin(game.time*83)*shake,camY=cy-viewH*.51+Math.cos(game.time*71)*shake;
  ctx.save();ctx.scale(zoom,zoom);world.draw(ctx,viewW,viewH,camX,camY,{level:active?game.level:1,time:game.time,reducedMotion});ctx.translate(-camX,-camY);
  if(active){
  for(const item of game.pickups){if(Math.abs(item.x-cx)>viewW||Math.abs(item.y-cy)>viewH)continue;ctx.save();ctx.translate(item.x,item.y);if(item.type==='meat'){ellipse(ctx,0,1,9,6,'#b95a55','#f0c9a1');line(ctx,[[-7,-2],[7,3]],'#f4e2be',3);ellipse(ctx,-8,-3,2.5,2.5,'#f4e2be');ellipse(ctx,8,4,2.5,2.5,'#f4e2be');}else if(item.type==='oil'){ellipse(ctx,0,0,7,10,'#d6a94e','#f0d681');ellipse(ctx,-2,-3,2,4,'#fff1b180');}else{ellipse(ctx,0,2,8,11,'#dc6737','#f2ad52');ellipse(ctx,0,4,4,7,'#ffd36a');}ctx.restore();}
@@ -50,7 +75,10 @@ function draw(game, {active = true, moving = false, reducedMotion = false} = {})
   }ctx.restore();
  }
  for(const s of game.shots){if(s.ownerId){drawBossProjectile(ctx,s);}else if(s.kind==='feather'){ctx.save();ctx.translate(s.x,s.y);ctx.rotate(Math.atan2(s.vy,s.vx));ellipse(ctx,0,0,9,3,'#f0dfbf','#cb6555');line(ctx,[[-7,0],[8,0]],'#fff2cf',1);ctx.restore();}else{ellipse(ctx,s.x,s.y,4,7,'#f0dfbf');ellipse(ctx,s.x,s.y,2,3,'#cb6555');}}
- }ctx.restore();fog();}
+ }ctx.restore();fog();
+ const boss=bossId==null?null:game.enemies.find(e=>e.hp>0&&e.boss&&(e.encounterId??e.id)===bossId);
+ if(active&&boss)drawBossIndicator(game,boss,camX,camY,zoom);
+}
 
   const observer=new ResizeObserver(resize);observer.observe(canvas.parentElement);resize();
   return {resize,draw,drawHero(){if(!heroCanvas)return;const c=heroCanvas.getContext('2d');c.clearRect(0,0,heroCanvas.width,heroCanvas.height);drawFerret(c,{x:heroCanvas.width/2,y:heroCanvas.height/2,scale:3,face:1,walk:0,armor:0});},destroy(){observer.disconnect();}};
