@@ -1,7 +1,7 @@
 # Huroner Survivor — estado vigente
 
 ## Objetivo / fase
-Añadir números de daño y curación sutiles sin saturar la pantalla. Implementación pendiente de QA en feature/subtle-combat-numbers.
+Añadir números de daño y curación sutiles sin saturar la pantalla. Implementación, QA e integración en `main` completados.
 
 ## Diseño
 - Daño: número pequeño crema sobre el enemigo, asciende ~16 px y desaparece en 0,68 s.
@@ -27,8 +27,11 @@ PASS lógico localizado:
 - cada texto desaparece en menos de 1 s;
 - core.js y render.js parsean correctamente.
 
+## Integración
+PR #13 fusionado en `main` el 2026-10-04. Merge squash: `f3011637021d6330ec7d2e4d77de93ef47038565`.
+
 ## Contexto preservado
 Spawn midgame suavizado; jitter de embestidas corregido; arena final del inframundo integrada; 20 bosses normales; ataque automático por defecto; XP 30/70; escudo 20→120; ataque 0,25 s; zoom bloqueado.
 
 ## Siguiente paso
-Revisar diff, integrar en main, comprobar Pages y validar visualmente en móvil que tamaño/contraste sean suficientemente sutiles.
+Validar visualmente en móvil que tamaño/contraste sean suficientemente sutiles y ajustar solo presentación si hiciera falta.
