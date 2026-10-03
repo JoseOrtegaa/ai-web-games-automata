@@ -14,10 +14,16 @@ Suavizar ligeramente la acumulación de enemigos alrededor del nivel 23 sin nerf
 Si el jugador sube niveles rápido, el término por nivel aceleraba la aparición antes de que la horda existente se limpiara. La reducción se concentra en Profundidades/midgame y sigue siendo monotónica nivel a nivel.
 
 ## QA
-Pendiente comprobar monotonicidad, reducción objetivo en nivel 23, recuperación de pendiente desde 31 y simulación acotada.
+PASS lógico localizado:
+- tasa monotónica al menos hasta nivel 60;
+- niveles 1–15 sin cambios;
+- nivel 23 @300 s baja de 3,91 a 3,71 enemigos/s (~5,1%);
+- desde nivel 31 vuelve la pendiente original de +0,105 enemigos/s por nivel;
+- simulaciones de 20 s en niveles 20/23/25/30 permanecen finitas y acotadas;
+- core.js parsea correctamente.
 
 ## Contexto preservado
 Jitter de embestidas corregido; arena final del inframundo integrada; 20 bosses normales (5 por mundo); familias de enemigos por mundo; cuevas 5/10→15→30; ataque automático por defecto; XP 30/70; escudo 20→120; ataque 0,25 s; zoom bloqueado.
 
 ## Siguiente paso
-Ejecutar QA lógico localizado, integrar en main y comprobar Pages.
+Integrar en main, comprobar Pages y validar en móvil la acumulación alrededor de nivel 23.
