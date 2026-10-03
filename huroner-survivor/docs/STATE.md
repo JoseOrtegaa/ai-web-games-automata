@@ -1,7 +1,7 @@
 # Huroner Survivor — estado vigente
 
 ## Objetivo / fase
-Suavizar ligeramente la acumulación de enemigos alrededor del nivel 23 sin nerfear el early game ni eliminar el escalado. Implementación pendiente de QA en balance/soften-midgame-spawn.
+Suavizar ligeramente la acumulación de enemigos alrededor del nivel 23 sin nerfear el early game ni eliminar el escalado. Implementación, QA e integración en `main` completados.
 
 ## Ajuste de balance
 - Niveles 1–15: generación exactamente igual.
@@ -22,8 +22,11 @@ PASS lógico localizado:
 - simulaciones de 20 s en niveles 20/23/25/30 permanecen finitas y acotadas;
 - core.js parsea correctamente.
 
+## Integración
+PR #12 fusionado en `main` el 2026-10-03. Merge squash: `77b42d80590b416f3228343353048c3ee84644cf`.
+
 ## Contexto preservado
 Jitter de embestidas corregido; arena final del inframundo integrada; 20 bosses normales (5 por mundo); familias de enemigos por mundo; cuevas 5/10→15→30; ataque automático por defecto; XP 30/70; escudo 20→120; ataque 0,25 s; zoom bloqueado.
 
 ## Siguiente paso
-Integrar en main, comprobar Pages y validar en móvil la acumulación alrededor de nivel 23.
+Validar en móvil la acumulación alrededor de nivel 23 y ajustar solo si todavía se forma demasiada horda.
