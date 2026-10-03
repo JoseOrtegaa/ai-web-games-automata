@@ -17,7 +17,7 @@ Tiempo, desplazamiento, enemigos, recargas, invulnerabilidad y buffs avanzan exc
 - Un ataque autorizado apunta al enemigo vivo más cercano al comenzar el espadazo; sin enemigo usa la última orientación del hurón. No requiere acertar para consumir la recarga. El arco daña a todos los enemigos dentro de su área; no se añade selección manual de objetivo.
 - Recarga compartida manual/automática: **0,25 s**, sin bypass al alternar modalidades ni tocar repetidamente. Automático utiliza la misma puerta de ataque que manual. La presentación puede mostrar la recarga pero nunca modificarla.
 - Espada inicial: daño 20, alcance 98 más radio del enemigo, semiarco 1,35 rad más tolerancia de impacto 0,15 rad; retroceso de 10 unidades. Colmillo Gemelo ejecuta dos espadazos consecutivos dentro del mismo ataque y de la misma recarga; cada espadazo puede adquirir el objetivo más cercano. No añade retraso, carga ni combo.
-- Daño recibido: `max(1, dañoEntrante × 100 / (100 + 18 × rangoArmadura))`. El escudo absorbe primero el daño mitigado; el excedente pasa a HP. Tras recibirlo: 0,65 s de invulnerabilidad. La regeneración y curación nunca superan la vida máxima.
+- Daño recibido: `max(1, dañoEntrante × 100 / (100 + 18 × rangoArmadura))`, aplicado directamente a HP. Tras recibirlo: 0,65 s de invulnerabilidad. La regeneración y curación nunca superan la vida máxima.
 
 ### Experiencia y mejoras
 
@@ -25,7 +25,7 @@ Cada conejo, liebre o codorniz concede 2 XP; gallina común, 3; jefe intermedio,
 
 XP necesaria para salir del nivel `n`: `round(6 + 3n + 0,12n²)`. Al subir, se descuenta el umbral y se conserva el excedente. Se ofrecen hasta tres mejoras distintas al azar, excluyendo las que alcanzaron su máximo. Elegir una reanuda o abre inmediatamente la siguiente elección si sobra XP suficiente. La elección es obligatoria y no tiene temporizador. Si todas las mejoras están agotadas, se ofrece únicamente curación completa. Pulsaciones inválidas o duplicadas no pueden otorgar mejoras adicionales.
 
-Los porcentajes por rango se suman sobre la base; los buffs temporales multiplican después. Conservar estas trece mejoras, sus nombres ES/EN y límites:
+Los porcentajes por rango se suman sobre la base; los buffs temporales multiplican después. Conservar estas doce mejoras, sus nombres ES/EN y límites:
 
 | Mejora / ID | Efecto observable por rango | Máximo |
 | --- | --- | --- |
@@ -33,7 +33,6 @@ Los porcentajes por rango se suman sobre la base; los buffs temporales multiplic
 | Colmillo gemelo / `twin` | Dos espadazos por ataque | 1 |
 | Corazón indomable / `vitality` | +25 HP máximos y cura 35 HP | 6 |
 | Armadura de corteza / `armor` | Reducción según fórmula de armadura anterior | 6 |
-| Escudo del claro / `shield` | +20 de capacidad y carga al elegir; base 20, máximo total 120 | 5 |
 | Espada colosal / `reach` | Alcance 98 × (1 + 0,18 × rango); semiarco +0,13 rad/rango | 5 |
 | Patas ligeras / `speed` | Velocidad 124 × (1 + 0,12 × rango) | 5 |
 | Imán de almas / `magnet` | Radio 56 × (1 + 0,45 × rango) | 4 |
@@ -45,9 +44,11 @@ Los porcentajes por rango se suman sobre la base; los buffs temporales multiplic
 
 Corregir dos descripciones heredadas: no existe mejora de velocidad de ataque; la armadura no debe anunciar «+2» como si fuera la reducción real. La descripción de Gemelo debe hablar de «cada ataque» para cubrir automático y manual. Rayos comienza con dos objetivos y añade uno por rango posterior. No convertir estas correcciones de texto en cambios de reglas.
 
-### Escudo
+### Evolución visual del hurón
 
-Empieza lleno con 20 puntos (20% de los 100 HP iniciales), independiente de mejoras de vida. Cualquier daño válido reinicia la espera de 6 s; después recupera el 10% de la capacidad máxima por segundo, sin excederla. Pausa, elección y estados terminales congelan espera/recarga; reiniciar restaura 20/20 y cero rangos. Barra azul con cifra actual/máxima sobre la vida, ES/EN. El hurón sostiene un escudo azul de borde cobre en la pata libre; su emblema se apaga al agotarse, conservando la silueta. Sin partículas ni colisiones nuevas.
+El protagonista no tiene escudo, barra de escudo ni segunda arma en mano. Conserva la espada como arma visual principal. Su aspecto evoluciona exclusivamente por nivel, sin cambiar hitbox ni estadísticas: etapa I niveles 1–9, etapa II 10–19, etapa III 20–29 y etapa IV 30+. Las etapas añaden progresivamente protecciones, detalles del atuendo y presencia visual en la espada; la mejora de armadura sigue siendo una regla de reducción de daño independiente.
+
+La cámara de combate usa un encuadre aproximadamente 16% más alejado que el histórico para mostrar más arena y horda. Este cambio es solo de presentación: las coordenadas, alcances, velocidades y colisiones siguen en unidades de mundo.
 
 ### Pickups y ritmo existente
 
@@ -140,7 +141,7 @@ Todos los siguientes recursos son originales de esta V2, creados como código ve
 
 | Ruta | Uso / contrato |
 | --- | --- |
-| `art.js` | `drawFerret(ctx,{x,y,scale,face,walk,armor,shield})`, escala base aprox. 46 × 60; ancla de posición de actor. `face` ±1, `walk` fase en radianes. |
+| `art.js` | `drawFerret(ctx,{x,y,scale,face,walk,armor,evolution})`, escala base aprox. 46 × 60; ancla de posición de actor. `face` ±1, `walk` fase en radianes; `evolution` 0–3 deriva del nivel. |
 | `art.js` | `drawAnimal(ctx,{kind,x,y,scale,tier,boss,time,flash,id})`; `id` opcional desfasador, clases `rabbit/hare/quail/chicken`; escala base aprox. 40 × 56 incluyendo orejas, variable por animal. `boss` sólo añade corona: caller aplica escala. |
 | `assets/hero.svg` | Portada ilustrada transparente, viewBox 760 × 610; mostrar completa. |
 | `assets/divider.svg` | Separador botánico cobre, viewBox 400 × 28; uso opcional entre título y acciones. |
@@ -163,7 +164,7 @@ Art usa `save/restore`, no cambia Game, no consume RNG y cachea sólo paths est�
 
 La progresión ambiental no cambia de fondo automáticamente cada cinco niveles. Cada partida empieza en la superficie y el primer acceso al subsuelo se elige al iniciar entre los bosses de nivel 5 o 10. Al completar el boss correspondiente aparece una cueva física a distancia del jugador y una flecha fuera de pantalla señala su dirección. El mundo solo cambia cuando el hurón se acerca y usa **DESCENDER**.
 
-Las siguientes bajadas se desbloquean tras los bosses de nivel 15 y 30. Capas: superficie; subsuelo de tierra/piedra/cadáveres; profundidades rocosas que en nivel 20 incorporan magma y en 25 aumentan magma, fósiles y petróleo; capa de magma desde nivel 30, más intensa en 35. Los enemigos actuales se conservan. Entrar limpia entidades ligadas al mapa anterior, conserva vida/escudo/mejoras y recoloca al jugador en el origen de la nueva capa. Si una cueva se ignora y se derrota un boss posterior, el progreso pendiente se conserva para impedir bloqueos.
+Las siguientes bajadas se desbloquean tras los bosses de nivel 15 y 30. Capas: superficie; subsuelo de tierra/piedra/cadáveres; profundidades rocosas que en nivel 20 incorporan magma y en 25 aumentan magma, fósiles y petróleo; capa de magma desde nivel 30, más intensa en 35. Los enemigos actuales se conservan. Entrar limpia entidades ligadas al mapa anterior, conserva vida/mejoras y recoloca al jugador en el origen de la nueva capa. Si una cueva se ignora y se derrota un boss posterior, el progreso pendiente se conserva para impedir bloqueos.
 
 Los cambios de capa o fase visual usan un fundido de 1,25 s de tiempo de simulación; con movimiento reducido el cambio es inmediato. La decoración queda bajo actores, gemas, pickups y avisos, no añade colisiones ni modifica estadísticas, y los tiles de 768 px se cachean por etapa visual.
 
