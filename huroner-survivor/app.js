@@ -114,7 +114,7 @@ function levelMenu() {
     const content = document.createElement('span'), title = document.createElement('strong'), description = document.createElement('small'), rank = document.createElement('em');
     const language = preferences.language === 'es' ? 0 : 1;
     title.textContent = upgrade.name[language]; description.textContent = upgrade.desc[language];
-    rank.textContent = upgrade.id === 'heal' ? '♥' : `${t('rank')} ${game.rank(upgrade.id)} / ${upgrade.max} → ${game.rank(upgrade.id) + 1}`;
+    rank.textContent = upgrade.id === 'heal' ? '♥' : `${t('rank')} ${game.rank(upgrade.id)} / ${upgrade.max} → ${game.rank(upgrade.id) + 1} / ${upgrade.max}`;
     content.append(title, description, rank); button.append(icon, content);
     button.onclick = event => {
       // A stale button or the second click of a double click cannot select the next offer.
@@ -133,6 +133,8 @@ function hud() {
   const player = game.player;
   $('level').textContent = game.level; $('timer').textContent = formatTime(game.time);
   $('timer-label').textContent = t(game.bossSpawned ? 'defeatBoss' : 'survive');
+  $('shield-label').textContent = `${Math.ceil(player.shield)} / ${game.maxShield}`;
+  $('shield-fill').style.width = `${Math.max(0, player.shield / game.maxShield * 100)}%`;
   $('hp-label').textContent = `${Math.ceil(player.hp)} / ${player.maxHp}`;
   $('hp-fill').style.width = `${Math.max(0, player.hp / player.maxHp * 100)}%`;
   $('xp-fill').style.width = `${Math.min(100, game.xp / xpNeeded(game.level) * 100)}%`;

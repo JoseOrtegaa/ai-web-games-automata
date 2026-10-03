@@ -1,11 +1,14 @@
 // Deterministic, rendering-independent simulation. All time is active play time.
 export const BOSS_TIME = 600;
 export const ATTACK_COOLDOWN = .25;
+const INITIAL_HP = 100;
+const SHIELD_STEP = INITIAL_HP * .2;
 export const UPGRADES = [
   {id:'power', icon:'⚔', name:['Filo salvaje','Wild edge'], desc:['+22% de daño en todos los ataques.','+22% damage to all attacks.'], max:8},
   {id:'twin', icon:'⚔', name:['Colmillo gemelo','Twin fang'], desc:['Cada ataque lanza dos espadazos.','Each attack unleashes two sword slashes.'], max:1},
   {id:'vitality', icon:'♥', name:['Corazón indomable','Wild heart'], desc:['+25 de vida máxima y cura 35.','+25 maximum health and heal 35.'], max:6},
   {id:'armor', icon:'⬡', name:['Armadura de corteza','Bark armor'], desc:['Reduce el daño: divisor +0,18 por rango.','Reduce damage: divisor +0.18 per rank.'], max:6},
+  {id:'shield', icon:'◇', name:['Escudo del claro','Glade shield'], desc:['+20 de escudo. Se recarga tras 6 s sin daño.','+20 shield. Recharges after 6 s without damage.'], max:5},
   {id:'reach', icon:'⤢', name:['Espada colosal','Colossal sword'], desc:['+18% de alcance y un arco más amplio.','+18% reach and a wider slash.'], max:5},
   {id:'speed', icon:'➶', name:['Patas ligeras','Light paws'], desc:['+12% de velocidad de movimiento.','+12% movement speed.'], max:5},
   {id:'magnet', icon:'✦', name:['Imán de almas','Soul magnet'], desc:['+45% de radio para recoger experiencia.','+45% experience pickup radius.'], max:4},
@@ -22,7 +25,7 @@ export class Game {
   constructor(random = Math.random) { this.random=random; this.reset(); }
   reset() {
     this.state='playing'; this.time=0; this.level=1; this.xp=0; this.kills=0;
-    this.player={x:0,y:0,hp:100,maxHp:100,face:-Math.PI/2,invuln:0};
+    this.player={x:0,y:0,hp:INITIAL_HP,maxHp:INITIAL_HP,shield:SHIELD_STEP,shieldDelay:0,face:-Math.PI/2,invuln:0};
     this.upgrades={}; this.enemies=[]; this.gems=[]; this.pickups=[]; this.particles=[]; this.shots=[]; this.effects=[];
     this.manualAttackCooldown=0;
     this.spawnTimer=.5; this.pickupTimer=5; this.stormTimer=2; this.auraTimer=0;
@@ -33,7 +36,9 @@ export class Game {
   get damage() {return 20*(1+.22*this.rank('power'))*(this.fireTimer>0?1.35:1);}
   get reach() {return 98*(1+.18*this.rank('reach'));}
   get speed() {return 124*(1+.12*this.rank('speed'))*(this.speedBoostTimer>0?1.1:1);}
-  get pickup() {return 43*(1+.45*this.rank('magnet'));}
+  get pickup() {return 56*(1+.45*this.rank('magnet'));}
+  get maxShield() {return SHIELD_STEP*(1+this.rank('shield'));}
+  gainXp(amount) {this.xp=Math.round((this.xp+amount)*10)/10;}
   emit(type,data={}) {this.events.push({type,...data});}
   addEffect(effect) {if(this.effects.length<140)this.effects.push(effect);}
   spawn(kind,boss=false,bossLevel=this.level,finalBoss=false) {
@@ -77,8 +82,11 @@ export class Game {
     if(e.hp>0)return;
     this.kills++;this.emit('kill');
     const value=e.finalBoss?100:e.boss?20:e.kind==='chicken'?3:2;
-    if(this.gems.length<350)this.gems.push({x:e.x,y:e.y,value,heal:false});
-    else {let g=this.gems[0];g.value+=value;}
+    this.gainXp(value*.3);
+    const dropped=Math.round(value*.7*10)/10;
+    const xpGem=this.gems.length>=350?this.gems.find(g=>!g.heal&&!g.taken):null;
+    if(this.gems.length<350||!xpGem)this.gems.push({x:e.x,y:e.y,value:dropped,heal:false});
+    else xpGem.value=Math.round((xpGem.value+dropped)*10)/10;
     if(this.random()<.035)this.gems.push({x:e.x+7,y:e.y+5,value:15,heal:true});
     if(this.rank('leech')&&this.random()<.2)this.player.hp=Math.min(this.player.maxHp,this.player.hp+2*this.rank('leech'));
     for(let i=0;i<8;i++){if(this.particles.length>=200)break;let a=this.random()*6.28;this.particles.push({x:e.x,y:e.y,vx:Math.cos(a)*(15+this.random()*65),vy:Math.sin(a)*(15+this.random()*65),life:.6+this.random()*.5,max:1.1,size:2+this.random()*4});}
@@ -150,7 +158,10 @@ export class Game {
   hurt(amount) {
     const p=this.player;if(p.invuln>0||this.state!=='playing')return;
     // Armor has diminishing returns; damage always remains meaningful.
-    p.hp-=Math.max(1,amount*100/(100+this.rank('armor')*18));p.invuln=.65;this.shake=5;this.emit('hurt');
+    const damage=Math.max(1,amount*100/(100+this.rank('armor')*18));
+    const absorbed=Math.min(p.shield,damage);
+    p.shield-=absorbed;p.hp-=damage-absorbed;p.shieldDelay=6;
+    p.invuln=.65;this.shake=5;this.emit('hurt');
     if(p.hp<=0){p.hp=0;this.state='dead';this.emit('dead');}
   }
   offer() {
@@ -171,8 +182,10 @@ export class Game {
   }
   choose(id) {
     if(this.state!=='levelup'||!this.choices.some(u=>u.id===id))return false;
+    const upgrade=UPGRADES.find(u=>u.id===id);
+    if(id!=='heal'&&(!upgrade||this.rank(id)>=upgrade.max))return false;
     if(id==='heal')this.player.hp=this.player.maxHp;
-    else{this.upgrades[id]=this.rank(id)+1;if(id==='vitality'){this.player.maxHp+=25;this.player.hp=Math.min(this.player.maxHp,this.player.hp+35);}}
+    else{this.upgrades[id]=this.rank(id)+1;if(id==='vitality'){this.player.maxHp+=25;this.player.hp=Math.min(this.player.maxHp,this.player.hp+35);}if(id==='shield')this.player.shield+=SHIELD_STEP;}
     this.choices=[];this.state='playing';this.checkLevel();return true;
   }
   step(dt,input={x:0,y:0}) {
@@ -180,6 +193,9 @@ export class Game {
     dt=clamp(dt,0,.05);this.time+=dt;const p=this.player;
     this.manualAttackCooldown=Math.max(0,this.manualAttackCooldown-dt);
     p.invuln=Math.max(0,p.invuln-dt);this.shake=Math.max(0,this.shake-dt*20);
+    const rechargeTime=Math.max(0,dt-p.shieldDelay);
+    p.shieldDelay=Math.max(0,p.shieldDelay-dt);
+    p.shield=Math.min(this.maxShield,p.shield+this.maxShield*.1*rechargeTime);
     this.speedBoostTimer=Math.max(0,this.speedBoostTimer-dt);this.fireTimer=Math.max(0,this.fireTimer-dt);
     p.hp=Math.min(p.maxHp,p.hp+this.rank('regen')*.7*dt);
     let l=Math.hypot(input.x,input.y),nx=input.x/Math.max(1,l),ny=input.y/Math.max(1,l);
@@ -231,7 +247,7 @@ export class Game {
     this.shots=this.shots.filter(s=>s.life>0).slice(-150);
     for(const item of this.pickups){if(item.taken)continue;const d=Math.hypot(item.x-p.x,item.y-p.y);if(d<18){if(item.type==='meat')p.hp=Math.min(p.maxHp,p.hp+3);if(item.type==='oil')this.speedBoostTimer=Math.max(this.speedBoostTimer,20);if(item.type==='fire')this.fireTimer=Math.max(this.fireTimer,15);item.taken=true;this.emit('item',{kind:item.type});}}
     this.pickups=this.pickups.filter(item=>!item.taken);
-    for(const g of this.gems){let dx=p.x-g.x,dy=p.y-g.y,d=Math.hypot(dx,dy);if(d<this.pickup||g.attract){g.attract=true;g.x+=dx/(d||1)*Math.min(d,300*dt);g.y+=dy/(d||1)*Math.min(d,300*dt);if(d<16){if(g.heal)p.hp=Math.min(p.maxHp,p.hp+g.value);else this.xp+=g.value;g.taken=true;this.emit('pickup');}}}
+    for(const g of this.gems){let dx=p.x-g.x,dy=p.y-g.y,d=Math.hypot(dx,dy);if(d<this.pickup||g.attract){g.attract=true;const travel=Math.min(d,Math.max(300,this.speed*1.25)*dt);g.x+=dx/(d||1)*travel;g.y+=dy/(d||1)*travel;if(d-travel<16){if(g.heal)p.hp=Math.min(p.maxHp,p.hp+g.value);else this.gainXp(g.value);g.taken=true;this.emit('pickup');}}}
     this.gems=this.gems.filter(g=>!g.taken);this.enemies=this.enemies.filter(e=>e.hp>0);
     for(const e of this.effects)e.life-=dt;this.effects=this.effects.filter(e=>e.life>0);
     for(const q of this.particles){q.life-=dt;q.x+=q.vx*dt;q.y+=q.vy*dt;q.vx*=.95;q.vy*=.95;}this.particles=this.particles.filter(q=>q.life>0);

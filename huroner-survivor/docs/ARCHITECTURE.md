@@ -66,3 +66,7 @@ Conservar estos identificadores históricos aunque la carpeta se llame `huroner-
 ## Publicación
 
 Fuente y artefacto coinciden en `huroner-survivor/`; no hay build ni dist. `index.html` carga `./app.js` como módulo y los imports/assets son relativos. Pages sirve raíz de `main`, según README: mantener este mecanismo y una sola entrada del juego en el catálogo. Ruta prevista: `https://joseortegaa.github.io/ai-web-games-automata/huroner-survivor/`; no declararla publicada/comprobada hasta QA y humo remoto registrados en STATE. El coordinador integra y publica tras QA; arquitectura no cambia configuración remota.
+
+## XP y escudo (2026-10-03)
+
+`Game.hit` reparte XP 30/70; `gainXp` conserva décimas. Al saturar gemas, agregar sólo a XP viva, nunca a curación. `player.shield` y `shieldDelay` pertenecen a core; `maxShield` deriva de rango, base 20 y +20 hasta cinco mejoras. `hurt` mitiga con armadura, absorbe escudo y resta excedente de HP; `step` recarga sólo el tiempo posterior a 6 s sin daño (10% capacidad/s). `choose` valida también el máximo. UI sólo lee y muestra barra azul; `drawFerret` recibe `shield` normalizado para colorear el emblema del escudo en la pata libre, sin mutar Game.

@@ -17,15 +17,15 @@ Tiempo, desplazamiento, enemigos, recargas, invulnerabilidad y buffs avanzan exc
 - Un ataque autorizado apunta al enemigo vivo más cercano al comenzar el espadazo; sin enemigo usa la última orientación del hurón. No requiere acertar para consumir la recarga. El arco daña a todos los enemigos dentro de su área; no se añade selección manual de objetivo.
 - Recarga compartida manual/automática: **0,25 s**, sin bypass al alternar modalidades ni tocar repetidamente. Automático utiliza la misma puerta de ataque que manual. La presentación puede mostrar la recarga pero nunca modificarla.
 - Espada inicial: daño 20, alcance 98 más radio del enemigo, semiarco 1,35 rad más tolerancia de impacto 0,15 rad; retroceso de 10 unidades. Colmillo Gemelo ejecuta dos espadazos consecutivos dentro del mismo ataque y de la misma recarga; cada espadazo puede adquirir el objetivo más cercano. No añade retraso, carga ni combo.
-- Daño recibido: `max(1, dañoEntrante × 100 / (100 + 18 × rangoArmadura))`. Tras recibirlo: 0,65 s de invulnerabilidad. La regeneración y curación nunca superan la vida máxima.
+- Daño recibido: `max(1, dañoEntrante × 100 / (100 + 18 × rangoArmadura))`. El escudo absorbe primero el daño mitigado; el excedente pasa a HP. Tras recibirlo: 0,65 s de invulnerabilidad. La regeneración y curación nunca superan la vida máxima.
 
 ### Experiencia y mejoras
 
-Cada conejo, liebre o codorniz concede una gema de 2 XP; gallina común, 3; jefe intermedio, 20; jefe final, 100 aunque su muerte termina la partida. Cada baja tiene una probabilidad del 3,5% de dejar además una gema curativa de 15 HP. La atracción inicial de gemas tiene radio 43; una gema atraída sigue acercándose hasta recogerse. Los pickups de carne/aceite/fuego usan contacto directo (radio 18), no el imán de XP.
+Cada conejo, liebre o codorniz concede 2 XP; gallina común, 3; jefe intermedio, 20; jefe final, 100 aunque su muerte termina la partida. El 30% se suma al matar y el 70% cae como gema, conservando el total y las décimas sin error acumulado. La comprobación de nivel sigue en el paso de simulación para completar el ataque y respetar estados terminales. Cada baja tiene una probabilidad del 3,5% de dejar además una gema curativa de 15 HP. La atracción inicial de gemas tiene radio 56; una gema atraída sigue acercándose hasta recogerse, a velocidad máxima entre 300 y 1,25 veces la velocidad del jugador. Los pickups de carne/aceite/fuego usan contacto directo (radio 18), no el imán de XP.
 
 XP necesaria para salir del nivel `n`: `round(6 + 3n + 0,12n²)`. Al subir, se descuenta el umbral y se conserva el excedente. Se ofrecen hasta tres mejoras distintas al azar, excluyendo las que alcanzaron su máximo. Elegir una reanuda o abre inmediatamente la siguiente elección si sobra XP suficiente. La elección es obligatoria y no tiene temporizador. Si todas las mejoras están agotadas, se ofrece únicamente curación completa. Pulsaciones inválidas o duplicadas no pueden otorgar mejoras adicionales.
 
-Los porcentajes por rango se suman sobre la base; los buffs temporales multiplican después. Conservar estas doce mejoras, sus nombres ES/EN y límites:
+Los porcentajes por rango se suman sobre la base; los buffs temporales multiplican después. Conservar estas trece mejoras, sus nombres ES/EN y límites:
 
 | Mejora / ID | Efecto observable por rango | Máximo |
 | --- | --- | --- |
@@ -33,9 +33,10 @@ Los porcentajes por rango se suman sobre la base; los buffs temporales multiplic
 | Colmillo gemelo / `twin` | Dos espadazos por ataque | 1 |
 | Corazón indomable / `vitality` | +25 HP máximos y cura 35 HP | 6 |
 | Armadura de corteza / `armor` | Reducción según fórmula de armadura anterior | 6 |
+| Escudo del claro / `shield` | +20 de capacidad y carga al elegir; base 20, máximo total 120 | 5 |
 | Espada colosal / `reach` | Alcance 98 × (1 + 0,18 × rango); semiarco +0,13 rad/rango | 5 |
 | Patas ligeras / `speed` | Velocidad 124 × (1 + 0,12 × rango) | 5 |
-| Imán de almas / `magnet` | Radio 43 × (1 + 0,45 × rango) | 4 |
+| Imán de almas / `magnet` | Radio 56 × (1 + 0,45 × rango) | 4 |
 | Instinto vital / `regen` | Regenera 0,7 HP/s por rango | 4 |
 | Cuchillas lunares / `orbit` | Una cuchilla adicional: órbita de radio 72 a 2,5 rad/s; impacto de 0,65 × daño, recarga por enemigo 0,35 s | 4 |
 | Tormenta salvaje / `lightning` | Cada 2,8 s alcanza hasta rango + 1 enemigos cercanos, a menos de 350 unidades; daño 2,1 × daño | 4 |
@@ -43,6 +44,10 @@ Los porcentajes por rango se suman sobre la base; los buffs temporales multiplic
 | Colmillo carmesí / `leech` | Cada baja tiene 20% de probabilidad de curar 2 × rango HP | 3 |
 
 Corregir dos descripciones heredadas: no existe mejora de velocidad de ataque; la armadura no debe anunciar «+2» como si fuera la reducción real. La descripción de Gemelo debe hablar de «cada ataque» para cubrir automático y manual. Rayos comienza con dos objetivos y añade uno por rango posterior. No convertir estas correcciones de texto en cambios de reglas.
+
+### Escudo
+
+Empieza lleno con 20 puntos (20% de los 100 HP iniciales), independiente de mejoras de vida. Cualquier daño válido reinicia la espera de 6 s; después recupera el 10% de la capacidad máxima por segundo, sin excederla. Pausa, elección y estados terminales congelan espera/recarga; reiniciar restaura 20/20 y cero rangos. Barra azul con cifra actual/máxima sobre la vida, ES/EN. El hurón sostiene un escudo azul de borde cobre en la pata libre; su emblema se apaga al agotarse, conservando la silueta. Sin partículas ni colisiones nuevas.
 
 ### Pickups y ritmo existente
 
@@ -79,7 +84,7 @@ Antes de empezar, explicar movimiento, ataque seleccionado y condición de victo
 
 ### Invariantes y criterios comprobables para QA
 
-1. La misma secuencia de input, tiempo y aleatoriedad produce las mismas reglas de combate y progresión que el original, salvo correcciones explícitas de estados terminales. Ningún ajuste de diseño altera cifras para aparentar mayor dificultad o potencia.
+1. La misma secuencia de input, tiempo y aleatoriedad produce las reglas de combate y progresión documentadas, incluidas las peticiones de XP repartida y escudo del 2026-10-03. Ningún ajuste de diseño altera cifras para aparentar mayor dificultad o potencia.
 2. Manual y automático comparten los 0,25 s; Gemelo duplica el espadazo una sola vez; el objetivo siempre es el vivo más cercano o la orientación previa si no existe.
 3. Tiempo/buffs/recargas no avanzan en pausa ni elección; reanudar no compensa de golpe el tiempo de pestaña oculta. Reiniciar vacía enemigos, efectos, elecciones, buffs e input retenido.
 4. Los niveles 5/10 generan jefes una vez; 6/11/16 mutan; el boss final aparece una sola vez a los 600 s. Los avisos no persiguen al jugador después de fijarse.
@@ -135,7 +140,7 @@ Todos los siguientes recursos son originales de esta V2, creados como código ve
 
 | Ruta | Uso / contrato |
 | --- | --- |
-| `art.js` | `drawFerret(ctx,{x,y,scale,face,walk,armor})`, escala base aprox. 46 × 60; ancla de posición de actor. `face` ±1, `walk` fase en radianes. |
+| `art.js` | `drawFerret(ctx,{x,y,scale,face,walk,armor,shield})`, escala base aprox. 46 × 60; ancla de posición de actor. `face` ±1, `walk` fase en radianes. |
 | `art.js` | `drawAnimal(ctx,{kind,x,y,scale,tier,boss,time,flash,id})`; `id` opcional desfasador, clases `rabbit/hare/quail/chicken`; escala base aprox. 40 × 56 incluyendo orejas, variable por animal. `boss` sólo añade corona: caller aplica escala. |
 | `assets/hero.svg` | Portada ilustrada transparente, viewBox 760 × 610; mostrar completa. |
 | `assets/divider.svg` | Separador botánico cobre, viewBox 400 × 28; uso opcional entre título y acciones. |

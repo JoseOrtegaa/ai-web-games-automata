@@ -5,6 +5,8 @@ import { Game, ATTACK_COOLDOWN, xpNeeded } from '../core.js';
 function scenario() {
   const game = new Game(() => .5);
   game.spawnTimer = game.pickupTimer = 999;
+  game.player.shieldDelay = 999;
+  game.player.shield = 0; // Isolate lethal health damage; shield behavior has its own tests.
   return game;
 }
 function enemy(game, x, { final = false, hp = 1 } = {}) {
@@ -62,7 +64,7 @@ test('victory from each passive weapon stops later targets, projectile damage an
     assert.equal(survivor.hp, 100, weapon);
     assert.equal(game.player.hp, 40, weapon);
     assert.equal(game.shots[0].life, 1, weapon);
-    assert.equal(game.xp, 0, weapon);
+    assert.equal(game.xp, 30, weapon); // Direct XP belongs to the winning kill, before terminal.
     assert.equal(game.pickups[0].taken, false, weapon);
     assert.deepEqual(game.events.map(event => event.type), ['kill', 'won'], weapon);
     assertFrozen(game);

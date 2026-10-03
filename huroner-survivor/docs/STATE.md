@@ -1,19 +1,19 @@
 # Huroner Survivor — estado vigente
 
 ## Objetivo y fase
-Mundo más tétrico cada cinco niveles. Implementado, QA local PASS y publicación verificada. Cambio exclusivamente visual; no repetir diseño ni pruebas de combate ya cerradas.
+XP 30% directa/70% en gemas, escudo recargable/mejorable, mejoras máximas ocultas y escudo visible en la silueta. Implementado y QA local PASS; pendiente integración/publicación.
 
 ## Revisión y archivos
-Base remota: 7ad600cd4a630176f63cfd22a8a064f9294c6441. `world.js` genera/cachea etapas; `render.js` delega fondo usando nivel y tiempo del Game. Contratos y dirección actualizados en ARCHITECTURE/DESIGN; prueba reproducible `tests/world-qa.cjs` con Playwright externo.
+Base `c69a17c`, rama `feature/xp-shield-upgrades`. Cambios en core, app/HUD, i18n, art/render y pruebas `progression.test.js` / `progression-qa.cjs`. Contratos y balance en DESIGN/ARCHITECTURE.
 
-## Decisiones
-5: raíces secas; 10: cementerio; 15: osario/grietas; 20: ruinas; 25: abismo. Múltiplos posteriores redistribuyen motivos y oscurecen con límite. Fundido de 1,8 s de simulación, congelado en pausa/elección, inmediato con movimiento reducido. Menú/reinicio vuelve a pradera. Solo dos tiles como máximo; no nuevos objetos de simulación ni cambios de dificultad.
+## Decisiones duraderas
+Radio de gemas 56; atracción persistente a max(300, velocidad×1,25), XP con precisión de décimas y sin agregar a gemas curativas. Escudo lleno 20; +20 capacidad/carga por rango, cinco rangos, máximo 120. Daño mitigado por armadura consume escudo y desborda a vida; espera 6 s sin daño, recarga 10% de capacidad/s. Pausa/elección congelan. Vida máxima no escala escudo. Menú filtra máximos y core rechaza selección obsoleta. Escudo azul/cobre en pata libre, emblema apagado sin carga; sin partículas nuevas.
 
-## Verificación y límites
-Chromium/WebKit PASS: umbrales, etapas, transición/pausa, reset, movimiento reducido, Game inmutable, recursos sin errores y capturas móvil/escritorio. Evidencia en QA.md. Sin pruebas físicas; sigue vigente la limitación de rendimiento bajo carga extrema del juego previo.
+## Completado y verificación
+35 pruebas de reglas PASS. Chromium/WebKit PASS: HUD, XP al matar, mejoras máximas, escudo, pausa/elección, reset, ES/EN, layouts móvil/pequeño/escritorio, dibujo reflejado/con armadura y renderer inmutable. Evidencia en QA y progression-local.json. Sin pruebas físicas; permanece limitación de rendimiento extremo previa.
 
-## Contexto duradero
-Ruta canónica `huroner-survivor/`. Legacy archivado en `feature/huroner-survivor-legacy`. Conservar claves de almacenamiento `huroner-survivor-2:*` para mantener ajustes/récords. No hay carpeta V2 en main.
+## Contexto preservado
+Ruta `huroner-survivor/`, Pages desde main. Legacy en `feature/huroner-survivor-legacy`; claves `huroner-survivor-2:*` conservadas. Mundos por cada 5 niveles previamente terminados, sin cambios en esta entrega. No reabrir fases anteriores.
 
 ## Siguiente paso
-Entrega completada en commit `67c5458b3ea256fdfa2ab6dc45f2975d47f7a75c`. [Pages 37078325776](https://github.com/JoseOrtegaa/ai-web-games-automata/actions/runs/37078325776) success. Humo público PASS: módulo cargado, transición real nivel 4→5 en app, HUD y pausa/reanudación; sin errores de carga/página. Evidencia en world-public.json. Esperar siguiente petición de Jose; no repetir fases anteriores.
+Revisar diff, integrar sin sobrescribir cambios ajenos y comprobar publicación. Sin defectos abiertos.

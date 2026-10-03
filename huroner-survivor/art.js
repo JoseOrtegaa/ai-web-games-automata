@@ -15,7 +15,7 @@ function oval(c, x, y, rx, ry, fill, stroke = null, width = 1.2) {
 function line(c, data, color = INK, width = 1) { shape(c, data, null, color, width); }
 
 /** Approximately 46 × 60 units. x/y is the actor ground anchor, face is ±1. */
-export function drawFerret(c, { x = 0, y = 0, scale = 1, face = 1, walk = 0, armor = 0 } = {}) {
+export function drawFerret(c, { x = 0, y = 0, scale = 1, face = 1, walk = 0, armor = 0, shield = 1 } = {}) {
   c.save(); c.translate(x, y); c.scale(scale * (face < 0 ? -1 : 1), scale);
   c.lineJoin = 'round'; c.lineCap = 'round';
   const step = Math.sin(walk) * 2;
@@ -46,6 +46,12 @@ export function drawFerret(c, { x = 0, y = 0, scale = 1, face = 1, walk = 0, arm
   line(c, 'M14 11L12 16', '#705743', 3);
   oval(c, 11, 1, 4.3, 6.5, '#d7c6a6', INK);
   oval(c, 13, 5, 3.3, 3, '#efe1c4', INK, .9);
+  // A compact shield in the free paw, opposite the sword; stays visible when depleted.
+  oval(c, -12, 2, 4, 5, '#d7c6a6', INK);
+  shape(c, 'M-24-5Q-16-2-7-5L-8 8Q-10 15-16 19Q-23 15-25 8Z', '#263f53', '#b99562', 1.6);
+  shape(c, 'M-21-1L-17 0L-17 14Q-21 11-22 6Z', '#47718a', null);
+  line(c, 'M-16-1L-16 15M-22 4L-10 4', '#638da1', .8);
+  shape(c, 'M-16 0L-12 5L-16 10L-20 5Z', shield > 0 ? '#9dd9ff' : '#536b78', INK, .8);
   // Rounded ears, narrow muzzle and dark eye mask distinguish a ferret.
   oval(c, -10, -23, 5.3, 5.8, '#dcccaf', INK);
   oval(c, 7, -25, 5.2, 5.2, '#dcccaf', INK);

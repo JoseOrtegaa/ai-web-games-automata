@@ -1,0 +1,34 @@
+[
+  {
+    "browser": "chromium",
+    "version": "134.0.6998.35",
+    "result": "PASS",
+    "checks": [
+      "shield HUD and damage",
+      "pause and choice freeze recharge",
+      "direct kill XP level-up",
+      "max-rank exclusion and shield upgrade",
+      "reset and ES/EN",
+      "390/320/1440 layouts",
+      "shield art both directions and armor",
+      "renderer immutable"
+    ],
+    "errors": []
+  },
+  {
+    "browser": "webkit",
+    "version": "18.4",
+    "result": "PASS",
+    "checks": [
+      "shield HUD and damage",
+      "pause and choice freeze recharge",
+      "direct kill XP level-up",
+      "max-rank exclusion and shield upgrade",
+      "reset and ES/EN",
+      "390/320/1440 layouts",
+      "shield art both directions and armor",
+      "renderer immutable"
+    ],
+    "errors": []
+  }
+]

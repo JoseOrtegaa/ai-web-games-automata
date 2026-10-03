@@ -50,3 +50,18 @@ Entidades acotadas y ejecución estable; no se alcanzan 60 fps en esta carga hea
 Commit de juego: `51b61920a9b27a8163af70bbdd49a1ed2623427c`. [Pages 37073839721](https://github.com/JoseOrtegaa/ai-web-games-automata/actions/runs/37073839721): success.
 
 URL verificada: https://joseortegaa.github.io/ai-web-games-automata/huroner-survivor-2/ el 2026-10-02 22:42 UTC. Catálogo, ilustración cargada, inicio, HUD, pausa y reanudación PASS; sin errores de página/red. Navegador del entorno acepta el certificado del proxy: esta comprobación no valida TLS. [Resultado público](public-results.json).
+
+
+## 2026-10-03 — XP repartida, escudo y límites de mejoras
+
+**PASS local.** Base `c69a17c`, rama `feature/xp-shield-upgrades`; revisión propia, sin agentes adicionales.
+
+- `node --test tests/*.test.js`: cuatro archivos PASS; `node --test --test-isolation=none tests/*.test.js`: 35 casos PASS.
+- Nuevos criterios: XP 30/70 para especies/jefes, avance sólo matando y conservación de décimas; gemas saturadas sin mezclar curación; atracción persistente incluso con velocidad máxima/aceite.
+- Escudo inicial 20, mitigación previa, absorción y excedente, invulnerabilidad, demora 6 s, recarga 10%/s, pausa/elección, cinco mejoras de +20, independencia de vida y reset.
+- Máximos fuera de ofertas, última mejora válida, selección obsoleta rechazada y curación al agotar catálogo. Regresiones terminales adaptan el escenario sin escudo para seguir aislando daño letal.
+- `tests/progression-qa.cjs` con Playwright 1.51.1 externo: Chromium 134.0.6998.35 y WebKit 18.4 PASS. HUD real, nivel por baja, congelación, mejora de escudo y exclusión de agotadas, reinicio, ES/EN, layouts 390×844, 320×568 y 1440×1000, renderer inmutable. Sin errores de página/recursos.
+- Revisión visual de capturas: escudo azul/cobre sobre pata libre, espada/cara visibles; ambas orientaciones, armadura y emblema sin carga. Barra azul sobre vida, elección legible. Resultados reproducibles en `progression-local.json`; capturas temporales `/tmp/huroner-progression-qa/`.
+- No se han realizado pruebas físicas de iPhone/Android. Sin cambios en cadencia, enemigos ni mundos.
+
+Publicación pendiente de verificar tras integración.
