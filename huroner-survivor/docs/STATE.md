@@ -1,24 +1,30 @@
 # Huroner Survivor — estado vigente
 
 ## Objetivo / fase
-Evitar que las hordas numerosas colapsen visualmente en una sola pila de sprites sin reducir el límite global ni rebajar la presión del juego. Implementación en rama completada; QA e integración pendientes.
+Evitar que las hordas numerosas colapsen visualmente en una sola pila de sprites sin reducir el límite global ni rebajar la presión del juego. Implementación y QA lógico completados; listo para integrar/publicar.
 
 ## Revisión
-Rama `feature/horde-spacing` sobre `main`. Archivos afectados: `core.js`, `tests/core.test.js` y este STATE.
+Rama `feature/horde-spacing` sobre `main`. PR #2. Archivos funcionales afectados: `core.js` y `tests/core.test.js`.
 
 ## Decisiones
-Se mantienen el límite ordinario de 170 enemigos, vida, daño, XP, bosses y cadencia de spawn. La solución combina tres reglas localizadas:
+Se mantienen el límite ordinario de 170 enemigos, vida, daño, XP, bosses y cadencia de spawn. La solución combina:
 - spawn ponderado por 8 sectores alrededor del jugador, evitando sectores localmente saturados;
-- objetivo cercano desplazado por enemigo al aproximarse al jugador, para que no todos persigan el mismo píxel;
-- separación suave mediante grid espacial, con prioridad para bosses/auxiliares para no desplazar sus mecánicas.
+- offsets de aproximación por enemigo únicamente cuando hay al menos 6 enemigos ordinarios a <180 px del jugador;
+- separación suave mediante grid espacial, con prioridad para bosses/auxiliares para no desplazar sus mecánicas;
+- recolocación de enemigos muy lejanos usando la misma distribución por sectores.
 
-No hay colisiones rígidas ni límite artificial de densidad. El sistema queda preparado para que futuros arquetipos puedan reutilizar o sustituir sus preferencias de distancia.
+No hay colisiones rígidas ni reducción artificial de enemigos. Con pocos enemigos se conserva la persecución directa previa.
 
-## QA previsto
-Pruebas nuevas: distribución de spawn lejos de sectores saturados y dispersión de una pila melee densa. Mantener suite existente, incluido stress de 10 minutos y límites de entidades. Después revisar diff, integrar en `main` y verificar Pages.
+## QA
+QA localizado sobre el código real de la rama: 42/42 pruebas lógicas PASS:
+- `core.test.js`: 20/20, incluidas las dos regresiones nuevas y stress de 10 minutos;
+- `bosses.test.js`: 16/16;
+- `boss-expansion.test.js`: 6/6.
+
+La primera pasada detectó que el offset afectaba a un enemigo aislado; se corrigió activándolo solo bajo densidad real y la segunda pasada quedó completa en PASS. No se afirma prueba física en iPhone.
 
 ## Contexto preservado
 Bosses: HP +30→50% y dos ataques nuevos por actor ya integrados. XP 30/70; escudo 20→120; ataque 0,25 s; mundos cada 5 niveles; zoom bloqueado. Ruta canónica `huroner-survivor/`.
 
 ## Siguiente paso
-Ejecutar QA de la rama. Si pasa, fusionar/publicar y hacer humo remoto del enlace jugable. No repetir análisis ni cambiar balance ajeno a la densidad de horda.
+Fusionar PR #2 en `main`, esperar Pages y hacer humo remoto del enlace jugable. No repetir implementación ni cambiar balance ajeno a la densidad de horda.
