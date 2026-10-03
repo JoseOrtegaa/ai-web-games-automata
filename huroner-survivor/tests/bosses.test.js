@@ -10,13 +10,17 @@ function scene(type, level=5) {
 function advance(g,time,input){for(let left=time;left>1e-8;left-=.01)g.step(Math.min(.01,left),input);}
 function approx(a,b){assert.ok(Math.abs(a-b)<1e-7,`${a} != ${b}`);}
 
-test('ten distinct catalog entries are all selectable and adjacent picks do not repeat',()=>{
-  assert.equal(BOSSES.length,10);assert.equal(new Set(BOSSES.map(b=>b.id)).size,10);
-  const chosen=new Set();
-  for(let i=0;i<10;i++){const g=new Game(()=> (i+.1)/10);chosen.add(spawnBoss(g).bossType);}
-  assert.equal(chosen.size,10);
-  const g=new Game(()=>.5);let prior=null;
-  for(let i=0;i<30;i++){const e=spawnBoss(g);assert.notEqual(e.bossType,prior);prior=e.bossType;}
+test('twenty bosses are split into five distinct random bosses per world',()=>{
+  assert.equal(BOSSES.length,20);assert.equal(new Set(BOSSES.map(b=>b.id)).size,20);
+  for(let depth=0;depth<4;depth++){
+    const defs=BOSSES.filter(b=>b.depth===depth);assert.equal(defs.length,5);
+    assert.equal(new Set(defs.map(b=>b.profile)).size,5);
+    const chosen=new Set();
+    for(let i=0;i<5;i++){const g=new Game(()=> (i+.05)/5);g.worldDepth=depth;chosen.add(spawnBoss(g).bossType);}
+    assert.equal(chosen.size,5);
+    const g=new Game(()=>.5);g.worldDepth=depth;let prior=null;
+    for(let i=0;i<20;i++){const e=spawnBoss(g);assert.equal(e.bossTheme,depth);assert.notEqual(e.bossType,prior);prior=e.bossType;}
+  }
 });
 
 test('milestones 5/10/15 create one encounter each, preserve living encounters and level scaling',()=>{
@@ -147,7 +151,7 @@ test('coexisting bosses remain bounded over sustained combat and preserve finite
   for(const def of BOSSES){const e=spawnBoss(g,def.id,20);Object.assign(e,{x:100,y:0});}
   for(let i=0;i<2400;i++){
     g.step(.05,{x:Math.cos(i/200)*.3,y:Math.sin(i/200)*.3});g.events=[];
-    assert.ok(g.hazards.length<=64);assert.ok(g.shots.length<=150);assert.ok(g.enemies.length<=13);
+    assert.ok(g.hazards.length<=64);assert.ok(g.shots.length<=150);assert.ok(g.enemies.length<=25);
     assert.ok(g.enemies.every(e=>Number.isFinite(e.hp)&&Number.isFinite(e.x)&&Number.isFinite(e.y)));
   }
 });
