@@ -5,6 +5,27 @@ function rng(seed=123){return()=>{seed=(seed*1664525+1013904223)>>>0;return seed
 function nearby(g,kind='rabbit',x=40,y=0){const e=g.spawn(kind);Object.assign(e,{x,y});return e;}
 test('normalized controls, fixed time ceiling and paused simulation',()=>{const g=new Game(rng());g.step(.05,{x:1,y:1});assert.ok(Math.abs(Math.hypot(g.player.x,g.player.y)-g.speed*.05)<1e-8);g.state='levelup';const snapshot=JSON.stringify(g);g.step(.05,{x:1,y:0});assert.equal(JSON.stringify(g),snapshot);});
 test('manual slash targets enemies and drops collectible experience',()=>{const g=new Game(rng());g.player.face=0;let e=nearby(g);g.manualAttack();for(let i=0;i<10;i++)g.step(.05);g.manualAttack();assert.ok(e.hp<=0);assert.equal(g.kills,1);assert.ok(g.gems.length);g.gems=[{x:g.player.x,y:g.player.y,value:3}];g.step(.02);assert.equal(g.xp,3.6);});
+test('combat numbers aggregate rapid damage per enemy and stay globally capped',()=>{
+  const g=new Game(rng());g.spawnTimer=g.pickupTimer=999;
+  const e=nearby(g,'rabbit',40,0);e.hp=e.maxHp=500;
+  g.upgrades.twin=1;g.manualAttack();
+  const text=g.combatTexts.find(t=>t.kind==='damage'&&t.targetId===e.id);
+  assert.ok(text);assert.equal(text.amount,40);assert.equal(g.combatTexts.filter(t=>t.targetId===e.id).length,1);
+  for(let i=0;i<20;i++)g.addCombatText('damage',i+1,i*4,0,1000+i);
+  assert.ok(g.combatTexts.length<=10);
+});
+test('healing numbers are green-data events, use actual healing and throttle regeneration',()=>{
+  const g=new Game(rng());g.spawnTimer=g.pickupTimer=999;g.player.hp=50;g.upgrades.regen=1;
+  for(let i=0;i<20;i++)g.step(.05);
+  const regenTexts=g.combatTexts.filter(t=>t.kind==='heal');
+  assert.ok(regenTexts.length<=1,'regen should not create a number every frame');
+  assert.ok(regenTexts[0]?.amount>.5&&regenTexts[0]?.amount<1);
+  g.combatTexts=[];g.healTextPending=0;g.healTextTimer=0;g.player.hp=g.player.maxHp-1;
+  const item=g.spawnPickup('meat');Object.assign(item,{x:g.player.x,y:g.player.y});g.step(.01);
+  const meatText=g.combatTexts.find(t=>t.kind==='heal');
+  assert.ok(meatText);assert.equal(meatText.amount,1,'healing text must show actual HP restored, not nominal pickup value');
+});
+
 test('level up offers three distinct valid choices and carries over XP',()=>{const g=new Game(rng());g.xp=xpNeeded(1)+xpNeeded(2)+2;g.checkLevel();assert.equal(g.level,2);assert.equal(g.state,'levelup');assert.equal(g.choices.length,3);assert.equal(new Set(g.choices.map(x=>x.id)).size,3);assert.equal(g.choose('invalid'),false);let id=g.choices[0].id;assert.equal(g.choose(id),true);assert.equal(g.rank(id),1);assert.equal(g.level,3);assert.equal(g.state,'levelup');assert.equal(g.xp,2);g.choose(g.choices[0].id);assert.equal(g.state,'playing');});
 test('level-up XP remainder stays rounded to one decimal',()=>{const g=new Game(rng());g.level=10;g.xp=xpNeeded(10)+.2;g.checkLevel();assert.equal(g.level,11);assert.equal(g.xp,.2);assert.equal(String(g.xp),'0.2');});
 test('enemy spawn pressure rises smoothly with every level and active time',()=>{
