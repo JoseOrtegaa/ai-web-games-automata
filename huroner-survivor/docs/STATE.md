@@ -1,37 +1,47 @@
 # Huroner Survivor — estado vigente
 
 ## Objetivo / fase
-Suavizar y aumentar progresivamente la generación de enemigos para evitar que el mundo 2 se sienta vacío y eliminar saltos bruscos de densidad. Implementación, QA lógico e integración en `main` completados.
+Convertir el boss final en un encuentro realmente final: acceso al inframundo, arena propia, pocos esbirros y tres fases de ataques combinados. Implementación y QA lógico completados en feature/final-underworld-arena; pendiente integración/publicación.
 
-## Generación normal
-- Antes: intervalo dependiente casi solo del tiempo y tandas de 1/2/3/4/5 enemigos que saltaban cada 150 s.
-- Ahora: `spawnRateFor(level,time)` aumenta ligeramente con **cada nivel** y también de forma continua con el tiempo activo.
-- Se genera un enemigo por tick de spawn, eliminando saltos de tamaño de tanda.
-- Referencias aproximadas: lvl 1 = 0,82 enemigos/s; lvl 5 @60 s = 1,40/s; lvl 10 @150 s = 2,16/s; lvl 15 @220 s = 2,86/s; lvl 20 @300 s = 3,60/s; lvl 25 @380 s = 4,33/s; lvl 30 @450 s = 5,04/s; lvl 35 @520 s = 5,74/s.
-- Al entrar en una cueva se limpian las entidades del mundo anterior como antes, pero el primer spawn pasa de 0,5 s a 0,15 s para evitar una pausa artificial.
-- No hay bonus discreto por mundo: la presión depende de nivel/tiempo, por lo que descender no produce un salto ni una caída artificial.
+## Flujo final
+- A los 10:00 ya no aparece el rey directamente: se abre una grieta/cueva final con flecha.
+- Al acercarse, el botón cambia a **BAJAR AL INFRAMUNDO**.
+- Al entrar se limpia el mapa anterior y se inicia una arena circular independiente (finalArena, radio 285).
+- Rey único con arte propio underworld_king; +18% HP adicional respecto al escalado final anterior.
+- Máximo 4 esbirros magma, aproximadamente uno cada 4,2 s; sin pickups periódicos.
+- DEV ?dev=1: botón **FINAL** entra directamente a la arena.
+
+## Dificultad del rey
+- Fase I (100–70%): cinco ataques del rey en ciclo.
+- Fase II (70–35%): ataque principal + tres marcas infernales simultáneas; cadencia ~2,55 s.
+- Fase III (≤35%): lo anterior + anillo expansivo + dos carriles fijados; cadencia ~2,15 s.
+- Todos los patrones nuevos tienen telegráfico; no se aumenta el daño bruto de forma equivalente.
 
 ## Implementación
-`core.js`: nuevas `spawnRateFor` / `spawnIntervalFor`; reemplazo de tandas por cadencia continua; reanudación rápida tras cueva.
-`tests/core.test.js`: monotonicidad por nivel/tiempo y ausencia de burst.
-`tests/world-progression.test.js`: reanudación de spawn tras descenso.
+core.js: puerta final, entrada, límites físicos de arena, HP extra, spawn reducido y DEV final.
+bosses.js: fases II/III y patrones simultáneos.
+world.js: stage 40 inframundo.
+boss-art.js: Rey del Inframundo único y paleta final.
+render.js: portal final y borde de arena.
+app.js / i18n.js / index.html: UX, textos ES/EN y botón DEV.
+Tests actualizados para flujo 10:00, fases, límites y minions.
 
 ## QA
 PASS lógico:
-- tasa aumenta en cada nivel del 1 al 40;
-- el tiempo activo también aumenta la presión de forma continua;
-- simulaciones de 10 s en tramos 5/10/15/25/35 producen presión creciente y acotada;
-- un tick de spawn crea un solo enemigo, sin ráfagas por umbral;
-- descenso reanuda spawn en ≤0,15 s;
-- `core.js` parsea correctamente.
+- 10:00 abre portal sin spawnear al rey;
+- entrar crea un único rey final con tema/forma propios;
+- arena confina jugador y rey;
+- máximo 4 esbirros y todos usan familia magma;
+- fase II genera 4 hazards simultáneos y fase III 7 en el escenario comprobado;
+- todos los hazards añadidos nacen con edad negativa/aviso previo;
+- stage de inframundo = 40 sin convertirlo en un quinto worldDepth;
+- core/bosses/world/boss-art/render/app parsean;
+- todos los IDs DOM literales usados por app existen.
 
-No se afirma prueba física en iPhone ni ejecución de la suite Node desde checkout local en esta sesión.
-
-## Integración
-PR #9 fusionado en `main` el 2026-10-03. Merge squash: `e1473f7c40e8dcfa422bc4f7a33e3e04639e24b9`.
+No se afirma prueba física en iPhone ni ejecución Playwright local en esta sesión.
 
 ## Contexto preservado
-20 bosses normales: 5 por mundo, más rey final de 600 s. Familias normales distintas por mundo. Cuevas: primera bajada tras boss 5/10 aleatorio, siguientes tras 15/30. Modo DEV `?dev=1`. Ataque automático por defecto. XP 30/70 con remanente redondeado; escudo 20→120; ataque 0,25 s; zoom bloqueado.
+20 bosses normales: 5 por mundo. Generación normal gradual por nivel + tiempo. Familias normales distintas por mundo. Cuevas: primera bajada tras boss 5/10 aleatorio, siguientes tras 15/30. Ataque automático por defecto. XP 30/70; escudo 20→120; ataque 0,25 s; zoom bloqueado.
 
 ## Siguiente paso
-Validar sensación de densidad en móvil, especialmente tras la primera bajada y en los niveles 20–35; ajustar solo la pendiente si hiciera falta.
+Revisar diff, integrar en main, comprobar Pages y probar físicamente el boss final en móvil con DEV → FINAL para ajustar dificultad si fuera necesario.
