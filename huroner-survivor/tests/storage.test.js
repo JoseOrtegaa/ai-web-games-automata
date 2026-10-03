@@ -13,7 +13,7 @@ function memoryStorage(entries = []) {
 }
 
 test('preferences default from browser language and validate each stored field', () => {
-  const defaults = { language: 'es', muted: false, attackMode: 'button', attackSide: 'right' };
+  const defaults = { language: 'es', muted: false, attackMode: 'auto', attackSide: 'right' };
   assert.deepEqual(loadPreferences(memoryStorage(), 'es-ES'), defaults);
   assert.deepEqual(loadPreferences(memoryStorage(), 'fr-FR'), { ...defaults, language: 'en' });
   for (const raw of ['{broken', 'null', '42', 'false', '[]', '"text"']) {
@@ -23,6 +23,8 @@ test('preferences default from browser language and validate each stored field',
   assert.deepEqual(loadPreferences(memoryStorage([[PREFERENCES_KEY, JSON.stringify(invalid)]]), 'es'), defaults);
   const partial = memoryStorage([[PREFERENCES_KEY, JSON.stringify({ language: 'en', muted: true })]]);
   assert.deepEqual(loadPreferences(partial, 'es'), { ...defaults, language: 'en', muted: true });
+  const savedManual = memoryStorage([[PREFERENCES_KEY, JSON.stringify({ attackMode: 'button' })]]);
+  assert.equal(loadPreferences(savedManual, 'es').attackMode, 'button');
 });
 
 test('preferences and records round-trip using only V2 keys, without touching legacy data', () => {
