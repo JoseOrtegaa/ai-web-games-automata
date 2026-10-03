@@ -34,6 +34,7 @@ PASS lógico:
 - máximo 4 esbirros y todos usan familia magma;
 - fase II genera 4 hazards simultáneos y fase III 7 en el escenario comprobado;
 - todos los hazards añadidos nacen con edad negativa/aviso previo;
+- muestreo espacial de fase III conserva zonas de escape en todos los instantes comprobados (peor muestra: 146/197 puntos seguros);
 - stage de inframundo = 40 sin convertirlo en un quinto worldDepth;
 - core/bosses/world/boss-art/render/app parsean;
 - todos los IDs DOM literales usados por app existen.
