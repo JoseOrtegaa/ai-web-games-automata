@@ -1,7 +1,7 @@
 # Huroner Survivor — estado vigente
 
 ## Objetivo / fase
-Convertir el boss final en un encuentro realmente final: acceso al inframundo, arena propia, pocos esbirros y tres fases de ataques combinados. Implementación y QA lógico completados en feature/final-underworld-arena; pendiente integración/publicación.
+Convertir el boss final en un encuentro realmente final: acceso al inframundo, arena propia, pocos esbirros y tres fases de ataques combinados. Implementación, QA lógico e integración en `main` completados.
 
 ## Flujo final
 - A los 10:00 ya no aparece el rey directamente: se abre una grieta/cueva final con flecha.
@@ -41,8 +41,11 @@ PASS lógico:
 
 No se afirma prueba física en iPhone ni ejecución Playwright local en esta sesión.
 
+## Integración
+PR #10 fusionado en `main` el 2026-10-03. Merge squash: `bd0c05f460fe09b36fc728d8fee54e318eda0056`.
+
 ## Contexto preservado
 20 bosses normales: 5 por mundo. Generación normal gradual por nivel + tiempo. Familias normales distintas por mundo. Cuevas: primera bajada tras boss 5/10 aleatorio, siguientes tras 15/30. Ataque automático por defecto. XP 30/70; escudo 20→120; ataque 0,25 s; zoom bloqueado.
 
 ## Siguiente paso
-Revisar diff, integrar en main, comprobar Pages y probar físicamente el boss final en móvil con DEV → FINAL para ajustar dificultad si fuera necesario.
+Probar físicamente el boss final en móvil con DEV → FINAL y ajustar únicamente telegráficos/cadencia si la fase III resulta demasiado fácil o demasiado punitiva.
