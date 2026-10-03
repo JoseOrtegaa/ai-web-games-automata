@@ -106,3 +106,17 @@ Reproducir QA con Playwright 1.51.1 instalado fuera del proyecto; `QA_BROWSERS=c
 - Las aserciones numéricas equivalentes se ejecutaron con Node y pasan.
 - No se ejecutó la suite completa ni QA de navegador en este entorno porque el runner no tiene acceso de red al repositorio; no se afirma prueba física en iPhone/Android.
 - GitHub Pages: run 37161784959 completado con `success` para el commit de juego `ed7d597ace7be7543761913c0853df57d1738d26`.
+
+
+## 2026-10-04 — enemigos normales menos robóticos
+
+**PASS lógico localizado.** PR #16, squash `712208aa6e9d9348a8f6cf5e11a40661090d3c22`.
+
+- Puntería imperfecta añadida a jump/fan/lunge/shot/ram; burst/explode permanecen centrados en el propio enemigo.
+- Cada una de las 16 familias conserva su ataque principal y recibe un secundario coherente; bone_skull evolucionado alterna explode/ram.
+- 1 de cada 4 IDs puede abrir con secundario y la anti-repetición fuerza cambio tras dos usos iguales cuando la alternativa está disponible.
+- El secundario no amplía el rango original de activación del enemigo.
+- Fan secundario de arqueros conserva feather/bone/rock/ember según familia.
+- Checks dirigidos ejecutados con Node: repertorios, desviación de puntería, apertura no sincronizada, anti-repetición y conservación de rango: PASS.
+- La suite completa no se pudo ejecutar en el runner aislado porque no resuelve github.com; se revisó el diff integrado y los tests de regresión específicos quedaron añadidos al repositorio.
+- Bosses no modificados; no se afirma prueba física en iPhone/Android.
