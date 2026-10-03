@@ -64,4 +64,4 @@ URL verificada: https://joseortegaa.github.io/ai-web-games-automata/huroner-surv
 - Revisión visual de capturas: escudo azul/cobre sobre pata libre, espada/cara visibles; ambas orientaciones, armadura y emblema sin carga. Barra azul sobre vida, elección legible. Resultados reproducibles en `progression-local.json`; capturas temporales `/tmp/huroner-progression-qa/`.
 - No se han realizado pruebas físicas de iPhone/Android. Sin cambios en cadencia, enemigos ni mundos.
 
-Publicación pendiente de verificar tras integración.
+Publicación verificada: commit `7903e2b3b5415df74a4d1eb777906fff6546b857`, Pages `37117269702` success. Siete archivos desplegados coinciden byte por byte con los probados. Humo público Chromium/WebKit PASS: arranque, escudo 20/20, pausa/reanudación y carga sin errores. Ver `progression-public.json`.

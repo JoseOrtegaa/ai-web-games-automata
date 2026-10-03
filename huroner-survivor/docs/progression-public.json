@@ -1,0 +1,60 @@
+{
+  "commit": "7903e2b3b5415df74a4d1eb777906fff6546b857",
+  "pagesRun": 37117269702,
+  "source": [
+    {
+      "file": "index.html",
+      "sha256": "f061f895ed93b7cd7b209be04c7e764cc3ac48eb43d085f3171772ec3d18335f"
+    },
+    {
+      "file": "core.js",
+      "sha256": "22d78f756932f39a6533bf681fb214f08d9a380702763ee5e4868ee7a677c7bc"
+    },
+    {
+      "file": "app.js",
+      "sha256": "8d69a89a5d8d0b75c053a0875f03e454e9f6c222b5e4f18ac18ea9aa9c6fffc1"
+    },
+    {
+      "file": "style.css",
+      "sha256": "c1206f346eb85f4e934a36a85a4f0daa3a2780bb3efdcf306362402f545f8b33"
+    },
+    {
+      "file": "i18n.js",
+      "sha256": "eb852ce7737140b4e610b626195d617bf6cf304e4eda91e81de501c505479e72"
+    },
+    {
+      "file": "art.js",
+      "sha256": "fe3aacde185ff8f8dbee40be3d18c36a772ebe9111336998e82318e9a6846db1"
+    },
+    {
+      "file": "render.js",
+      "sha256": "14fe18795b668abed26026e0bda4c013f68c8b659dfcc0309009994095d2822b"
+    }
+  ],
+  "smoke": [
+    {
+      "browser": "chromium",
+      "version": "134.0.6998.35",
+      "result": "PASS",
+      "checks": [
+        "public boot",
+        "shield HUD 20/20",
+        "pause/resume",
+        "resources and script errors"
+      ],
+      "errors": []
+    },
+    {
+      "browser": "webkit",
+      "version": "18.4",
+      "result": "PASS",
+      "checks": [
+        "public boot",
+        "shield HUD 20/20",
+        "pause/resume",
+        "resources and script errors"
+      ],
+      "errors": []
+    }
+  ]
+}
