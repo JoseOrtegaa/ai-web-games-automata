@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Game } from '../core.js';
-import { BOSSES, EXTRA_ATTACKS, spawnBoss, bossEncounters, stepBoss, stepHazards, hazardContains } from '../bosses.js';
+import { BOSSES, BOSS_POOLS, EXTRA_ATTACKS, spawnBoss, bossEncounters, stepBoss, stepHazards, hazardContains } from '../bosses.js';
 
 function scene(key,index=1,level=5) {
   const g=new Game(()=>.5);g.spawnTimer=g.pickupTimer=999;
@@ -14,6 +14,18 @@ function scene(key,index=1,level=5) {
 }
 function advance(g,seconds){for(let i=0;i<Math.round(seconds*100);i++)g.step(.01);}
 const keys=Object.keys(EXTRA_ATTACKS);
+
+test('world pools contain five environment-specific bosses and preserve reusable attack profiles',()=>{
+  assert.equal(BOSS_POOLS.length,4);
+  for(let depth=0;depth<4;depth++){
+    assert.equal(BOSS_POOLS[depth].length,5);
+    const defs=BOSS_POOLS[depth].map(id=>BOSSES.find(b=>b.id===id));
+    assert.ok(defs.every(def=>def&&def.depth===depth));
+    assert.equal(new Set(defs.map(def=>def.profile)).size,5);
+    assert.equal(new Set(defs.map(def=>def.form)).size,5);
+  }
+});
+
 
 test('all encounters and final receive 30–50% extra HP on top of original level scaling',()=>{
   for(const level of [1,5,10,15,20,25,50,100])for(const def of [...BOSSES,{id:'king'}]){
