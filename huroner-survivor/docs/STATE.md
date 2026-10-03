@@ -1,30 +1,23 @@
 # Huroner Survivor — estado vigente
 
 ## Objetivo / fase
-Corregir el jitter de cámara observado alrededor del nivel 23 cuando varios enemigos con embestida coinciden. Implementación, QA localizado e integración en `main` completados.
+Suavizar ligeramente la acumulación de enemigos alrededor del nivel 23 sin nerfear el early game ni eliminar el escalado. Implementación pendiente de QA en balance/soften-midgame-spawn.
 
-## Causa
-En Profundidades el stone_boar usa ram. Cada embestida aplicaba un empujón físico de 34 px antes de comprobar si el jugador seguía invulnerable por otro golpe. Con varios jabalíes, golpes que no causaban daño seguían desplazando al jugador; como la cámara lo sigue, la escena parecía temblar/saltar repetidamente.
+## Ajuste de balance
+- Niveles 1–15: generación exactamente igual.
+- Niveles 16–30: incremento por nivel baja de 0,105 a 0,08 enemigos/s.
+- Desde nivel 31: vuelve la pendiente original de 0,105 enemigos/s por nivel, conservando únicamente la pequeña reducción acumulada del tramo medio.
+- El componente por tiempo activo (+0,0026 enemigos/s por segundo, hasta 600 s) no cambia.
+- Referencia nivel 23 @300 s: 3,71 enemigos/s frente a 3,91 antes (~5,1% menos).
 
-## Corrección
-- hurt() devuelve ahora si el impacto realmente entró.
-- El empujón de ram solo se aplica cuando hurt() devuelve true.
-- Embestidas bloqueadas por los 0,65 s de invulnerabilidad se consumen pero no desplazan al jugador.
-- Un impacto válido mantiene el empujón de 34 px y el screen shake existente (shake=5), por lo que no se pierde feedback.
+## Motivo
+Si el jugador sube niveles rápido, el término por nivel aceleraba la aparición antes de que la horda existente se limpiara. La reducción se concentra en Profundidades/midgame y sigue siendo monotónica nivel a nivel.
 
 ## QA
-PASS lógico localizado:
-- una embestida válida sigue causando daño, 34 px de knockback y shake=5;
-- 7 embestidas solapadas durante invulnerabilidad añaden 0 px de knockback;
-- al terminar la invulnerabilidad una nueva embestida válida vuelve a empujar 34 px;
-- hurt() distingue impacto aplicado (true) de impacto bloqueado (false);
-- core.js parsea correctamente.
-
-## Integración
-PR #11 fusionado en `main` el 2026-10-03. Merge squash: `210deee1560aa35de04d79f56a78d064e1c1d3a4`.
+Pendiente comprobar monotonicidad, reducción objetivo en nivel 23, recuperación de pendiente desde 31 y simulación acotada.
 
 ## Contexto preservado
-Arena final del inframundo integrada; 20 bosses normales (5 por mundo); generación gradual por nivel/tiempo; familias de enemigos por mundo; cuevas 5/10→15→30; ataque automático por defecto; XP 30/70; escudo 20→120; ataque 0,25 s; zoom bloqueado.
+Jitter de embestidas corregido; arena final del inframundo integrada; 20 bosses normales (5 por mundo); familias de enemigos por mundo; cuevas 5/10→15→30; ataque automático por defecto; XP 30/70; escudo 20→120; ataque 0,25 s; zoom bloqueado.
 
 ## Siguiente paso
-Validar en móvil alrededor del nivel 23 que la cámara ya no entra en efecto pinball con varios jabalíes; mantener el shake de impactos válidos.
+Ejecutar QA lógico localizado, integrar en main y comprobar Pages.
