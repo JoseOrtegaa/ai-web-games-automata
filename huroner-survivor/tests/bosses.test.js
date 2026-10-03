@@ -5,7 +5,7 @@ import { BOSSES, spawnBoss, bossEncounters, stepBoss, hazardContains, stepHazard
 function scene(type, level=5) {
   const g=new Game(()=>.5);g.spawnTimer=g.pickupTimer=999;
   const e=spawnBoss(g,type,level);Object.assign(e,{x:0,y:0,speed:0,ability:0});
-  Object.assign(g.player,{x:100,y:0,shield:0,shieldDelay:999});return {g,e};
+  Object.assign(g.player,{x:100,y:0});return {g,e};
 }
 function advance(g,time,input){for(let left=time;left>1e-8;left-=.01)g.step(Math.min(.01,left),input);}
 function approx(a,b){assert.ok(Math.abs(a-b)<1e-7,`${a} != ${b}`);}
