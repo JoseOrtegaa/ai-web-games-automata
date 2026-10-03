@@ -20,9 +20,9 @@ test('boss direction indicator clamps to the viewport edge and keeps direction',
 });
 
 
-test('camera zoom is roughly sixteen percent farther out than the previous framing',()=>{
-  assert.ok(Math.abs(cameraZoomFor(390)-.84)<1e-8);
-  assert.ok(Math.abs(cameraZoomFor(430)-.9261538461538461)<1e-8);
-  assert.equal(cameraZoomFor(540),.99);
-  assert.ok(cameraZoomFor(320)>=.68&&cameraZoomFor(320)<.7);
+test('camera zoom shows roughly thirty percent more field than the previous framing',()=>{
+  assert.ok(Math.abs(cameraZoomFor(390)-(.84/1.3))<1e-8);
+  assert.ok(Math.abs(cameraZoomFor(430)-(.9261538461538461/1.3))<1e-8);
+  assert.ok(Math.abs(cameraZoomFor(540)-(.99/1.3))<1e-8);
+  assert.ok(cameraZoomFor(320)>=.52&&cameraZoomFor(320)<.54);
 });
