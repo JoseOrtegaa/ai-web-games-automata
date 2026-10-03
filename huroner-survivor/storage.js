@@ -15,7 +15,7 @@ export function loadPreferences(storage = browserStorage(), browserLanguage = gl
   return {
     language: ['es', 'en'].includes(saved.language) ? saved.language : browserLanguage.startsWith('es') ? 'es' : 'en',
     muted: typeof saved.muted === 'boolean' ? saved.muted : false,
-    attackMode: ['button', 'auto'].includes(saved.attackMode) ? saved.attackMode : 'button',
+    attackMode: ['button', 'auto'].includes(saved.attackMode) ? saved.attackMode : 'auto',
     attackSide: ['left', 'right'].includes(saved.attackSide) ? saved.attackSide : 'right',
   };
 }
