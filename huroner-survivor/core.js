@@ -131,18 +131,19 @@ export class Game {
     return sector*sectorWidth+sectorWidth*.5+(this.random()-.5)*sectorWidth*.7;
   }
   spawn(kind,boss=false,bossLevel=this.level,finalBoss=false) {
-    const a=boss?this.random()*TAU:this.chooseSpawnAngle(), d=430+this.random()*90;
-    const roster=enemyRoster(this.worldDepth);
+    const a=boss?this.random()*TAU:this.chooseSpawnAngle(),spawnDepth=this.finalArena&&!boss?3:this.worldDepth;
+    const d=this.finalArena&&!boss?235+this.random()*30:430+this.random()*90;
+    const roster=enemyRoster(spawnDepth);
     kind=kind||roster[Math.floor(this.random()*roster.length)];
-    const def=enemyDefinition(kind),tier=boss?this.mutation:enemyEvolutionTier(this.worldDepth,this.level),growth=1+this.time/340;
+    const def=enemyDefinition(kind),tier=boss?this.mutation:enemyEvolutionTier(spawnDepth,this.level),growth=1+this.time/340;
     const maxHp=boss?(finalBoss?Math.max(3200,1400+bossLevel*95):520+bossLevel*105)*bossHealthMultiplier(bossLevel):def.hp*growth*(1+tier*.28);
     const id=this.nextId++,crowdAngle=id*GOLDEN_ANGLE,crowdRadius=8+(id*17)%23;
     const e={id,kind,x:this.player.x+Math.cos(a)*d,y:this.player.y+Math.sin(a)*d,
       hp:maxHp,maxHp,r:boss?43:def.r,tier,boss,bossLevel:boss?bossLevel:0,finalBoss,crowdAngle,crowdRadius,
       speed:boss?34+Math.min(10,bossLevel*.35):def.speed*(1+tier*.08),
-      damage:boss?(finalBoss?Math.max(26,16+bossLevel):14+bossLevel*1.15):9+this.worldDepth*2.2+tier*2+this.time/120,
+      damage:boss?(finalBoss?Math.max(26,16+bossLevel):14+bossLevel*1.15):9+spawnDepth*2.2+tier*2+this.time/120,
       xpValue:def.xp,attackStyle:enemyAttackStyle(kind,tier),specialTier:def.specialTier??0,projectileKind:def.projectile||null,
-      stainColor:def.stain,deathColor:def.death,worldDepth:this.worldDepth,
+      stainColor:def.stain,deathColor:def.death,worldDepth:spawnDepth,
       flash:0,slow:0,orbitCD:0,ability:2+this.random()*3,charge:0,vx:0,vy:0,specialAttack:null,
       special:boss?['charge','ring','burst'][Math.floor(this.random()*3)]:null};
     this.enemies.push(e);
