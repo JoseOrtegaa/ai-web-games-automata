@@ -5,6 +5,15 @@ import { FINAL_ARENA_RADIUS } from './core.js';
 function ellipse(c,x,y,rx,ry,color,stroke){c.beginPath();c.ellipse(x,y,rx,ry,0,0,Math.PI*2);c.fillStyle=color;c.fill();if(stroke){c.strokeStyle=stroke;c.lineWidth=1.8;c.stroke();}}
 function line(c,points,color,width=2){c.strokeStyle=color;c.lineWidth=width;c.lineCap='round';c.lineJoin='round';c.beginPath();points.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.stroke();}
 function sword(c,x,y,angle,scale=1){c.save();c.translate(x,y);c.rotate(angle);c.scale(scale,scale);c.fillStyle='#dce9ce';c.beginPath();c.moveTo(-4,0);c.lineTo(-5,-35);c.lineTo(0,-47);c.lineTo(5,-35);c.lineTo(4,0);c.closePath();c.fill();line(c,[[0,-40],[0,-1]],'#86afa1',1.3);line(c,[[-10,0],[10,0]],'#d6ad57',4);line(c,[[0,2],[0,13]],'#8a5e3c',5);ellipse(c,0,14,3,3,'#e5be70');c.restore();}
+function drawCombatText(c,t){
+  const progress=1-t.life/t.max,heal=t.kind==='heal',raw=heal&&t.amount<2?Math.round(t.amount*10)/10:Math.round(t.amount);
+  if(raw<=0)return;
+  const label=(heal?'+':'')+String(raw);
+  c.save();c.translate(t.x,t.y-progress*16);c.globalAlpha=Math.min(.82,(t.life/t.max)*1.15);
+  c.font='600 10px system-ui,-apple-system,sans-serif';c.textAlign='center';c.textBaseline='middle';
+  c.lineWidth=2.4;c.strokeStyle='#071410c9';c.strokeText(label,0,0);
+  c.fillStyle=heal?'#91d6a4':'#f1dfbd';c.fillText(label,0,0);c.restore();
+}
 
 export function bossIndicatorGeometry(targetX,targetY,originX,originY,width,height){
   const side=Math.min(36,width*.1),top=Math.min(124,height*.2),right=width-side,bottom=height-Math.min(68,height*.11);
@@ -125,6 +134,7 @@ function draw(game, {active = true, moving = false, reducedMotion = false, bossI
   else if(s.kind==='ember'){ctx.save();ctx.translate(s.x,s.y);ctx.rotate(Math.atan2(s.vy,s.vx));ellipse(ctx,0,0,8,4,'#e96530','#ffb052');ellipse(ctx,3,0,3,2,'#ffd36f');ctx.restore();}
   else{ellipse(ctx,s.x,s.y,4,7,'#f0dfbf');ellipse(ctx,s.x,s.y,2,3,'#cb6555');}
  }
+ for(const t of game.combatTexts){if(Math.abs(t.x-cx)<=viewW/2+60&&Math.abs(t.y-cy)<=viewH*.65+60)drawCombatText(ctx,t);}
  }ctx.restore();fog();
  const boss=bossId==null?null:game.enemies.find(e=>e.hp>0&&e.boss&&(e.encounterId??e.id)===bossId);
  if(active&&boss)drawBossIndicator(game,boss,camX,camY,zoom);
