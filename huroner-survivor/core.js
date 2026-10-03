@@ -267,7 +267,7 @@ export class Game {
       }
       if(e.charge>0){e.charge-=dt;e.x+=e.vx*dt;e.y+=e.vy*dt;}
       else{e.x+=moveDx/moveD*speed*dt;e.y+=moveDy/moveD*speed*dt;}
-      if(d>800&&!e.boss){const a=this.random()*Math.PI*2;e.x=p.x+Math.cos(a)*480;e.y=p.y+Math.sin(a)*480;}
+      if(d>800&&!e.boss){const a=this.chooseSpawnAngle();e.x=p.x+Math.cos(a)*480;e.y=p.y+Math.sin(a)*480;}
       if(!busy&&d<e.r+13)this.hurt(e.damage);
       if(this.state!=='playing')return;
       if(this.rank('orbit')&&e.orbitCD<=0){for(let i=0;i<this.rank('orbit');i++){const a=this.time*2.5+i/this.rank('orbit')*Math.PI*2;const ox=p.x+Math.cos(a)*72,oy=p.y+Math.sin(a)*72;if(Math.hypot(e.x-ox,e.y-oy)<e.r+17){this.hit(e,this.damage*.65);if(this.state!=='playing')return;e.orbitCD=.35;break;}}}
