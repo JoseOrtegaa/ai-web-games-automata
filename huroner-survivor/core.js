@@ -240,7 +240,7 @@ export class Game {
   checkLevel() {
     if(this.state!=='playing')return;
     if(this.xp>=xpNeeded(this.level)){
-      this.xp-=xpNeeded(this.level);this.level++;this.mutate();
+      this.xp=Math.round((this.xp-xpNeeded(this.level))*10)/10;this.level++;this.mutate();
       if(this.level%5===0&&this.level>this.lastLevelBoss){this.lastLevelBoss=this.level;spawnBoss(this,null,this.level);}
       this.offer();
     }
