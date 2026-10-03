@@ -159,15 +159,11 @@ Art usa `save/restore`, no cambia Game, no consume RNG y cachea sólo paths est�
 7. Pausa, selección, derrota y victoria se distinguen por título y contenido, además de color. Foco e interacción visibles y áreas táctiles de al menos 44 px.
 8. Capturas finales de menú, arena poblada, elección y final en móvil/escritorio muestran el mismo lenguaje de cobre, marfil y petróleo; dibujo completo de portada y sin texto cortado.
 
-## Evolución del mundo cada cinco niveles
+## Mundos y descenso
 
-Petición vigente: escenario progresivamente siniestro, exclusivamente visual. Niveles 1–4 conservan la pradera; 5–9: raíces secas y vegetación marchita; 10–14: cementerio frío con lápidas; 15–19: osario, grietas rojizas y tonos vino; 20–24: arcos derruidos y ruinas malditas; desde 25: abismo violeta oscuro. Cada siguiente múltiplo de cinco redistribuye motivos y profundiza la oscuridad hasta un límite que preserva legibilidad.
-
-Transición por fundido de 1,8 s de tiempo de simulación: pausa/elección la congelan. Movimiento reducido cambia directamente. Reiniciar o volver al menú recupera la pradera. Decoración bajo actores, gemas, pickups y avisos; sin colisiones, enemigos, estadísticas, sonido ni luces intermitentes nuevos. Tile de 768 px horneado solo al cambiar de etapa; máximo dos tiles durante el fundido y 38 motivos, independientemente del nivel.
-
-### Mundos y descenso
-
-La progresión ambiental ya no cambia de fondo automáticamente cada cinco niveles. Cada partida empieza en la superficie y el primer acceso al subsuelo se elige al iniciar entre los bosses de nivel 5 o 10. Al completar el boss correspondiente aparece una cueva física a distancia del jugador y una flecha fuera de pantalla señala su dirección. El mundo solo cambia cuando el hurón se acerca y usa **DESCENDER**.
+La progresión ambiental no cambia de fondo automáticamente cada cinco niveles. Cada partida empieza en la superficie y el primer acceso al subsuelo se elige al iniciar entre los bosses de nivel 5 o 10. Al completar el boss correspondiente aparece una cueva física a distancia del jugador y una flecha fuera de pantalla señala su dirección. El mundo solo cambia cuando el hurón se acerca y usa **DESCENDER**.
 
 Las siguientes bajadas se desbloquean tras los bosses de nivel 15 y 30. Capas: superficie; subsuelo de tierra/piedra/cadáveres; profundidades rocosas que en nivel 20 incorporan magma y en 25 aumentan magma, fósiles y petróleo; capa de magma desde nivel 30, más intensa en 35. Los enemigos actuales se conservan. Entrar limpia entidades ligadas al mapa anterior, conserva vida/escudo/mejoras y recoloca al jugador en el origen de la nueva capa. Si una cueva se ignora y se derrota un boss posterior, el progreso pendiente se conserva para impedir bloqueos.
+
+Los cambios de capa o fase visual usan un fundido de 1,25 s de tiempo de simulación; con movimiento reducido el cambio es inmediato. La decoración queda bajo actores, gemas, pickups y avisos, no añade colisiones ni modifica estadísticas, y los tiles de 768 px se cachean por etapa visual.
 
