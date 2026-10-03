@@ -107,7 +107,7 @@ test('rabbit warns, jumps to its locked target, damages on landing and can be do
 test('quail keeps one evolved fan pattern with three locked feathers',()=>{
   for(const level of [5,11,16,30]){
     const {g,e}=specialScenario('quail',level,240);g.step(.01);const angle=e.specialAttack.angle;
-    advance(g,.74,{x:0,y:1});assert.equal(g.shots.length,3);
+    advance(g,.74,{x:0,y:1});assert.equal(g.shots.length,0);advance(g,.02);assert.equal(g.shots.length,3);
     const angles=g.shots.map(s=>Math.atan2(s.vy,s.vx));
     for(let i=0;i<angles.length;i++){
       const expected=angle+(i-(angles.length-1)/2)*.3;
