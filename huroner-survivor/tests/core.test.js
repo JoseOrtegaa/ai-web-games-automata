@@ -154,18 +154,14 @@ function specialScenario(kind,level=6,x=150){
   const e=nearby(g,kind,x);e.ability=0;return {g,e};
 }
 function advance(g,seconds,input){for(let left=seconds;left>1e-9;left-=.01)g.step(Math.min(.01,left),input);}
-test('ordinary enemies aim imperfectly enough for jump attacks to genuinely miss',()=>{
-  const g=new Game(rng(444));g.level=5;g.mutation=1;g.spawnTimer=g.pickupTimer=999;
-  const first=g.spawn('rabbit'),second=g.spawn('rabbit');
-  Object.assign(first,{x:150,y:0,ability:0,speed:0});
-  Object.assign(second,{x:150,y:0,ability:0,speed:0});
-  g.stepEnemySpecial(first,.01,150);g.stepEnemySpecial(second,.01,150);
-  assert.equal(first.specialAttack.kind,'jump');assert.equal(second.specialAttack.kind,'jump');
-  for(const e of [first,second]){
-    const miss=Math.hypot(e.specialAttack.x-g.player.x,e.specialAttack.y-g.player.y);
-    assert.ok(miss>40,'jump target should be displaced beyond the old near-perfect aim');
-  }
-  assert.notDeepEqual([first.specialAttack.x,first.specialAttack.y],[second.specialAttack.x,second.specialAttack.y]);
+test('jump aim has a high-miss clumsy branch without making every jump inaccurate',()=>{
+  const clumsyGame=new Game(()=>.1),accurateGame=new Game(()=>.95);
+  const enemy={id:1,x:150,y:0};
+  const clumsy=clumsyGame.imperfectEnemyAim(enemy,clumsyGame.player,'jump');
+  const accurate=accurateGame.imperfectEnemyAim(enemy,accurateGame.player,'jump');
+  assert.equal(clumsy.clumsy,true);assert.equal(accurate.clumsy,false);
+  assert.ok(Math.hypot(clumsy.x,clumsy.y)>44,'clumsy jump should target outside the standing player hit area');
+  assert.ok(Math.hypot(accurate.x,accurate.y)<35,'some jumps should still be credible threats');
 });
 test('ordinary enemies cannot repeat the same special forever when a variant is available',()=>{
   const g=new Game(rng(555));g.level=5;g.mutation=1;g.spawnTimer=g.pickupTimer=999;
@@ -188,13 +184,17 @@ test('surface specials unlock at the single level-5 evolution and wait until in 
     const far=specialScenario(kind,16,400);far.g.step(.01);assert.equal(far.e.specialAttack,null);
   }
 });
-test('rabbit warns, jumps to its locked target, damages on landing and can be dodged',()=>{
+test('rabbit warns, locks its imperfect landing point and resolves damage from that point',()=>{
   for(const dodge of [false,true]){
     const {g,e}=specialScenario('rabbit');g.step(.01);const target={x:e.specialAttack.x,y:e.specialAttack.y};
+    const initialMiss=Math.hypot(target.x-g.player.x,target.y-g.player.y);
     advance(g,.74,dodge?{x:0,y:1}:undefined);assert.equal(e.specialAttack.phase,'warning');assert.equal(g.player.hp,100);
     advance(g,.02);assert.equal(e.specialAttack.phase,'jump');assert.equal(g.player.hp,100);
     assert.equal(e.specialAttack.x,target.x);assert.equal(e.specialAttack.y,target.y);
-    advance(g,.46);assert.equal(e.specialAttack,null);assert.equal(g.player.hp,dodge?100:100-e.damage);
+    advance(g,.46);
+    assert.equal(e.specialAttack,null);
+    if(dodge)assert.equal(g.player.hp,100);
+    else assert.equal(g.player.hp,initialMiss<44?100-e.damage:100);
     assert.ok(g.effects.some(effect=>effect.type==='enemy-impact'));
   }
 });
