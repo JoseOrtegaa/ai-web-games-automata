@@ -38,6 +38,17 @@
     <div id="touch-hint" hidden></div>
     <div id="joystick" hidden><div id="stick"></div></div>
     <button id="attack-button" class="attack-control" hidden><span class="sword-icon" aria-hidden="true">⚔</span><span data-i18n="attack"></span><i><b id="attack-fill"></b></i></button>
+    <div id="dev-tools" hidden>
+      <button id="dev-toggle" type="button">DEV</button>
+      <div id="dev-panel" hidden>
+        <div class="dev-title"><b>DEV TOOLS</b><span id="dev-level-label">LVL 1</span></div>
+        <div class="dev-row dev-level-row"><button id="dev-level-down" type="button">−1</button><button id="dev-level-up" type="button">+1</button><input id="dev-level-input" type="number" min="1" max="99" value="1" inputmode="numeric" aria-label="Developer level"><button id="dev-level-set" type="button">SET</button></div>
+        <div class="dev-presets"><button type="button" data-dev-level="5">5</button><button type="button" data-dev-level="10">10</button><button type="button" data-dev-level="15">15</button><button type="button" data-dev-level="20">20</button><button type="button" data-dev-level="25">25</button></div>
+        <div class="dev-stat"><span>DAÑO <b id="dev-power-rank">0/8</b></span><div><button id="dev-power-up" type="button">+1</button><button id="dev-power-max" type="button">MAX</button></div></div>
+        <div class="dev-stat"><span>REGEN <b id="dev-regen-rank">0/4</b></span><div><button id="dev-regen-up" type="button">+1</button><button id="dev-regen-max" type="button">MAX</button></div></div>
+        <div class="dev-actions"><button id="dev-heal" type="button">CURAR</button><button id="dev-boss" type="button">BOSS</button></div>
+      </div>
+    </div>
     <div id="toast" role="status" aria-live="polite"></div>
     <section id="level-screen" class="screen overlay" hidden aria-labelledby="level-title"><div class="panel choice-panel"><p id="level-summary" class="eyebrow"></p><h2 id="level-title" data-i18n="levelup"></h2><p class="panel-copy" data-i18n="choose"></p><div id="choices"></div></div></section>
     <section id="pause-screen" class="screen overlay" hidden aria-labelledby="pause-title"><div class="panel pause-panel"><div class="ornament" aria-hidden="true">❧</div><p class="eyebrow" data-i18n="edition"></p><h2 id="pause-title" data-i18n="paused"></h2><p class="panel-copy" data-i18n="pauseText"></p><button id="resume" class="primary" data-i18n="resume"></button><button id="pause-sound" class="secondary"></button><button id="quit" class="text-button" data-i18n="quit"></button></div></section>

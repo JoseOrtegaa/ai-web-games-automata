@@ -43,6 +43,22 @@ export class Game {
   get speed() {return 124*(1+.12*this.rank('speed'))*(this.speedBoostTimer>0?1.1:1);}
   get pickup() {return 56*(1+.45*this.rank('magnet'));}
   get maxShield() {return SHIELD_STEP*(1+this.rank('shield'));}
+  debugSetLevel(value) {
+    if(this.state==='dead'||this.state==='won')return false;
+    const level=clamp(Math.round(Number(value)||1),1,99);
+    this.level=level;this.xp=0;this.mutation=mutationFor(level);this.lastLevelBoss=Math.floor(level/5)*5;
+    this.choices=[];if(this.state==='levelup')this.state='playing';
+    // Level jumps start a clean combat scenario; fresh spawns use the selected tier.
+    this.enemies=[];this.hazards=[];this.shots=[];this.boss=null;this.lastBossType=null;
+    return level;
+  }
+  debugSetUpgrade(id,value) {
+    if(!['power','regen'].includes(id))return false;
+    const upgrade=UPGRADES.find(u=>u.id===id),rank=clamp(Math.round(Number(value)||0),0,upgrade.max);
+    this.upgrades[id]=rank;return rank;
+  }
+  debugHeal() {this.player.hp=this.player.maxHp;this.player.shield=this.maxShield;return true;}
+  debugSpawnBoss() {return this.state==='playing'?spawnBoss(this,null,this.level):null;}
   gainXp(amount) {this.xp=Math.round((this.xp+amount)*10)/10;}
   emit(type,data={}) {this.events.push({type,...data});}
   addEffect(effect) {if(this.effects.length<140)this.effects.push(effect);}

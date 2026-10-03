@@ -27,6 +27,21 @@ test('manual and automatic attacks target the nearest living enemy regardless of
   }
   assert.equal(UPGRADES.find(u=>u.id==='twin').max,1);
 });
+test('developer controls set level, selected upgrades, healing and boss level without normal level-up flow',()=>{
+  const g=new Game(rng(321));g.spawnTimer=g.pickupTimer=999;
+  const ordinary=nearby(g,'rabbit',120,0);
+  g.state='levelup';g.choices=[UPGRADES[0]];
+  assert.equal(g.debugSetLevel(25),25);
+  assert.equal(g.level,25);assert.equal(g.xp,0);assert.equal(g.mutation,3);assert.equal(g.state,'playing');assert.deepEqual(g.choices,[]);
+  assert.ok(!g.enemies.includes(ordinary));
+  assert.equal(g.debugSetUpgrade('power',999),8);assert.equal(g.rank('power'),8);
+  assert.equal(g.debugSetUpgrade('regen',2),2);assert.equal(g.rank('regen'),2);
+  assert.equal(g.debugSetUpgrade('armor',6),false);assert.equal(g.rank('armor'),0);
+  g.player.hp=1;g.player.shield=0;g.debugHeal();assert.equal(g.player.hp,g.player.maxHp);assert.equal(g.player.shield,g.maxShield);
+  const boss=g.debugSpawnBoss();assert.ok(boss&&boss.bossLevel===25);assert.equal(g.level,25);
+  assert.equal(g.debugSetLevel(120),99);assert.equal(g.debugSetLevel(-5),1);
+});
+
 test('ordinary spawns avoid sectors that are already locally saturated',()=>{
   const g=new Game(rng(77));g.spawnTimer=g.pickupTimer=999;
   g.enemies=Array.from({length:40},(_,i)=>({id:1000+i,hp:1,boss:false,x:450,y:(i-20)*2}));

@@ -1,5 +1,5 @@
 import { bossEncounters, bossDefinition } from './bosses.js';
-import { Game, xpNeeded, ATTACK_COOLDOWN } from './core.js';
+import { Game, UPGRADES, xpNeeded, ATTACK_COOLDOWN } from './core.js';
 import { createRenderer } from './render.js';
 import { createInput } from './input.js';
 import { createAudio } from './audio.js';
@@ -12,6 +12,8 @@ const preferences = loadPreferences();
 const audio = createAudio();
 const renderer = createRenderer({ canvas: $('world') });
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+const devMode = new URLSearchParams(window.location.search).get('dev') === '1';
+const devMax = id => UPGRADES.find(upgrade => upgrade.id === id)?.max ?? 0;
 let record = loadRecord(), mode = 'home', last = performance.now(), hudTimer = 0;
 let choiceVersion = 0, visibleChoices = null, toastTimer = 0, shownBossId = null;
 const t = key => text(key, preferences.language);
@@ -67,6 +69,25 @@ function preference(key, value) {
 }
 function toggleSound() { audio.unlock(); preference('muted', !preferences.muted); }
 function toast(message) { $('toast').textContent = message; $('toast').classList.add('show'); toastTimer = 3; }
+function syncDevTools() {
+  const visible = devMode && ((mode === 'playing' && game.state === 'playing') || mode === 'paused');
+  $('dev-tools').hidden = !visible;
+  if (!visible) { $('dev-panel').hidden = true; return; }
+  $('dev-level-label').textContent = `LVL ${game.level}`;
+  if (document.activeElement !== $('dev-level-input')) $('dev-level-input').value = String(game.level);
+  $('dev-power-rank').textContent = `${game.rank('power')}/${devMax('power')}`;
+  $('dev-regen-rank').textContent = `${game.rank('regen')}/${devMax('regen')}`;
+}
+function applyDevLevel(value) {
+  if (!devMode || game.debugSetLevel(value) === false) return;
+  shownBossId = null; visibleChoices = null; choiceVersion++;
+  if (mode === 'playing') { show(null); input.reset(); syncControls(); focusArena(); }
+  hud(); syncDevTools();
+}
+function applyDevUpgrade(id, value) {
+  if (!devMode || game.debugSetUpgrade(id, value) === false) return;
+  hud(); syncDevTools();
+}
 function start() {
   audio.unlock(); audio.reset(); game.reset(); mode = 'playing'; shownBossId = null;
   choiceVersion++; visibleChoices = null; input.reset(); show(null); $('hud').hidden = false;
@@ -81,6 +102,7 @@ function resume() {
   mode = 'playing'; input.reset(); show(null); audio.unlock(); last = performance.now(); syncControls(); focusArena();
 }
 function keepRecord(won) {
+  if (devMode) return;
   const next = { time: Math.floor(game.time), kills: game.kills, level: game.level, won };
   const score = value => (value.won ? 1e7 : Math.min(value.time, 600) * 1000) + value.kills;
   if (!record || score(next) > score(record)) { record = next; saveRecord(record); }
@@ -158,6 +180,7 @@ function hud() {
     if (timer <= 0) continue;
     const element = document.createElement('span'); element.textContent = `${t(key)} ${bonus} · ${Math.ceil(timer)} s`; buffs.append(element);
   }
+  syncDevTools();
 }
 function consumeEvents() {
   const events = game.events.splice(0); audio.handleEvents(events);
@@ -195,7 +218,25 @@ $('lang-es').onclick = () => preference('language', 'es'); $('lang-en').onclick 
 $('sound').onclick = toggleSound; $('settings-sound').onclick = toggleSound; $('pause-sound').onclick = toggleSound;
 $('attack-auto').onclick = () => preference('attackMode', 'auto'); $('attack-manual').onclick = () => preference('attackMode', 'button');
 $('attack-left').onclick = () => preference('attackSide', 'left'); $('attack-right').onclick = () => preference('attackSide', 'right');
+if (devMode) {
+  $('dev-tools').addEventListener('pointerdown', event => event.stopPropagation());
+  $('dev-toggle').onclick = () => { $('dev-panel').hidden = !$('dev-panel').hidden; syncDevTools(); };
+  $('dev-level-down').onclick = () => applyDevLevel(game.level - 1);
+  $('dev-level-up').onclick = () => applyDevLevel(game.level + 1);
+  $('dev-level-set').onclick = () => applyDevLevel($('dev-level-input').value);
+  for (const button of document.querySelectorAll('[data-dev-level]')) button.onclick = () => applyDevLevel(button.dataset.devLevel);
+  $('dev-power-up').onclick = () => applyDevUpgrade('power', game.rank('power') + 1);
+  $('dev-power-max').onclick = () => applyDevUpgrade('power', devMax('power'));
+  $('dev-regen-up').onclick = () => applyDevUpgrade('regen', game.rank('regen') + 1);
+  $('dev-regen-max').onclick = () => applyDevUpgrade('regen', devMax('regen'));
+  $('dev-heal').onclick = () => { game.debugHeal(); hud(); };
+  $('dev-boss').onclick = () => {
+    const boss = game.debugSpawnBoss();
+    if (boss) shownBossId = boss.encounterId ?? boss.id;
+    hud();
+  };
+}
 function loseFocus() { input.reset(); pause(); last = performance.now(); audio.suspend(); }
 window.addEventListener('blur', loseFocus);
 document.addEventListener('visibilitychange', () => { if (document.hidden) loseFocus(); });
-audio.setMuted(preferences.muted); translate(); syncControls(); requestAnimationFrame(frame);
+audio.setMuted(preferences.muted); translate(); syncControls(); syncDevTools(); requestAnimationFrame(frame);
