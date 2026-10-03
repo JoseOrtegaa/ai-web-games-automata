@@ -53,38 +53,21 @@ test('wider pickup locks onto gems and catches a retreating player even with all
   assert.equal(g.gems[0].attract, undefined);
 });
 
-test('shield absorbs mitigated damage, overflows to health and respects invulnerability', () => {
-  const g = game(); assert.equal(g.player.shield, 20); assert.equal(g.maxShield, 20);
-  g.hurt(12); assert.equal(g.player.shield, 8); assert.equal(g.player.hp, 100);
-  g.hurt(50); assert.equal(g.player.shield, 8); assert.equal(g.player.shieldDelay, 6);
-  g.player.invuln = 0; g.hurt(13);
-  assert.equal(g.player.shield, 0); assert.equal(g.player.hp, 95);
-  const armored = game(); armored.upgrades.armor = 2; armored.hurt(40);
-  close(armored.player.hp, 120 - 40 / 1.36); assert.equal(armored.player.shield, 0);
+test('damage goes directly to health while armor and invulnerability still work', () => {
+  const g = game(); g.hurt(12); assert.equal(g.player.hp, 88);
+  const hp=g.player.hp; g.hurt(50); assert.equal(g.player.hp,hp);
+  g.player.invuln=0; g.hurt(13); assert.equal(g.player.hp,75);
+  const armored=game(); armored.upgrades.armor=2; armored.hurt(40);
+  close(armored.player.hp,100-40/1.36);
 });
 
-test('shield waits six active seconds, recharges 10% per second, restarts on damage and caps', () => {
-  const g = game(); g.hurt(20);
-  advance(g, 6); close(g.player.shield, 0);
-  advance(g, 1); close(g.player.shield, 2);
-  g.hurt(1); close(g.player.shield, 1);
-  advance(g, 5.95); close(g.player.shield, 1);
-  advance(g, .15); close(g.player.shield, 1.2);
-  advance(g, 12); assert.equal(g.player.shield, 20); assert.equal(g.player.hp, 100);
-});
-
-test('choice freezes shield recharge; five upgrades add fixed capacity, vitality does not scale it', () => {
-  const g = game(); g.hurt(20); g.offer();
-  advance(g, 7); assert.equal(g.player.shieldDelay, 6); assert.equal(g.player.shield, 0);
-  for (let i = 1; i <= 5; i++) {
-    g.offer(); g.choices = [UPGRADES.find(u => u.id === 'shield')];
-    assert.equal(g.choose('shield'), true);
-    assert.equal(g.maxShield, 20 + 20 * i); assert.equal(g.player.shield, 20 * i);
-  }
-  g.offer(); g.choices = [UPGRADES.find(u => u.id === 'vitality')]; g.choose('vitality');
-  assert.equal(g.player.maxHp, 125); assert.equal(g.maxShield, 120);
-  advance(g, 7); close(g.player.shield, 112);
-  g.reset(); assert.equal(g.player.shield, 20); assert.equal(g.maxShield, 20); assert.equal(g.player.shieldDelay, 0);
+test('player shield upgrade and runtime shield state are fully removed', () => {
+  const g=game();
+  assert.equal(UPGRADES.some(u=>u.id==='shield'),false);
+  assert.equal('shield' in g.player,false);
+  assert.equal('shieldDelay' in g.player,false);
+  assert.equal('maxShield' in g,false);
+  g.offer(); assert.equal(g.choices.some(u=>u.id==='shield'),false);
 });
 
 test('maxed upgrades disappear, last available rank works, stale caps reject, exhausted pool heals', () => {
