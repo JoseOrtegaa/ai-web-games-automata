@@ -183,7 +183,7 @@ function frame(now) {
   consumeEvents(); syncControls();
   if (toastTimer > 0) { toastTimer -= dt; if (toastTimer <= 0) $('toast').classList.remove('show'); }
   hudTimer -= dt; if (hudTimer <= 0 && mode !== 'home' && mode !== 'settings') { hudTimer = .08; hud(); }
-  renderer.draw(game, { active: !['home', 'settings'].includes(mode), moving: Math.hypot(movement.x, movement.y) > .1, reducedMotion: reducedMotion.matches });
+  renderer.draw(game, { active: !['home', 'settings'].includes(mode), moving: Math.hypot(movement.x, movement.y) > .1, reducedMotion: reducedMotion.matches, bossId: shownBossId });
   requestAnimationFrame(frame);
 }
 $('start').onclick = start; $('retry').onclick = start; $('pause').onclick = pause; $('resume').onclick = resume;
