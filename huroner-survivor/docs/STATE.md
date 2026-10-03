@@ -1,7 +1,7 @@
 # Huroner Survivor — estado vigente
 
 ## Objetivo / fase
-Eliminar completamente el escudo del jugador, hacer que el hurón evolucione visualmente con el nivel y alejar la cámara para mostrar más arena. Implementación y QA lógico completados en feature/ferret-evolution-zoomout; pendiente integración/publicación.
+Eliminar completamente el escudo del jugador, hacer que el hurón evolucione visualmente con el nivel y alejar la cámara para mostrar más arena. Implementación, QA lógico e integración en `main` completados.
 
 ## Escudo del jugador
 - Eliminados estado shield/shieldDelay/maxShield, mejora Escudo del claro, absorción/recarga, barra HUD y arte del escudo en la pata libre.
@@ -31,8 +31,11 @@ Eliminar completamente el escudo del jugador, hacer que el hurón evolucione vis
 - HUD/app/index/style sin referencias de escudo del jugador;
 - core.js, art.js, render.js y app.js parsean.
 
+## Integración
+PR #14 fusionado en `main` el 2026-10-04. Merge squash: `eef0f6a5328a3f02472e02d147adbb4bb49915de`.
+
 ## Contexto preservado
 Números de daño/curación sutiles; spawn midgame suavizado; jitter de embestidas corregido; arena final del inframundo; 20 bosses normales; ataque automático por defecto; XP 30/70; ataque 0,25 s; zoom del navegador bloqueado.
 
 ## Siguiente paso
-Integrar en main, comprobar Pages y validar visualmente en iPhone el tamaño de cámara y que las cuatro evoluciones se distingan bien durante partida.
+Validar visualmente en iPhone el tamaño de cámara y que las cuatro evoluciones se distingan bien durante partida; ajustar solo presentación si hiciera falta.
