@@ -94,3 +94,15 @@ Reproducir QA con Playwright 1.51.1 instalado fuera del proyecto; `QA_BROWSERS=c
 ## 2026-10-04 — evolución del hurón, sin escudo y cámara alejada
 
 **PASS lógico localizado.** Se elimina el sistema de escudo del jugador sin tocar la protección especial de bosses. Daño mitigado por armadura pasa directo a HP. `ferretEvolutionFor` cubre cuatro etapas 1–9/10–19/20–29/30+; el arte produce cuatro firmas distintas y no conserva el dibujo del escudo de mano. `cameraZoomFor` da 0,84 a 390 px, 0,926 a 430 px y tope 0,99 a 540 px, equivalente a un encuadre aproximado 16% más lejano que el histórico. HUD/runtime no contienen referencias al escudo del jugador. Core, arte, renderer y app parsean. Prueba física en iPhone pendiente.
+
+
+## 2026-10-04 — cámara 30% más alejada adicional
+
+**PASS lógico localizado.** PR #15, squash `ed7d597ace7be7543761913c0853df57d1738d26`.
+
+- El diff de runtime modifica únicamente `cameraZoomFor`: zoom previo / 1,30. No toca `Game`, spawns, daño, movimiento, hitboxes, input ni HUD.
+- Valores comprobados: 320 px → 0,530178; 390 px → 0,646154; 430 px → 0,712426; 540 px → 0,761538.
+- La prueba `tests/render.test.js` fue actualizada para esas referencias y conserva las pruebas del indicador de boss.
+- Las aserciones numéricas equivalentes se ejecutaron con Node y pasan.
+- No se ejecutó la suite completa ni QA de navegador en este entorno porque el runner no tiene acceso de red al repositorio; no se afirma prueba física en iPhone/Android.
+- GitHub Pages: run 37161784959 iniciado para el commit de juego; verificar conclusión antes de considerar publicación cerrada.
