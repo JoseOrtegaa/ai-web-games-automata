@@ -241,8 +241,9 @@ export class Game {
       e.x=a.fromX+(a.x-a.fromX)*progress;e.y=a.fromY+(a.y-a.fromY)*progress;
       const dx=p.x-e.x,dy=p.y-e.y,d=Math.hypot(dx,dy)||1;
       if(!a.hit&&d<e.r+14){
-        if(a.kind==='ram'){p.x+=dx/d*34;p.y+=dy/d*34;}
-        this.hurt(e.damage);a.hit=true;
+        const landed=this.hurt(e.damage);
+        if(a.kind==='ram'&&landed){p.x+=dx/d*34;p.y+=dy/d*34;}
+        a.hit=true;
         if(this.state!=='playing')return true;
       }
       if(a.time>0)return true;
@@ -273,13 +274,14 @@ export class Game {
     return true;
   }
   hurt(amount) {
-    const p=this.player;if(p.invuln>0||this.state!=='playing')return;
+    const p=this.player;if(p.invuln>0||this.state!=='playing')return false;
     // Armor has diminishing returns; damage always remains meaningful.
     const damage=Math.max(1,amount*100/(100+this.rank('armor')*18));
     const absorbed=Math.min(p.shield,damage);
     p.shield-=absorbed;p.hp-=damage-absorbed;p.shieldDelay=6;
     p.invuln=.65;this.shake=5;this.emit('hurt');
     if(p.hp<=0){p.hp=0;this.state='dead';this.emit('dead');}
+    return true;
   }
   offer() {
     if(this.state==='dead'||this.state==='won')return;

@@ -23,6 +23,21 @@ test('spawn cadence creates one enemy at a time instead of burst jumps',()=>{
 
 test('surface enemies have a single evolution that unlocks their combat abilities',()=>{const g=new Game(rng());const hare=nearby(g,'hare',150,0);const chicken=nearby(g,'chicken',70,0);let old=hare.maxHp;g.level=5;g.mutate();assert.equal(hare.tier,1);assert.ok(hare.maxHp>old);hare.ability=0;g.step(.02);assert.equal(hare.specialAttack.kind,'ram');g.level=20;g.mutate();assert.equal(g.mutation,1);assert.equal(mutationFor(16),1);assert.equal(mutationFor(90),1);chicken.ability=0;g.step(.02);assert.equal(chicken.specialAttack.kind,'burst');});
 test('armor mitigates damage, invulnerability prevents stacked hits and death ends run',()=>{const g=new Game(rng());g.upgrades.armor=2;g.player.shield=0;g.hurt(20);assert.ok(g.player.hp>80);const hp=g.player.hp;g.hurt(20);assert.equal(g.player.hp,hp);g.player.invuln=0;g.hurt(1000);assert.equal(g.state,'dead');assert.equal(g.player.hp,0);});
+test('ram knockback only applies when the hit actually lands',()=>{
+  const g=new Game(rng());g.worldDepth=2;g.level=23;g.spawnTimer=g.pickupTimer=999;
+  const makeRam=()=>{
+    const px=g.player.x,e=g.spawn('stone_boar');Object.assign(e,{x:px-8,y:0,speed:0,ability:999});
+    e.specialAttack={kind:'ram',phase:'dash',time:.2,duration:.36,fromX:px-8,fromY:0,x:px+20,y:0,hit:false};
+    return e;
+  };
+  g.player.invuln=.4;const blocked=makeRam(),blockedX=g.player.x;g.stepEnemySpecial(blocked,.01,8);
+  assert.equal(g.player.x,blockedX,'invulnerable ram must not shove the player');
+  assert.equal(blocked.specialAttack.hit,true);
+  g.player.invuln=0;const landed=makeRam(),before=g.player.x;g.stepEnemySpecial(landed,.01,8);
+  assert.ok(Math.abs(g.player.x-before)>30,'a real ram hit should still knock the player back');
+  assert.equal(g.shake,5,'real hits keep impact feedback');
+});
+
 test('new weapons damage foes; vitality heals and upgrades stop at caps',()=>{const g=new Game(rng());g.upgrades={lightning:1,frost:1};g.stormTimer=0;g.auraTimer=0;const e=nearby(g,'chicken',20,0);const hp=e.hp;g.step(.02);assert.ok(e.hp<hp);g.player.hp=10;g.offer();g.choices=[UPGRADES.find(u=>u.id==='vitality')];g.choose('vitality');assert.equal(g.player.maxHp,125);assert.equal(g.player.hp,45);for(const u of UPGRADES)g.upgrades[u.id]=u.max;g.offer();assert.deepEqual(g.choices.map(x=>x.id),['heal']);g.choose('heal');assert.equal(g.player.hp,125);});
 test('ten active minutes open the final descent; the king spawns only after entering the arena',()=>{const g=new Game(rng());g.time=BOSS_TIME-.03;g.step(.02);assert.equal(g.finalGateOpened,false);g.step(.02);assert.equal(g.finalGateOpened,true);assert.ok(g.cave?.final);assert.equal(g.bossSpawned,false);assert.equal(g.boss,null);Object.assign(g.player,{x:g.cave.x,y:g.cave.y});const king=g.enterCave();assert.ok(king?.finalBoss);assert.equal(g.finalArena,true);assert.equal(g.bossSpawned,true);assert.equal(g.boss.bossType,'final_king');const id=g.boss.id;g.step(.02);assert.equal(g.boss.id,id);g.hit(g.boss,1e9);assert.equal(g.state,'won');const time=g.time;g.step(.05);assert.equal(g.time,time);g.reset();assert.equal(g.time,0);assert.equal(g.level,1);assert.equal(g.finalArena,false);assert.equal(g.finalGateOpened,false);assert.equal(g.boss,null);});
 test('level bosses appear every five levels, scale, use specials and do not end the run',()=>{const g=new Game(rng());g.level=4;g.xp=xpNeeded(4);g.checkLevel();assert.equal(g.level,5);assert.ok(g.boss&&g.boss.bossLevel===5&&!g.boss.finalBoss);const hp5=g.boss.maxHp,damage5=g.boss.damage;g.hit(g.boss,1e6);assert.equal(g.state,'levelup');g.state='playing';g.level=9;g.xp=xpNeeded(9);g.checkLevel();assert.ok(g.boss.maxHp>hp5&&g.boss.damage>damage5);g.state='playing';g.boss=g.spawn('chicken',true,10,true);Object.assign(g.boss,{x:100,y:0,speed:0});g.player.invuln=99;for(const [index,count] of [[1,10],[2,5],[0,0]]){g.shots=[];Object.assign(g.boss,{attackIndex:index,ability:0,castLeft:0,pending:null,charge:0});g.step(.02);assert.equal(g.shots.length,0);assert.ok(g.boss.pending);for(let i=0;i<21;i++)g.step(.05);if(count)assert.equal(g.shots.length,count);else assert.ok(g.boss.charge>0);}});
