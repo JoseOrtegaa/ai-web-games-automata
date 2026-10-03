@@ -1,7 +1,7 @@
 # Huroner Survivor — estado vigente
 
 ## Objetivo / fase
-Reemplazar el pool global de bosses por cinco bosses temáticos y aleatorios para cada mundo. Implementación y QA lógico completados en `feature/boss-pools-by-world`; pendiente integración/publicación.
+Reemplazar el pool global de bosses por cinco bosses temáticos y aleatorios para cada mundo. Implementación, QA lógico e integración en `main` completados.
 
 ## Bosses por mundo
 - Superficie: Hermanos del eclipse, Codorniz prismática, Pollo bastión, Liebre cornuda, Viuda de espinas.
@@ -28,8 +28,11 @@ PASS lógico:
 
 No se afirma prueba física en iPhone ni ejecución de la suite Node desde checkout local: el contenedor de esta sesión no pudo resolver github.com.
 
+## Integración
+PR #8 fusionado en `main` el 2026-10-03. Merge squash: `aff246fa4fe948c7af9e8bab242652405aa9e0ac`.
+
 ## Contexto preservado
 Familias normales por mundo ya integradas. Cuevas: primera bajada tras boss 5/10 aleatorio, siguientes tras 15/30. Modo DEV `?dev=1`. Ataque automático por defecto. XP 30/70 con remanente redondeado; escudo 20→120; ataque 0,25 s; zoom bloqueado.
 
 ## Siguiente paso
-Revisar diff, integrar en `main`, comprobar GitHub Pages y probar visualmente bosses de las cuatro capas en móvil.
+Probar visualmente bosses de las cuatro capas en móvil y ajustar tamaño/contraste/telegráficos si alguno lo necesita.
