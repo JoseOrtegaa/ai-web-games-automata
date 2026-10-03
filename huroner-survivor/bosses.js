@@ -185,6 +185,29 @@ function extraAttack(game,e,id,angle) {
       hazard(game,e,'lightning',{x:p.x,y:p.y,radius:52,age:-2,duration:.35});e.castLeft=2.4;e.ability=4.6;break;
   }
 }
+function finalPhaseFor(e) {
+  const ratio=e.hp/e.maxHp;
+  return ratio<=.35?3:ratio<=.7?2:1;
+}
+function finalCombo(game,e,phase,angle) {
+  if(phase<2)return;
+  const p=game.player;
+  // Phase II layers delayed infernal marks over the king's primary attack.
+  for(let i=0;i<3;i++){
+    const a=angle+i*Math.PI*2/3,r=phase>=3?82:68;
+    hazard(game,e,'lightning',{
+      x:p.x+Math.cos(a)*r,y:p.y+Math.sin(a)*r,radius:phase>=3?31:27,
+      age:-1.05-i*.26,duration:.24,damage:e.damage*(phase>=3?.58:.48)
+    });
+  }
+  if(phase<3)return;
+  // Phase III adds a readable expanding ring and two locked lanes, leaving escape wedges.
+  hazard(game,e,'ring',{radius:52,rate:105,width:9,age:-1.2,duration:2.1,damage:e.damage*.5});
+  for(const offset of [-.62,.62]){
+    hazard(game,e,'beam',{angle:angle+offset,range:310,width:12,age:-1.25,duration:.32,damage:e.damage*.46});
+  }
+}
+
 function release(game, e, action) {
   if (action.kind === 'magic') for(let i=-1;i<=1;i++)projectile(game,e,action.angle+i*.26);
   if (action.kind === 'scythe') projectile(game,e,action.angle,'scythe',210);
@@ -194,6 +217,7 @@ function release(game, e, action) {
 }
 export function stepBoss(game, e, dt, distance) {
   const p=game.player;
+  if(e.finalBoss){const phase=finalPhaseFor(e);if(phase!==(e.finalPhase||1)){e.finalPhase=phase;game.emit('finalPhase',{phase});}}
   if(e.leap) {
     e.leap.age=Math.min(e.leap.duration,e.leap.age+dt);
     const t=e.leap.age/e.leap.duration;
@@ -221,10 +245,13 @@ export function stepBoss(game, e, dt, distance) {
   e.attackIndex=(index+1)%(originalCount+2);
   if(index>=originalCount){
     e.lastAttack=EXTRA_ATTACKS[key][index-originalCount];
-    extraAttack(game,e,e.lastAttack,angle);return true;
+    extraAttack(game,e,e.lastAttack,angle);
+    if(e.finalBoss){const phase=finalPhaseFor(e);finalCombo(game,e,phase,angle);e.ability=phase===3?2.15:phase===2?2.55:3.15;}
+    return true;
   }
   e.lastAttack=e.finalBoss?['charge','ring','burst'][index]:'original';
   if(e.finalBoss){
+    const phase=finalPhaseFor(e);
     if(index===0){
       const speed=230+Math.min(70,e.bossLevel*3);
       hazard(game,e,'beam',{angle,range:speed*.65,width:43,damage:0,age:-1,duration:.65});
@@ -233,7 +260,8 @@ export function stepBoss(game, e, dt, distance) {
       const count=Math.min(16,8+Math.floor(e.bossLevel/5));
       volley(game,e,Array.from({length:count},(_,i)=>i/count*Math.PI*2),'magic',115,Math.max(14,e.damage*.65));
     }else volley(game,e,[-2,-1,0,1,2].map(i=>angle+i*.16),'magic',145,Math.max(14,e.damage*.72));
-    e.ability=3.1;return true;
+    finalCombo(game,e,phase,angle);
+    e.ability=phase===3?2.15:phase===2?2.55:3.15;return true;
   }
   switch(e.bossProfile) {
     case 'twins':
