@@ -68,7 +68,7 @@ function draw(game, {active = true, moving = false, reducedMotion = false, bossI
  if(active){
  if(game.cave)drawCave(ctx,game.cave,game.time);
  for(const item of game.pickups){if(Math.abs(item.x-cx)>viewW||Math.abs(item.y-cy)>viewH)continue;ctx.save();ctx.translate(item.x,item.y);if(item.type==='meat'){ellipse(ctx,0,1,9,6,'#b95a55','#f0c9a1');line(ctx,[[-7,-2],[7,3]],'#f4e2be',3);ellipse(ctx,-8,-3,2.5,2.5,'#f4e2be');ellipse(ctx,8,4,2.5,2.5,'#f4e2be');}else if(item.type==='oil'){ellipse(ctx,0,0,7,10,'#d6a94e','#f0d681');ellipse(ctx,-2,-3,2,4,'#fff1b180');}else{ellipse(ctx,0,2,8,11,'#dc6737','#f2ad52');ellipse(ctx,0,4,4,7,'#ffd36a');}ctx.restore();}
- for(const e of game.effects){if(e.type==='blood'){ctx.globalAlpha=Math.min(.42,e.life/4);ellipse(ctx,e.x,e.y,e.r*1.3,e.r*.8,'#812e39');ctx.globalAlpha=1;}}
+ for(const e of game.effects){if(e.type==='blood'){ctx.globalAlpha=Math.min(.42,e.life/4);ellipse(ctx,e.x,e.y,e.r*1.3,e.r*.8,e.color||'#812e39');ctx.globalAlpha=1;}}
  for(const g of game.gems){if(Math.abs(g.x-cx)>viewW||Math.abs(g.y-cy)>viewH)continue;ctx.save();ctx.translate(g.x,g.y);if(g.heal){ellipse(ctx,0,0,6,6,'#e9917f');line(ctx,[[-3,0],[3,0]],'#ffe6bc',2);line(ctx,[[0,-3],[0,3]],'#ffe6bc',2);}else{
   const pulse=.5+.5*Math.sin(game.time*3.2+g.x*.13+g.y*.17),sparkle=Math.max(0,(pulse-.72)/.28),color=g.value>4?'#e7be71':'#87c9bf';
   ctx.rotate(Math.PI/4);ctx.fillStyle=color;ctx.fillRect(-3.5,-3.5,7,7);
@@ -84,20 +84,31 @@ function draw(game, {active = true, moving = false, reducedMotion = false, bossI
  for(const e of game.effects){if(e.type==='enemy-impact'){ctx.save();ctx.globalAlpha=e.life/e.max;ellipse(ctx,e.x,e.y,e.r,e.r,'#f49c5555','#f0dfbf');ctx.restore();}}
  const entities=[...game.enemies,{player:true,y:p.y}].sort((a,b)=>a.y-b.y);
  drawBossHazards(ctx,game);
- for(const e of entities){if(e.player){ctx.globalAlpha=p.invuln>0?.5+Math.sin(game.time*45)*.3:1;drawFerret(ctx,{x:p.x,y:p.y,scale:1,face:Math.cos(p.face)<-.05?-1:1,walk:reducedMotion?0:game.time*(moving?14:3),armor:game.rank('armor'),shield:p.shield/game.maxShield});ctx.globalAlpha=1;}else{if(Math.abs(e.x-cx)>viewW/2+80||Math.abs(e.y-cy)>viewH*.6+80)continue;if((e.kind==='hare'&&e.tier>=1||e.boss&&e.special==='charge')&&e.ability<.65){ctx.setLineDash([4,6]);line(ctx,[[e.x,e.y],[p.x,p.y]],'#e9ae7a65',2);ctx.setLineDash([]);}const jump=e.specialAttack?.phase==='jump'?Math.sin(Math.PI*(1-e.specialAttack.time/e.specialAttack.duration))*32:0;if(e.bossType)drawBoss(ctx,e.leap?{...e,y:e.y-Math.sin(Math.PI*e.leap.age/e.leap.duration)*38}:e,reducedMotion?0:game.time);else if(e.shieldOwnerId)drawShieldKey(ctx,e,reducedMotion?0:game.time);else drawAnimal(ctx,{...e,x:e.x,y:e.y-jump,scale:e.boss?2.15:1+e.tier*.1,time:reducedMotion?0:game.time});if(e.hp<e.maxHp&&!e.boss){ctx.fillStyle='#071410';ctx.fillRect(e.x-13,e.y-40,26,3);ctx.fillStyle='#dba77a';ctx.fillRect(e.x-13,e.y-40,26*e.hp/e.maxHp,3);}}}
+ for(const e of entities){if(e.player){ctx.globalAlpha=p.invuln>0?.5+Math.sin(game.time*45)*.3:1;drawFerret(ctx,{x:p.x,y:p.y,scale:1,face:Math.cos(p.face)<-.05?-1:1,walk:reducedMotion?0:game.time*(moving?14:3),armor:game.rank('armor'),shield:p.shield/game.maxShield});ctx.globalAlpha=1;}else{if(Math.abs(e.x-cx)>viewW/2+80||Math.abs(e.y-cy)>viewH*.6+80)continue;if(e.boss&&e.special==='charge'&&e.ability<.65){ctx.setLineDash([4,6]);line(ctx,[[e.x,e.y],[p.x,p.y]],'#e9ae7a65',2);ctx.setLineDash([]);}const jump=e.specialAttack?.phase==='jump'?Math.sin(Math.PI*(1-e.specialAttack.time/e.specialAttack.duration))*32:0;if(e.bossType)drawBoss(ctx,e.leap?{...e,y:e.y-Math.sin(Math.PI*e.leap.age/e.leap.duration)*38}:e,reducedMotion?0:game.time);else if(e.shieldOwnerId)drawShieldKey(ctx,e,reducedMotion?0:game.time);else drawAnimal(ctx,{...e,x:e.x,y:e.y-jump,scale:e.boss?2.15:1+e.tier*.1,time:reducedMotion?0:game.time});if(e.hp<e.maxHp&&!e.boss){ctx.fillStyle='#071410';ctx.fillRect(e.x-13,e.y-40,26,3);ctx.fillStyle='#dba77a';ctx.fillRect(e.x-13,e.y-40,26*e.hp/e.maxHp,3);}}}
  for(let i=0;i<game.rank('orbit');i++){let a=game.time*2.5+i/game.rank('orbit')*Math.PI*2;sword(ctx,p.x+Math.cos(a)*72,p.y+Math.sin(a)*72,a,.65);}
  for(const e of game.effects){let life=e.life/e.max;if(e.type==='slash'){ctx.save();ctx.translate(e.x,e.y);ctx.globalAlpha=life;ctx.beginPath();ctx.arc(0,0,e.r,e.angle-e.half,e.angle+e.half);ctx.strokeStyle=e.fire?'#e56f36b5':'#dcecc873';ctx.lineWidth=19;ctx.stroke();ctx.beginPath();ctx.arc(0,0,e.r+8,e.angle-e.half,e.angle+e.half);ctx.strokeStyle=e.fire?'#ffd36f':'#fff5c3';ctx.lineWidth=3;ctx.stroke();ctx.restore();}if(e.type==='bolt'){ctx.globalAlpha=life;line(ctx,[[e.x+15,e.y-200],[e.x-12,e.y-90],[e.x+15,e.y-95],[e.x,e.y]],'#d6edff',4);ellipse(ctx,e.x,e.y,17,8,'#c8e5ef80');ctx.globalAlpha=1;}}
- for(const q of game.particles){ctx.globalAlpha=Math.min(1,q.life*2);ellipse(ctx,q.x,q.y,q.size,q.size*.7,'#a35453');}ctx.globalAlpha=1;
- for(const e of game.enemies){const a=e.specialAttack;if(!a)continue;
+ for(const q of game.particles){ctx.globalAlpha=Math.min(1,q.life*2);ellipse(ctx,q.x,q.y,q.size,q.size*.7,q.color||'#a35453');}ctx.globalAlpha=1;
+ for(const e of game.enemies){const a=e.specialAttack;if(!a||a.phase!=='warning')continue;
   ctx.save();ctx.lineWidth=2;ctx.strokeStyle='#f0dfbf';
-  if(a.kind==='quail'){
-   ctx.setLineDash([5,5]);for(let i=0;i<a.count;i++){const angle=a.angle+(i-(a.count-1)/2)*.3;line(ctx,[[a.x,a.y],[a.x+Math.cos(angle)*150,a.y+Math.sin(angle)*150]],'#f0dfbfc0',2);}
+  if(a.kind==='fan'||a.kind==='shot'){
+   ctx.setLineDash([5,5]);const count=a.kind==='fan'?a.count:1;
+   for(let i=0;i<count;i++){const angle=a.angle+(i-(count-1)/2)*(a.kind==='fan'?.3:0);line(ctx,[[e.x,e.y],[e.x+Math.cos(angle)*190,e.y+Math.sin(angle)*190]],a.kind==='shot'?'#d8c9a4cc':'#f0dfbfc0',2);}
+  }else if(a.kind==='lunge'||a.kind==='ram'){
+   ctx.setLineDash([6,5]);line(ctx,[[e.x,e.y],[a.x,a.y]],a.kind==='ram'?'#e0b38ac0':'#f0dfbfc0',3);
   }else{
-   ellipse(ctx,a.x,a.y,a.radius,a.radius,'#cb655540');ctx.setLineDash([5,4]);ctx.beginPath();ctx.arc(a.x,a.y,a.radius,0,Math.PI*2);ctx.stroke();
+   const warning=a.kind==='explode'?'#e65e3348':'#cb655540';
+   ellipse(ctx,a.x,a.y,a.radius,a.radius,warning);ctx.setLineDash([5,4]);ctx.beginPath();ctx.arc(a.x,a.y,a.radius,0,Math.PI*2);ctx.stroke();
    line(ctx,[[a.x-7,a.y],[a.x+7,a.y]],'#ffe4ad',2);line(ctx,[[a.x,a.y-7],[a.x,a.y+7]],'#ffe4ad',2);
   }ctx.restore();
  }
- for(const s of game.shots){if(s.ownerId){drawBossProjectile(ctx,s);}else if(s.kind==='feather'){ctx.save();ctx.translate(s.x,s.y);ctx.rotate(Math.atan2(s.vy,s.vx));ellipse(ctx,0,0,9,3,'#f0dfbf','#cb6555');line(ctx,[[-7,0],[8,0]],'#fff2cf',1);ctx.restore();}else{ellipse(ctx,s.x,s.y,4,7,'#f0dfbf');ellipse(ctx,s.x,s.y,2,3,'#cb6555');}}
+ for(const s of game.shots){
+  if(s.ownerId){drawBossProjectile(ctx,s);}
+  else if(s.kind==='feather'){ctx.save();ctx.translate(s.x,s.y);ctx.rotate(Math.atan2(s.vy,s.vx));ellipse(ctx,0,0,9,3,'#f0dfbf','#cb6555');line(ctx,[[-7,0],[8,0]],'#fff2cf',1);ctx.restore();}
+  else if(s.kind==='bone'){ctx.save();ctx.translate(s.x,s.y);ctx.rotate(Math.atan2(s.vy,s.vx));line(ctx,[[-8,0],[8,0]],'#d8c9a4',4);ellipse(ctx,-8,0,2.8,2.8,'#d8c9a4');ellipse(ctx,8,0,2.8,2.8,'#d8c9a4');ctx.restore();}
+  else if(s.kind==='rock'){ctx.save();ctx.translate(s.x,s.y);ctx.rotate(Math.atan2(s.vy,s.vx));ctx.fillStyle='#77706a';ctx.beginPath();ctx.moveTo(9,0);ctx.lineTo(-4,-5);ctx.lineTo(-8,3);ctx.closePath();ctx.fill();ctx.restore();}
+  else if(s.kind==='ember'){ctx.save();ctx.translate(s.x,s.y);ctx.rotate(Math.atan2(s.vy,s.vx));ellipse(ctx,0,0,8,4,'#e96530','#ffb052');ellipse(ctx,3,0,3,2,'#ffd36f');ctx.restore();}
+  else{ellipse(ctx,s.x,s.y,4,7,'#f0dfbf');ellipse(ctx,s.x,s.y,2,3,'#cb6555');}
+ }
  }ctx.restore();fog();
  const boss=bossId==null?null:game.enemies.find(e=>e.hp>0&&e.boss&&(e.encounterId??e.id)===bossId);
  if(active&&boss)drawBossIndicator(game,boss,camX,camY,zoom);
