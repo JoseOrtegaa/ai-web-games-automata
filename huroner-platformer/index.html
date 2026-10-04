@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+    <meta name="theme-color" content="#17262c">
+    <meta name="description" content="Ferret Jump. Un pequeño hurón, una casa enorme. Un plataformas pixel art original.">
+    <title>
+      Ferret Jump · La casa dormida
+    </title>
+  </head>
+  <body>
+    <main id="app">
+      <div id="game">
+      </div>
+      <header id="hud" hidden>
+        <div class="health" id="hearts">
+        </div>
+        <div class="kibble">
+          <span>
+            ◆
+          </span>
+          <b id="count">
+            0
+          </b>
+        </div>
+        <div id="buff">
+        </div>
+        <div class="hud-actions">
+          <button id="sound" aria-label="Silenciar audio">
+            ♪
+          </button>
+          <button id="pause" aria-label="Pausar">
+            Ⅱ
+          </button>
+        </div>
+      </header>
+      <div id="toast" role="status">
+      </div>
+      <nav id="controls" aria-label="Controles del juego" hidden>
+        <div class="directions">
+          <button data-control="left" aria-label="Mover izquierda">
+            ◀
+          </button>
+          <button data-control="right" aria-label="Mover derecha">
+            ▶
+          </button>
+        </div>
+        <button class="jump" data-control="jump" aria-label="Saltar">
+          ↟
+        </button>
+      </nav>
+      <section id="menu" class="overlay">
+        <div class="card">
+          <div class="eyebrow">
+            UNA PEQUEÑA GRAN AVENTURA
+          </div>
+          <h1>
+            FERRET
+            <br>
+            <span>
+              JUMP
+            </span>
+          </h1>
+          <p class="subtitle">
+            La casa dormida
+          </p>
+          <p class="intro">
+            Un pequeño hurón.
+            <br>
+            Una casa enorme por descubrir.
+          </p>
+          <button id="start" class="primary">
+            ¡A explorar!
+            <span>
+              →
+            </span>
+          </button>
+          <p class="hint">
+            ← → / A D para moverte · Espacio para saltar
+            <br>
+            Mantén el salto para llegar más alto.
+          </p>
+          <div class="chapter">
+            01
+            <span>
+              DEL NIDO A LA COCINA
+            </span>
+          </div>
+        </div>
+      </section>
+      <section id="pause-menu" class="overlay" hidden>
+        <div class="card compact">
+          <div class="eyebrow">
+            UN RESPIRO
+          </div>
+          <h2>
+            La casa puede esperar.
+          </h2>
+          <p>
+            Tu aventura está a salvo aquí.
+          </p>
+          <button id="resume" class="primary">
+            Seguir explorando →
+          </button>
+          <button id="restart" class="secondary">
+            Volver al nido
+          </button>
+        </div>
+      </section>
+      <section id="win" class="overlay" hidden>
+        <div class="card compact">
+          <div class="eyebrow">
+            ¡MENUDO EXPLORADOR!
+          </div>
+          <h2>
+            Una casa.
+            <br>
+            Mil aventuras.
+          </h2>
+          <p>
+            Has encontrado el camino al jardín.
+          </p>
+          <div id="results">
+          </div>
+          <button id="replay" class="primary">
+            Otra pequeña aventura →
+          </button>
+          <p class="hint">
+            ¿Descubriste todos los escondites?
+          </p>
+        </div>
+      </section>
+      <section id="rotate">
+        <div class="rotate-icon">
+          ▱ ↻
+        </div>
+        <h2>
+          Una aventura a lo ancho.
+        </h2>
+        <p>
+          Gira tu móvil para explorar
+          <br>
+          la casa dormida.
+        </p>
+        <small>
+          FERRET JUMP
+        </small>
+      </section>
+    </main>
+    <script type="module" src="/src/main.ts">
+    </script>
+  </body>
+</html>

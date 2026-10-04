@@ -1,0 +1,1 @@
+export const B = { speed: 220, acceleration: 1500, drag: 1900, gravity: 1200, jump: 490, cutJump: 180, maxFall: 700, coyote: 110, buffer: 130, invulnerability: 1400, bounce: 320, oilDuration: 12000, oilMultiplier: 1.25 } as const;
