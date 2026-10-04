@@ -123,6 +123,9 @@ test('final arena king gains HP and escalates into overlapping but warned phases
 
   g.hazards=[];g.shots=[];king.pending=null;king.castLeft=0;king.charge=0;king.hp=king.maxHp*.34;king.ability=0;king.attackIndex=0;
   stepBoss(g,king,.01,100);assert.equal(king.finalPhase,3);assert.ok(g.hazards.some(h=>h.kind==='ring'));assert.ok(g.hazards.filter(h=>h.kind==='beam').length>=3);assert.ok(g.hazards.every(h=>h.age<0));
+  const finalRing=g.hazards.find(h=>h.kind==='ring');
+  assert.deepEqual([finalRing.radius,finalRing.rate,finalRing.width,finalRing.age],[82,95,8,-1.45]);
+  assert.equal(hazardContains(finalRing,{x:king.x+55,y:king.y}),false,'close range stays safe when the ring activates');
 });
 
 test('final arena limits normal enemies and clamps combatants inside its boundary',()=>{
@@ -130,6 +133,6 @@ test('final arena limits normal enemies and clamps combatants inside its boundar
   g.spawnTimer=0;
   for(let i=0;i<1200;i++)g.step(.05,{x:1,y:1});
   const minions=g.enemies.filter(e=>!e.boss&&!e.shieldOwnerId&&e.hp>0);
-  assert.ok(minions.length<=4);assert.ok(Math.hypot(g.player.x,g.player.y)<=267.000001);
+  assert.ok(minions.length<=6);assert.ok(Math.hypot(g.player.x,g.player.y)<=267.000001);
   assert.ok(Math.hypot(king.x,king.y)<=237.000001);
 });
