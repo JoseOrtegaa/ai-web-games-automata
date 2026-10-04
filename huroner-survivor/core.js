@@ -400,7 +400,7 @@ export class Game {
       if(this.finalArena){
         this.spawnTimer=4.2;
         const minions=this.enemies.filter(e=>!e.boss&&!e.shieldOwnerId&&e.hp>0).length;
-        if(minions<4)this.spawn();
+        if(minions<6)this.spawn();
       }else{
         this.spawnTimer=spawnIntervalFor(this.level,this.time);
         if(this.enemies.length<170)this.spawn();
