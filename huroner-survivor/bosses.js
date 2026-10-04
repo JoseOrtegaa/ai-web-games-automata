@@ -202,7 +202,7 @@ function finalCombo(game,e,phase,angle) {
   }
   if(phase<3)return;
   // Phase III adds a readable expanding ring and two locked lanes, leaving escape wedges.
-  hazard(game,e,'ring',{radius:52,rate:105,width:9,age:-1.2,duration:2.1,damage:e.damage*.5});
+  hazard(game,e,'ring',{radius:82,rate:95,width:8,age:-1.45,duration:2.1,damage:e.damage*.5});
   for(const offset of [-.62,.62]){
     hazard(game,e,'beam',{angle:angle+offset,range:310,width:12,age:-1.25,duration:.32,damage:e.damage*.46});
   }
