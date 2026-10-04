@@ -211,14 +211,16 @@ test('triple shots use imperfect irregular spread instead of a perfect three-lin
     return Math.abs(Math.atan2(Math.sin(angle-perfect),Math.cos(angle-perfect)))>.02;
   }),'at least one projectile should deviate from the old perfect fan');
 });
-test('quail primary fan pattern keeps three locked feathers',()=>{
+test('quail primary fan keeps three feathers while allowing clumsy spread',()=>{
   for(const level of [5,11,16,30]){
-    const {g,e}=specialScenario('quail',level,240);g.step(.01);const angle=e.specialAttack.angle;
+    const {g,e}=specialScenario('quail',level,240);g.step(.01);
+    const {angle,spread,jitter}=e.specialAttack;
     advance(g,.74,{x:0,y:1});assert.equal(g.shots.length,0);advance(g,.02);assert.equal(g.shots.length,3);
     const angles=g.shots.map(s=>Math.atan2(s.vy,s.vx));
     for(let i=0;i<angles.length;i++){
-      const expected=angle+(i-(angles.length-1)/2)*.3;
-      assert.ok(Math.abs(Math.atan2(Math.sin(angles[i]-expected),Math.cos(angles[i]-expected)))<1e-8);
+      const expected=angle+(i-(angles.length-1)/2)*spread;
+      const delta=Math.abs(Math.atan2(Math.sin(angles[i]-expected),Math.cos(angles[i]-expected)));
+      assert.ok(delta<=jitter+1e-8);
       assert.equal(g.shots[i].damage,e.damage);assert.equal(g.shots[i].kind,'feather');
     }
   }
