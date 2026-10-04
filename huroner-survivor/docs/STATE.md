@@ -47,3 +47,9 @@ Números de daño/curación sutiles; spawn midgame suavizado; jitter de embestid
 
 ## Siguiente paso
 Probar en iPhone especialmente cadenas de saltos y abanicos triples; confirmar que ahora se puedan esquivar con más frecuencia sin volver inofensivas las hordas.
+
+## 2026-10-04 — ajuste de justicia del Rey final
+- El anillo superpuesto de Fase III conserva daño y duración, pero pasa de radio inicial 52→82, expansión 105→95, ancho 9→8 y aviso 1,20→1,45 s. Estar a 55 px del Rey queda fuera de la banda dañina al activarse.
+- La arena final admite hasta 6 esbirros magma en lugar de 4; la cadencia se mantiene en ~4,2 s.
+- QA localizado: `boss-expansion.test.js` 9/9 PASS en la simulación cargada; validación adicional confirma anillo cercano seguro y 6 esbirros magma vivos sin alterar el roster.
+- Integración: PR #18.

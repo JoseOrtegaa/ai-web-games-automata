@@ -133,3 +133,13 @@ Reproducir QA con Playwright 1.51.1 instalado fuera del proyecto; `QA_BROWSERS=c
 - Tests específicos actualizados para aceptar el nuevo punto de caída imperfecto y la geometría irregular del triple.
 - El runner aislado no resuelve raw.githubusercontent.com, por lo que no se ejecutó la suite Node completa en este entorno; diff y regresiones dirigidas revisados antes de integrar.
 - No se afirma prueba física en iPhone/Android.
+
+## 2026-10-04 — anillo del Rey final y dos esbirros extra
+
+**PASS lógico localizado.** PR #18.
+
+- Suite `boss-expansion.test.js`: 9/9 casos PASS sobre la revisión de la rama.
+- Fase III: anillo final verificado con radio inicial 82, expansión 95, ancho 8 y aviso 1,45 s; un jugador a 55 px del centro queda fuera de la banda al activarse.
+- Arena final: simulación mantiene exactamente 6 esbirros vivos como tope, todos del roster magma, con la cadencia existente de ~4,2 s.
+- Sin cambios en daño del Rey, HP, duración del anillo, cadencia de ataques, otras fases ni bosses normales.
+- No se afirma prueba física en iPhone/Android.
