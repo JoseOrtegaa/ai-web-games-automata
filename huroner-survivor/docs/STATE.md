@@ -33,10 +33,10 @@ Estado vigente: escudo del jugador eliminado, evolución visual del hurón activ
 - core.js, art.js, render.js y app.js parsean.
 
 ## Integración
-PR #14 fusionado en `main` el 2026-10-04 para evolución/sin escudo/cámara inicial. PR #15 para el alejamiento adicional de cámara. PR #16 para IA enemiga menos robótica. Último squash de gameplay: `712208aa6e9d9348a8f6cf5e11a40661090d3c22`.
+PR #14 fusionado en `main` el 2026-10-04 para evolución/sin escudo/cámara inicial. PR #15 para el alejamiento adicional de cámara. PR #16 para IA enemiga menos robótica. PR #17 aumenta los fallos reales de saltos y ataques a distancia. Último squash de gameplay: `07e77d4a2513431e79cb1761c406ca8a6f2ec0f3`.
 
 ## IA de enemigos normales
-- Los especiales ya no apuntan todos al píxel exacto del jugador: salto, disparo, abanico, lunge y ram aplican una desviación pequeña por enemigo/ataque.
+- Los especiales ya no apuntan todos al píxel exacto del jugador. Saltos y ataques a distancia usan torpeza probabilística: los saltos tienen una rama de fallo real alta (~68%); abanicos/triples ~62% y además dispersión/jitter por proyectil. Lunge, shot y ram conservan error moderado.
 - Cada familia conserva un ataque principal y dispone de un secundario coherente.
 - Algunos enemigos usan el secundario ya desde su primer especial; con alternativa disponible no pueden repetir el mismo patrón más de dos veces seguidas.
 - Los rangos de activación originales se conservan y los arqueros mantienen el proyectil propio de su mundo.
@@ -46,4 +46,4 @@ PR #14 fusionado en `main` el 2026-10-04 para evolución/sin escudo/cámara inic
 Números de daño/curación sutiles; spawn midgame suavizado; jitter de embestidas corregido; arena final del inframundo; 20 bosses normales; ataque automático por defecto; XP 30/70; ataque 0,25 s; zoom del navegador bloqueado.
 
 ## Siguiente paso
-Probar en iPhone la sensación de hordas: confirmar que la torpeza se perciba natural sin volver a los enemigos demasiado fáciles; ajustar solo margen de puntería o probabilidad de variantes si hiciera falta.
+Probar en iPhone especialmente cadenas de saltos y abanicos triples; confirmar que ahora se puedan esquivar con más frecuencia sin volver inofensivas las hordas.
