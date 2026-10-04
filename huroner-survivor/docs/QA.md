@@ -120,3 +120,16 @@ Reproducir QA con Playwright 1.51.1 instalado fuera del proyecto; `QA_BROWSERS=c
 - Checks dirigidos ejecutados con Node: repertorios, desviación de puntería, apertura no sincronizada, anti-repetición y conservación de rango: PASS.
 - La suite completa no se pudo ejecutar en el runner aislado porque no resuelve github.com; se revisó el diff integrado y los tests de regresión específicos quedaron añadidos al repositorio.
 - Bosses no modificados; no se afirma prueba física en iPhone/Android.
+
+
+## 2026-10-04 — mayor torpeza en saltos y disparos triples
+
+**PASS lógico localizado.** PR #17, squash `07e77d4a2513431e79cb1761c406ca8a6f2ec0f3`.
+
+- Saltos normales: rama torpe ~68%; cuando entra, el objetivo queda desplazado lo suficiente para poder caer fuera del área de impacto de un jugador quieto.
+- Fan/triple: rama torpe ~62%, spread variable 0,34–0,48 rad y jitter individual 0,055–0,11 rad por proyectil.
+- Shot/ram/lunge reciben error moderado adicional; burst/explode no cambian.
+- Daño, cooldowns, rangos de activación, bosses y límites de proyectiles permanecen sin cambios.
+- Tests específicos actualizados para aceptar el nuevo punto de caída imperfecto y la geometría irregular del triple.
+- El runner aislado no resuelve raw.githubusercontent.com, por lo que no se ejecutó la suite Node completa en este entorno; diff y regresiones dirigidas revisados antes de integrar.
+- No se afirma prueba física en iPhone/Android.
