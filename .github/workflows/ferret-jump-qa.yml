@@ -2,7 +2,12 @@ name: Ferret Jump QA
 on:
   push:
     paths:
-      - 'huroner-platformer/**'
+      - 'huroner-platformer/src/**'
+      - 'huroner-platformer/tests/**'
+      - 'huroner-platformer/dist/**'
+      - 'huroner-platformer/package*.json'
+      - 'huroner-platformer/index.html'
+      - 'huroner-platformer/*config*'
       - '.github/workflows/ferret-jump-qa.yml'
   workflow_dispatch:
 permissions:
