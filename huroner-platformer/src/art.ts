@@ -168,7 +168,8 @@ export function createArt(scene: Phaser.Scene): void {
         const out = hi.getContext('2d')!;
         out.imageSmoothingEnabled = false;
         out.drawImage(lo, 0, 0, hi.width, hi.height);
-        const atlas = scene.textures.addCanvas('ferret-sheet', hi)!;
+        // Passing a Texture to addSpriteSheet preserves its key (Phaser 3).
+        const atlas = scene.textures.addCanvas('ferret', hi)!;
         scene.textures.addSpriteSheet('ferret', atlas, { frameWidth: 48, frameHeight: 64 });
     }
     const anims = [['idle', 0, 1, 3, -1], ['run', 2, 5, 11, -1], ['jump', 6, 6, 1, 0], ['fall', 7, 7, 1, 0], ['hurt', 8, 8, 1, 0], ['dead', 9, 10, 4, 0]] as const;

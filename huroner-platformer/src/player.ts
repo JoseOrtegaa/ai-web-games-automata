@@ -10,7 +10,7 @@ export class Player {
     hurtUntil = 0;
     invulnerableUntil = 0;
     constructor(scene: Phaser.Scene, x: number, y: number) {
-        this.sprite = scene.physics.add.sprite(x, y, 'ferret');
+        this.sprite = scene.physics.add.sprite(x, y, 'ferret', 0);
         this.sprite.setSize(24, 42).setOffset(12, 20).setMaxVelocity(310, B.maxFall);
         this.sprite.setDepth(20);
     }
