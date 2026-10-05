@@ -10,6 +10,8 @@ Un plataformas pixel art original. Explora una casa enorme con un pequeño huró
 
 ## Desarrollo
 
-Node >=22.12. `npm ci`, `npm run dev`, `npm test`, `npm run build`, `npm run preview`.
+Node 24 o posterior (pruebas TypeScript nativas). `npm ci`, `npm run dev`, `npm test`, `npm run build`, `npm run preview`.
 
 Fuente TypeScript/Phaser con arte original generado en Canvas y sonido sintetizado. Sin código ni recursos de otros juegos. `dist/` se versiona para GitHub Pages del repositorio. Ver `AGENTS.md` y `docs/` para decisiones, contratos y QA. El guardado local conserva croquetas acumuladas y mejor resultado al terminar; falla de forma segura si el navegador bloquea almacenamiento.
+
+La validación de navegador reproducible está en `tests/browser-qa.mjs` y GitHub Actions. Requiere instalar Chromium con `npx playwright install chromium` y servir la raíz del repositorio en el puerto 8123. `BASE_URL` permite probar otro servidor. Avisos de terceros: `public/LICENSES.txt`, también publicado en `dist/`.

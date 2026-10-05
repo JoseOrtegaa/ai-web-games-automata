@@ -1,13 +1,13 @@
 # Estado
 
-- Objetivo: prototipo completo Ferret Jump, un nivel horizontal mobile-first.
-- Rama remota: `feature/ferret-jump`; base de main `7e34f50`. Survivor intacto.
-- Revisión remota vigente: `bf566ebce2efb2cbc734405ebaaa2d3f1e1eee58`.
-- Fase: cierre de QA; arquitectura/diseño/desarrollo terminados.
-- Primer QA real detectó textura del protagonista mal registrada; corregida en `ffa2a8a` (key de CanvasTexture y frame inicial).
-- QA `37269455689`: 25/25 casos dirigidos PASS, sin errores de consola. Movimiento, salto variable/coyote/buffer, combate, vida/checkpoint, secretos/powerups, audio, multitouch y cinco ratios comprobados en Chromium CI.
-- Pendiente: recorrido completo por teclado. El bot saltó prematuramente desde un mueble hacia un hueco; ajustada su lectura de descensos seguros sin cambiar geometría. Se añadió traza de daño.
-- QA vigente: GitHub Actions `37269835133`, probando recorrido corregido y render Canvas (comparar rendimiento frente a WebGL software del runner).
-- Entorno local no permite sockets de Chromium; QA remoto legítimo. No pruebas físicas iOS/Android.
-- Siguiente paso: leer resultado/artefactos de ese run, corregir solo fallos reales, actualizar QA y ARCHITECTURE, integrar main con conector GitHub y verificar Pages.
-- Publicación: `huroner-platformer/dist/` versionado; catálogo apunta a esa ruta. Git terminal no tiene credenciales; usar GitHub connector (create_tree/create_commit/update_ref sin force). No confundir commits locales iniciales con HEAD remoto.
+- Objetivo completado: prototipo Ferret Jump independiente, un nivel horizontal «La casa dormida».
+- Rama de trabajo: `feature/ferret-jump`, basada en main `7e34f50`; sin cambios en Survivor.
+- Arquitectura → Diseño → Desarrollo → QA completados con código, assets y evidencias reales.
+- Juego validado: `730a4dec88664d10bef577ff29b04bc7ad9a2b38`; bundle `index-DZNGAO9A.js`.
+- QA PASS: Actions `37270208690`, recorrido completo por teclado, 26 casos navegador y 3 reglas. Detalles y límites en QA.md.
+- Stack: TypeScript, Phaser Canvas/Arcade, Vite; fuente modular, arte pixel propio y audio sintetizado. Node 24 para desarrollo/pruebas.
+- Entrega: un nivel manual, controles móvil/PC, salto variable/coyote/buffer, 3 corazones, pisotón, cuatro arquetipos, croquetas, tres power-ups, dos secretos, checkpoint y final.
+- Ruta pública: https://joseortegaa.github.io/ai-web-games-automata/huroner-platformer/dist/
+- Fase actual: integración/publicación final; verificar Pages y coincidencia del bundle antes de cerrar.
+- Sin bloqueantes conocidos. Safari/móviles físicos y duración con principiantes pendientes; sin música ambiental.
+- Git terminal sin credenciales; publicación vía conector GitHub, commits/refs sin force. Dist versionado preserva Pages y catálogo existentes.

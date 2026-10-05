@@ -1,25 +1,24 @@
 # QA — Ferret Jump
 
-Estado: **PENDIENTE de build funcional**. La revisión estática no certifica jugabilidad.
+**PASS funcional y visual — 2026-10-05.** Juego validado en `730a4dec88664d10bef577ff29b04bc7ad9a2b38`, bundle `index-DZNGAO9A.js`.
 
-## Revisión previa
-- Reglas, arquitectura, diseño y geometría leídos por QA independiente.
-- Física nominal: altura máxima ~100 px, alcance ~180 px a velocidad constante; siete huecos de suelo de 80–100 px.
-- Ajuste solicitado y aceptado por Diseño: ampliar apoyo antes de la pared de 115 px en x5980, reduciendo la precisión requerida en el salto.
-- Ajuste solicitado y aceptado: spawn del segundo conejo separado del borde de la caja.
-- Documento de diseño corregido de diez a siete huecos reales.
+Evidencia: [GitHub Actions 37270208690](https://github.com/JoseOrtegaa/ai-web-games-automata/actions/runs/37270208690), artefacto `ferret-jump-qa` con JSON y capturas. Entorno: Ubuntu 24.04, Node 24, Playwright 1.62.1, Chromium 151, render Canvas. No equivale a móviles físicos.
 
-## Cobertura prevista
-1. Recorrido completo mediante teclado desde el inicio, sin posicionar al jugador, hasta victoria; verificar plataformas, dificultad y cámara.
-2. Casos dirigidos con `?qa=1`: salto corto/largo, coyote/buffer, pisotón, protegido de dos impactos, daño/invulnerabilidad, tres corazones, derrota/checkpoint y reinicio, cuatro arquetipos, croquetas/persistencia, buffs/transformación, dos secretos.
-3. Chromium real: emulación móvil y dos contactos táctiles simultáneos; orientación, pausa, ratios, ausencia de scroll/zoom, consola/carga y activación WebAudio.
-4. Capturas de menú, juego móvil, secreto/transformación, cocina y victoria; revisión visual.
+## Comprobaciones
+- `npm test`: 3/3 reglas geométricas correctas; typecheck y build correctos.
+- Recorrido real mediante teclado, sin teletransportes ni alterar salud/física: victoria en 62,76 s, 112 croquetas, checkpoint activo, dos corazones al terminar. Es recorrido automatizado directo; el objetivo de 2–4 minutos con exploración para un principiante requiere calibración humana.
+- **26/26 casos dirigidos PASS**: aceleración/frenada; salto corto (41 px en esta muestra) y mantenido (96 px); coyote; buffer; paredes/plataformas one-way; daño lateral e invulnerabilidad; pisotón sobre cuatro arquetipos (protegido dos golpes); derrota y respawn; checkpoint, conservación de recogidos y reintento; carne, aceite +25%/12 s y expiración/pausa; Pompón absorbe golpe; dos pasadizos; vuelo/proyectil anunciado; WebAudio/mute; victoria, guardado único/replay; giro/pausa; cinco ratios; multitouch CDP, doble toque sin zoom; muerte suspendida en vertical; rendimiento; recuperación desde cocina baja; consola limpia.
+- Ratios: 844×390, 932×430, 667×375, 1024×768, 1440×900 y vertical 390×844. Sin scroll, botones ≥44 px, escala visual 1.
+- Capturas revisadas: menú, protagonista/fondo/HUD, salón, cocina, Pompón, móvil, giro y victoria. Pixel art original legible y controles bajo zona principal de plataformas.
+- Muestra de 180 frames: mediana 16,7 ms, p95 16,7 ms (~60 FPS en runner). Canvas mejoró frente a WebGL software (33,3 ms); no certifica FPS de iPhone/Android.
 
-Entorno previsto: Chromium de Playwright disponible en el contenedor. No se afirmará prueba física iOS/Android. WebKit no disponible por bibliotecas del host. QA actualizará este documento con resultados reproducibles antes de integración.
+## Fallos corregidos
+1. La CanvasTexture conservaba otro key y las animaciones detenían el primer frame: mismo key y frame inicial explícito.
+2. Pausa/orientación durante muerte, tweens pendientes en replay, HUD del respawn y salto buffered corto.
+3. Ruta baja ante muebles altos obligaba a retroceder después de un rebote: nueve apoyos pequeños garantizan subidas de hasta 80 px.
+4. El controlador QA saltaba ante descensos seguros: ahora distingue caída a suelo y hueco, sin alterar la física del juego.
 
-## Reanudación: harness de navegador
-- `tests/browser-qa.mjs` ejecuta recorrido completo por teclado sin teletransportes (`browser-route.mjs`) y casos dirigidos (`browser-cases.mjs`). Usa Playwright; `BASE_URL` apunta al servidor de la raíz y `CHROMIUM_PATH` es opcional.
-- Evidencias en `test-results/`: JSON de recorrido/casos y capturas de menú, partida, transformación, victoria, orientación vertical y multitouch.
-- Análisis de sintaxis `node --check` de los tres scripts: correcto. Esto **no** constituye ejecución de sus pruebas.
-- El Chromium antiguo falla al arrancar; la copia limpia del navegador devuelve versión pero el host impide crear su socket. La revisión automática rechazó la elevación. No se elude la restricción: la ejecución real pasa al workflow de GitHub Actions sobre una rama de validación, antes de integración en main.
-- Estado de navegador pendiente de resultados de CI; no se declara PASS global. WebKit y hardware móvil permanecen sin verificar.
+## Límites
+Sin defectos bloqueantes conocidos con esta cobertura. Safari/WebKit y hardware iOS/Android no comprobados. No música ambiental; efectos originales sintetizados. Tiempo y sensación con jugadores noveles pendientes de feedback. El host local bloqueó sockets de Chromium; se validó en Actions sin eludir restricciones.
+
+Reproducción: Node 24, `npm ci`, `npm test`, `npm run build`, `npx playwright install chromium`; servir raíz del repositorio en 8123 y ejecutar `node tests/browser-qa.mjs` desde el juego. `BASE_URL` cambia servidor. `?qa=1` habilita casos dirigidos; el recorrido completo solo usa teclado.
