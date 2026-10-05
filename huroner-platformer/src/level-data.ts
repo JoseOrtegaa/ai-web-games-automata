@@ -37,6 +37,11 @@ ledge(12020, 315, 160, 'tile', 115);
 ledge(12260, 250, 390, 'wood', 25, true);
 ledge(12760, 330, 180, 'tile', 100);
 ledge(13100, 375, 200, 'cushion', 55);
+// Low book piles let a missed upper route recover without a precision backtrack.
+// Every climb from these footholds is at most 80px (full jump reaches ~96px).
+for (const x of [4990, 5920, 7960, 8880, 9470, 10300, 10990, 11960, 12700]) {
+    ledge(x, 390, 60, 'book', 40);
+}
 const collectibles: CollectibleDef[] = [];
 const trail = (x: number, y: number, count: number, step = 38) => {
     for (let i = 0; i < count; i++)

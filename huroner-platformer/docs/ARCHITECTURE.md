@@ -1,12 +1,12 @@
 # Arquitectura — Ferret Jump
 
 ## Stack y publicación
-TypeScript 5.9.3, Vite 8.3.2, Phaser 3.90.0. Versiones comprobadas en npm el 2026-10-04; Node local 24.19 satisface Vite (`^20.19 || >=22.12`). Phaser 3 estable ofrece Arcade Physics, escenas, animaciones, cámara y WebGL sin inventar un motor. Código nuevo; ninguna dependencia de Survivor.
+TypeScript 5.9.3, Vite 8.3.2, Phaser 3.90.0. Versiones comprobadas en npm el 2026-10-04; Node local 24.19 satisface Vite (`^20.19 || >=22.12`). Phaser 3 estable ofrece Arcade Physics, escenas, animaciones y cámara sin inventar un motor. Código nuevo; ninguna dependencia de Survivor.
 
 Fuente en `huroner-platformer/`; artefacto **versionado** en `huroner-platformer/dist/`, base relativa `./`. El catálogo enlaza `huroner-platformer/dist/`. Preserva Pages desde main/raíz y todos los juegos existentes, sin cambio global de despliegue. Comandos: `npm ci`, `npm run dev`, `npm run typecheck`, `npm test`, `npm run build`, `npm run preview`. Integración construye y sube fuente, lockfile y dist juntos.
 
 ## Responsabilidades y contratos
-- `main.ts`: Phaser AUTO (WebGL preferente), pixelArt, antialias false, viewport lógico 960×540 y FIT/CENTER_BOTH. Resolución interna 1; no multiplicar por DPR.
+- `main.ts`: Phaser CANVAS (2D), pixelArt, antialias false, viewport lógico 960×540 y FIT/CENTER_BOTH. Resolución interna 1; no multiplicar por DPR.
 - `scene.ts`: único propietario de partida, grupos físicos y ciclo de vida. Conecta módulos; sin bus global.
 - `player.ts`: locomoción/animación. `input.ts`: teclado y Pointer Events multitáctiles → eje -1/0/1, salto held/pressed/released. `collision.ts`: pisotón, daño y filtros one-way.
 - `enemies.ts`: patrulla, protegido de 2 pisotones, volador senoidal, tirador con aviso. `powerups.ts`, `collectibles.ts`: estados y solapes. `camera.ts`: seguimiento horizontal. `ui.ts`: HUD/menús/táctil. `audio.ts`: síntesis WebAudio tras gesto.
@@ -27,3 +27,5 @@ Scene guarda salud, buff/escudo, checkpoint, croquetas y sets de IDs recogidos/s
 Presupuesto: <=30 enemigos, <=180 croquetas, <=16 proyectiles simultáneos, <=80 partículas; desactivar IA fuera de cámara + margen. No afirmar 60 FPS móviles sin medición física. QA: tests de reglas geométricas/jump cuando útiles y navegador real automatizado con teclado/táctil, comprobación de HUD, muerte/checkpoint, cuatro enemigos, power-ups, secretos y victoria. Dev hook únicamente `?qa=1` para inspeccionar/posicionar; no sustituye recorrido jugable. Capturas móvil horizontal, 16:9 y vertical. Verificar dist servido por HTTP y finalmente URL Pages.
 
 Referencias: https://docs.phaser.io/phaser/concepts/physics/arcade ; https://vite.dev/guide/build (base relativa); https://vite.dev/guide/static-deploy.html .
+
+QA de render: en Chromium/Ubuntu de Actions, Canvas midió mediana 16,7 ms y p95 16,8 ms en 180 frames frente a WebGL software 33,3/33,4 ms. Se conserva Canvas para este escenario 2D; no es una promesa de rendimiento en hardware móvil.
