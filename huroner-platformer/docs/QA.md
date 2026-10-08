@@ -1,5 +1,16 @@
 # QA — Ferret Jump
 
+## Mejora de controles — 2026-10-08 — PASS
+- Configuración en menú con radio Deslizar/Botones y preferencia local independiente del progreso. Deslizar por defecto, también si el almacenamiento está bloqueado o el valor es inválido.
+- Deslizamiento horizontal con zona muerta de 12 px, captura de puntero, cambio izquierda/derecha, parada al soltar/cancelar/perder captura/pausar. Salto independiente multitouch y teclado conservado.
+- Botones de movimiento de 88×80 px en móvil horizontal y 96×88 px en pantallas altas; sin solapamiento con salto en 667×375, 844×390, 932×430 y 1280×720.
+- `npm test`: 3/3; `npm run build`: typecheck/build PASS (aviso de tamaño del bundle Phaser ya existente); `git diff --check`: PASS.
+- `CHROMIUM_PATH=/tmp/ferret-chromium/chromium node tests/browser-controls.mjs`: PASS, Chromium 153 / Playwright 1.62.1, emulación táctil CDP. Prueba movimiento real, salto, inversión, parada, captura fuera de zona, cancelación, pausa, teclado, persistencia tras recarga, fallback, tamaños y consola sin errores.
+- Capturas locales revisadas: configuración y ambos modos en 844×390. El test queda integrado en `tests/browser-qa.mjs`; los casos previos seleccionan Botones explícitamente.
+- Cobertura física iPhone/Android y Safari pendiente; no se presenta la emulación como prueba física. Sin defectos abiertos en el alcance.
+
+## Validación original
+
 **PASS funcional y visual — 2026-10-05.** Juego validado en `730a4dec88664d10bef577ff29b04bc7ad9a2b38`, bundle `index-DZNGAO9A.js`.
 
 Evidencia: [GitHub Actions 37270208690](https://github.com/JoseOrtegaa/ai-web-games-automata/actions/runs/37270208690), artefacto `ferret-jump-qa` con JSON y capturas. Entorno: Ubuntu 24.04, Node 24, Playwright 1.62.1, Chromium 151, render Canvas. No equivale a móviles físicos.

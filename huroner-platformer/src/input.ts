@@ -1,11 +1,21 @@
+import { setupMovementSettings, type MovementMode } from './settings';
+
 export class Input {
     private keys = new Set<string>();
     private pointers = new Map<number, string>();
     pressed = false;
     released = false;
     private wasJump = false;
+    private movementMode: MovementMode = 'swipe';
+    private swipe: { id: number; startX: number } | undefined;
+    private swipeAxis = 0;
     constructor() {
+        setupMovementSettings(mode => {
+            this.clear();
+            this.movementMode = mode;
+        });
         window.addEventListener('keydown', e => {
+            if (document.querySelector('dialog[open]')) return;
             if (['ArrowLeft', 'ArrowRight', 'ArrowUp', ' ', 'a', 'd', 'w', 'A', 'D', 'W'].includes(e.key)) {
                 e.preventDefault();
                 this.keys.add(e.key.toLowerCase());
@@ -18,6 +28,7 @@ export class Input {
         });
         document.querySelectorAll<HTMLButtonElement>('[data-control]').forEach(button => {
             button.addEventListener('pointerdown', e => {
+                if (button.dataset.control !== 'jump' && this.movementMode !== 'buttons') return;
                 e.preventDefault();
                 button.setPointerCapture(e.pointerId);
                 this.pointers.set(e.pointerId, button.dataset.control!);
@@ -34,11 +45,33 @@ export class Input {
             button.addEventListener('pointercancel', end);
             button.addEventListener('lostpointercapture', end);
         });
+        const zone = document.getElementById('swipe-zone')!;
+        zone.addEventListener('pointerdown', e => {
+            if (this.movementMode !== 'swipe' || this.swipe) return;
+            e.preventDefault();
+            zone.setPointerCapture(e.pointerId);
+            this.swipe = { id: e.pointerId, startX: e.clientX };
+            zone.classList.add('active');
+        });
+        zone.addEventListener('pointermove', e => {
+            if (this.swipe?.id !== e.pointerId) return;
+            e.preventDefault();
+            const dx = e.clientX - this.swipe.startX;
+            this.swipeAxis = Math.abs(dx) < 12 ? 0 : Math.sign(dx);
+            zone.style.setProperty('--swipe-offset', `${Math.max(-52, Math.min(52, dx))}px`);
+        });
+        const endSwipe = (e: PointerEvent) => {
+            if (this.swipe?.id !== e.pointerId) return;
+            this.clearSwipe();
+        };
+        zone.addEventListener('pointerup', endSwipe);
+        zone.addEventListener('pointercancel', endSwipe);
+        zone.addEventListener('lostpointercapture', endSwipe);
         window.addEventListener('blur', () => this.clear());
     }
     get axis() {
         const held = [...this.pointers.values()];
-        return Number(this.keys.has('arrowright') || this.keys.has('d') || held.includes('right')) - Number(this.keys.has('arrowleft') || this.keys.has('a') || held.includes('left'));
+        return Number(this.keys.has('arrowright') || this.keys.has('d') || held.includes('right') || this.swipeAxis > 0) - Number(this.keys.has('arrowleft') || this.keys.has('a') || held.includes('left') || this.swipeAxis < 0);
     }
     get jump() {
         return this.keys.has(' ') || this.keys.has('arrowup') || this.keys.has('w') || [...this.pointers.values()].includes('jump');
@@ -58,7 +91,15 @@ export class Input {
         this.pressed = false;
         this.released = false;
     }
+    private clearSwipe() {
+        this.swipe = undefined;
+        this.swipeAxis = 0;
+        const zone = document.getElementById('swipe-zone')!;
+        zone.classList.remove('active');
+        zone.style.setProperty('--swipe-offset', '0px');
+    }
     clear() {
+        this.clearSwipe();
         this.keys.clear();
         this.pointers.clear();
         this.pressed = false;

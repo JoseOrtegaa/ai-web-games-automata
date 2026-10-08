@@ -2,7 +2,8 @@
 
 Un plataformas pixel art original. Explora una casa enorme con un pequeño hurón, encuentra croquetas y pasadizos, salta sobre enemigos y llega al jardín.
 
-- **Móvil horizontal:** izquierda/derecha y salto; mantén el salto para alcanzar más altura.
+- **Móvil horizontal:** desliza horizontalmente en la zona izquierda y mantén el dedo para caminar; suelta para detenerte. Salta con el botón derecho y mantenlo para alcanzar más altura.
+- **Configuración (pantalla principal):** elige Deslizar (predeterminado) o Botones grandes. La preferencia se guarda localmente; el teclado sigue disponible en ambos modos.
 - **Teclado:** A/D o flechas, espacio/W/arriba. Escape/P pausa.
 - **Vida:** tres corazones. Calcetín a mitad de camino guarda el punto de reaparición.
 - **Objetos:** carne recupera vida, aceite acelera 12 segundos, pompón absorbe un golpe.
