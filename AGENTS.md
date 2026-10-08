@@ -1,24 +1,11 @@
-# AI Web Games Automata — entrada para agentes
+# ai-web-games-automata — reglas mínimas
 
-## Objetivo
-Convertir ideas de Jose en juegos web terminados dentro del alcance acordado: diseño, arquitectura, recursos, implementación, QA y publicación. Cada juego ocupa una carpeta en la raíz. No crear repositorios Git anidados.
+Usa **una sola sesión de IA con GitHub** para diseñar, implementar, probar y publicar. No hay workflow multiagente ni roles separados obligatorios.
 
-## Arranque y lectura
-1. Identifica la petición: juego nuevo, mejora, bug o documentación.
-2. El coordinador lee [WORKFLOW](workflow/WORKFLOW.md) y su [rol](workflow/agents/ORCHESTRATOR.md).
-3. Para juegos existentes, lee su AGENTS.md y STATE.md si existe. Inspecciona después solo documentos y código pertinentes.
-4. Cada especialista recibe las reglas comunes, su rol, el encargo y las rutas necesarias. No lee todos los roles ni otros juegos.
-5. Las plantillas están en workflow/templates/game/; no son instrucciones activas para juegos existentes.
-
-## Reglas comunes
-- La petición actual de Jose define el alcance. Pregunta por ambigüedades importantes; resuelve detalles técnicos autónomamente.
-- Consulta cualquier mecánica complementaria antes de incorporarla. Agrupa propuestas al inicio.
-- Dirección artística autónoma, con intención y coherencia.
-- Código simple, modular y localizado; refactoriza solo lo necesario para el cambio.
-- Prioriza iPhone/Safari y Android/Chrome; conserva una composición equilibrada en escritorio.
-- No confundas emulación con pruebas físicas ni inventes evidencias.
-- Integración y publicación automáticas tras QA satisfactorio, con herramientas y permisos disponibles. Nunca omitas controles para declarar éxito.
-- No sobrescribas trabajo ajeno, reescribas historial ni introduzcas costes nuevos sin autorización.
-
-## Fuentes y mantenimiento
-El repositorio contiene las reglas y el estado vigente. El chat aporta la petición actual. Si documentos y código discrepan, investiga y corrige el documento del área afectada. Conserva las restricciones particulares de cada juego. No dupliques los roles dentro de los juegos.
+- Lee la petición, el código y el README del juego afectado; revisa la rama actual y conserva el trabajo previo. No modifiques otros juegos ni reutilices sus recursos salvo utilidades realmente comunes.
+- Prioriza prototipos **jugables**, originales, con código simple y mantenible. No inventes mecánicas importantes ajenas a lo solicitado. Para nuevos juegos 2D, valora Phaser + TypeScript + Vite; conserva el stack de los existentes.
+- Mobile-first: controles táctiles, orientación, safe areas, prevención de zoom/scroll durante la partida y presentación correcta en escritorio. Respeta privacidad, guardados existentes y accesibilidad.
+- **0 € de gasto autorizado.** Sin backend, APIs facturables ni servicios nuevos con coste sin permiso explícito. Nunca publiques secretos.
+- QA proporcional: pruebas existentes, build si aplica y comprobación real del flujo jugable/controles. Un build verde no demuestra jugabilidad. No declares pruebas físicas de iPhone/Safari si solo has emulado.
+- Despliegue: GitHub Pages sirve `main` desde la raíz. `huroner-survivor/` se publica directamente; Ferret Jump compila y **versiona `huroner-platformer/dist/`**. Mantén el catálogo y las rutas de otros juegos.
+- Integra/publica los cambios autorizados tras QA correcto y confirma el enlace cuando puedas. Resume cambios, comprobaciones, commit y limitaciones; evita checkpoints y documentos ceremoniales.

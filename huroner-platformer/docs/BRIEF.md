@@ -1,9 +1,0 @@
-# Ferret Jump — prototipo
-
-Plataformas lateral pixel art original, independiente de Huroner Survivor. Carpeta provisional `huroner-platformer`. Mobile-first horizontal; teclado y tres controles táctiles: izquierda, derecha, salto variable. Aceleración/deceleración, control aéreo, coyote time y jump buffer. Tres corazones, daño lateral con invulnerabilidad, derrota/reinicio y checkpoint aproximadamente intermedio. Único ataque: pisotón con rebote.
-
-Un nivel manual de 2–4 minutos para principiantes recorre la casa humana a escala de hurón: nido, habitación, muebles/salón, cocina y salida. Introducción segura, dificultad progresiva, varias rutas opcionales y secretos obligatorios (pared falsa/conducto y escondite). Victoria claramente señalada.
-
-Hurón bípedo adorable con animaciones idle/carrera/salto/caída/daño/muerte. Cuatro arquetipos originales: patrulla, protegido (dos pisotones, protección legible), volador y tirador con proyectiles predecibles. Croquetas animadas, contador y persistencia preparada para recompensas futuras sin tienda. Carne +1 corazón, aceite de salmón velocidad temporal, una transformación visual de supervivencia que absorbe un golpe. Audio original por síntesis, feedback de eventos. Cámara suave; HUD mínimo; giro requerido en vertical; sin scroll/zoom/selección ni interferencias táctiles.
-
-Sin bosses, mundos extra, RPG, skins, tienda, ataques extra ni recursos de Nintendo. No tocar ni copiar código de huroner-survivor. Assets originales finales, no cuadrados de placeholder. Stack según TECHNOLOGY; build/publicación compatibles con Pages desde raíz de main. QA real: física, combate, buffs, secretos, checkpoint, victoria, audio, táctil/teclado, orientación y ratios móviles; distinguir emulación y hardware. Arquitectura → Diseño → Desarrollo → QA → Integración con entregables útiles.
