@@ -38,7 +38,11 @@
       <div id="toast" role="status">
       </div>
       <nav id="controls" aria-label="Controles del juego" hidden>
-        <div class="directions">
+        <div id="swipe-zone" aria-label="Desliza a izquierda o derecha para moverte">
+          <div class="swipe-track"><span>◀</span><span class="swipe-thumb"></span><span>▶</span></div>
+          <small>Desliza para moverte</small>
+        </div>
+        <div id="directions" class="directions" hidden>
           <button data-control="left" aria-label="Mover izquierda">
             ◀
           </button>
@@ -51,6 +55,7 @@
         </button>
       </nav>
       <section id="menu" class="overlay">
+        <button id="open-settings" aria-haspopup="dialog">Configuración</button>
         <div class="card">
           <div class="eyebrow">
             UNA PEQUEÑA GRAN AVENTURA
@@ -89,6 +94,19 @@
           </div>
         </div>
       </section>
+      <dialog id="settings" class="card compact" aria-labelledby="settings-title">
+        <h2 id="settings-title">Configuración</h2>
+        <fieldset>
+          <legend>Movimiento</legend>
+          <div class="movement-options">
+            <label><input type="radio" name="movement" value="swipe" checked> Deslizar</label>
+            <label><input type="radio" name="movement" value="buttons"> Botones</label>
+          </div>
+        </fieldset>
+        <p>Desliza a izquierda o derecha en la zona izquierda y mantén el dedo para caminar. Suelta para detenerte.</p>
+        <p>Salta con el botón de la derecha.</p>
+        <button id="close-settings" class="primary">Listo</button>
+      </dialog>
       <section id="pause-menu" class="overlay" hidden>
         <div class="card compact">
           <div class="eyebrow">

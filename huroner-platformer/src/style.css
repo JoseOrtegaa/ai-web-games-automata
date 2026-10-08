@@ -121,9 +121,9 @@ canvas {
   border:2px solid #fff6d74d;
   border-bottom:5px solid #0c17277a;
   border-radius:23px;
-  width:72px;
-  height:66px;
-  font-size:28px;
+  width:96px;
+  height:88px;
+  font-size:34px;
   box-shadow:0 2px 16px #0001;
 }
 #controls button.held {
@@ -137,6 +137,62 @@ canvas {
   background:#d77c5099;
   font-size:45px;
 }
+#swipe-zone {
+  width:240px;
+  height:116px;
+  pointer-events:auto;
+  touch-action:none;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  gap:10px;
+  background:#182b3b80;
+  border:2px solid #fff6d74d;
+  border-radius:28px;
+}
+.swipe-track {
+  width:184px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  color:#fff6d7b3;
+}
+.swipe-thumb {
+  width:44px;
+  height:44px;
+  border-radius:50%;
+  background:#fff6d74d;
+  transform:translateX(var(--swipe-offset,0px));
+}
+#swipe-zone.active .swipe-thumb { background:#f5bd77; }
+#swipe-zone small { font-size:12px; color:#fff7df; }
+#open-settings {
+  position:absolute;
+  top:max(16px,env(safe-area-inset-top));
+  right:max(22px,env(safe-area-inset-right));
+  padding:12px 16px;
+  min-height:46px;
+  border:1px solid #f8e1ad66;
+  border-radius:12px;
+  background:#182c31e6;
+  font-size:14px;
+}
+#settings { color:#fff7df; max-height:92dvh; overflow:auto; }
+#settings::backdrop { background:#08151dcc; }
+#settings h2 { margin-top:0; }
+#settings fieldset { border:0; padding:0; margin:0; }
+#settings legend { margin:0 auto 12px; color:#efc592; }
+.movement-options { display:flex; gap:12px; }
+.movement-options label {
+  flex:1;
+  padding:14px 8px;
+  border:1px solid #f8e1ad66;
+  border-radius:12px;
+  cursor:pointer;
+}
+.movement-options label:has(:checked) { background:#f5bd7733; border-color:#f5bd77; }
+.movement-options input { accent-color:#f5bd77; }
 .overlay {
   position:absolute;
   inset:0;
@@ -351,9 +407,10 @@ p {
     bottom:max(12px,env(safe-area-inset-bottom));
   }
   #controls button {
-    height:56px;
-    width:64px;
+    height:80px;
+    width:88px;
   }
+  #swipe-zone { width:224px; height:104px; }
   #controls .jump {
     height:66px;
     width:72px;
