@@ -36,6 +36,26 @@ function ferret(c: Ctx, frame: number) {
     const running = frame >= 2 && frame <= 5, bob = frame === 1 || frame === 3 || frame === 5 ? 1 : 0;
     c.save();
     c.translate(0, bob);
+    if (frame === 11) {
+        // Low, horizontal pose: tail and head stay recognisable in the narrow passage.
+        poly(c, P.ink, [7, 24, 2, 23, 0, 19, 2, 17, 4, 20, 9, 21]);
+        poly(c, P.fur, [7, 22, 3, 21, 2, 19, 4, 20]);
+        poly(c, P.ink, [6, 21, 17, 18, 21, 20, 22, 27, 7, 28]);
+        poly(c, P.fur, [8, 21, 17, 19, 19, 22, 19, 26, 8, 26]);
+        poly(c, P.cream, [13, 21, 20, 22, 20, 26, 13, 26]);
+        poly(c, P.ink, [15, 16, 16, 12, 19, 13, 21, 16, 23, 17, 24, 24, 20, 27, 16, 25]);
+        rect(c, P.fur, 18, 14, 2, 4);
+        rect(c, P.pink, 19, 14, 1, 2);
+        poly(c, P.cream, [17, 19, 21, 18, 24, 20, 24, 24, 19, 25]);
+        rect(c, P.ink, 20, 20, 2, 2);
+        rect(c, P.light, 20, 20, 1, 1);
+        rect(c, P.pink, 23, 22, 1, 2);
+        rect(c, P.teal, 11, 21, 6, 1);
+        rect(c, P.ink, 9, 27, 4, 3);
+        rect(c, P.ink, 19, 26, 4, 4);
+        c.restore();
+        return;
+    }
     if (frame >= 9) {
         c.translate(12, 23);
         c.rotate(frame === 9 ? -0.7 : -1.4);
@@ -157,14 +177,14 @@ function plant(c: Ctx) {
 }
 export function createArt(scene: Phaser.Scene): void {
     if (!scene.textures.exists('ferret')) {
-        const lo = canvas(24 * 11, 32), c = lo.getContext('2d')!;
-        for (let i = 0; i < 11; i++) {
+        const lo = canvas(24 * 12, 32), c = lo.getContext('2d')!;
+        for (let i = 0; i < 12; i++) {
             c.save();
             c.translate(i * 24, 0);
             ferret(c, i);
             c.restore();
         }
-        const hi = canvas(48 * 11, 64);
+        const hi = canvas(48 * 12, 64);
         const out = hi.getContext('2d')!;
         out.imageSmoothingEnabled = false;
         out.drawImage(lo, 0, 0, hi.width, hi.height);
@@ -172,7 +192,7 @@ export function createArt(scene: Phaser.Scene): void {
         const atlas = scene.textures.addCanvas('ferret', hi)!;
         scene.textures.addSpriteSheet('ferret', atlas, { frameWidth: 48, frameHeight: 64 });
     }
-    const anims = [['idle', 0, 1, 3, -1], ['run', 2, 5, 11, -1], ['jump', 6, 6, 1, 0], ['fall', 7, 7, 1, 0], ['hurt', 8, 8, 1, 0], ['dead', 9, 10, 4, 0]] as const;
+    const anims = [['idle', 0, 1, 3, -1], ['run', 2, 5, 11, -1], ['jump', 6, 6, 1, 0], ['fall', 7, 7, 1, 0], ['hurt', 8, 8, 1, 0], ['dead', 9, 10, 4, 0], ['crouch', 11, 11, 1, 0]] as const;
     for (const [name, start, end, frameRate, repeat] of anims)
         if (!scene.anims.exists(`ferret-${name}`))
             scene.anims.create({ key: `ferret-${name}`, frames: scene.anims.generateFrameNumbers('ferret', { start, end }), frameRate, repeat });

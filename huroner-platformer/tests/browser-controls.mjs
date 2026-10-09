@@ -93,7 +93,7 @@ try {
         }));
         assert(rects.every(r => r.x >= 0 && r.y >= 0 && r.right <= width && r.bottom <= height));
         assert(rects.slice(0, 2).every(r => r.w >= 88 && r.h >= 80), 'larger movement buttons');
-        assert(rects[1].right < rects[2].x, 'movement and jump do not overlap');
+        assert(rects[1].right < rects[2].x && rects.at(-2).right < rects.at(-1).x, 'movement, crouch and jump do not overlap');
     }
     await page.setViewportSize({ width: 844, height: 390 });
     await page.screenshot({ path: 'test-results/controls-buttons-mobile.png' });

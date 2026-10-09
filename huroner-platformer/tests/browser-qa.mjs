@@ -3,7 +3,7 @@ import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 fs.mkdirSync('test-results',{recursive:true});
 const runs=[];
-for(const file of ['browser-route.mjs','browser-cases.mjs','browser-controls.mjs','browser-worlds.mjs']){
+for(const file of ['browser-route.mjs','browser-cases.mjs','browser-controls.mjs','browser-crouch.mjs','browser-worlds.mjs']){
  const run=spawnSync(process.execPath,[`tests/${file}`],{stdio:'inherit',env:process.env,timeout:360000});
  runs.push({file,status:run.status,error:run.error?.message});
 }

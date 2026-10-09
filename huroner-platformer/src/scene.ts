@@ -9,7 +9,7 @@ import { Input } from './input';
 import { Audio } from './audio';
 import { UI } from './ui';
 import { Enemies, type Enemy } from './enemies';
-import { canStomp, canLandOneWay } from './collision';
+import { canStomp, canLandOneWay, hasHeadroom } from './collision';
 import { applyPower, type Status } from './powerups';
 import { saveRun } from './collectibles';
 import { updateCamera } from './camera';
@@ -67,7 +67,8 @@ export class GameScene extends Phaser.Scene {
         createSurfaceArt(this);
         this.drawWorld();
         this.controls ??= new Input();
-        this.player = new Player(this, this.level.spawn.x, this.level.spawn.y);
+        this.player = new Player(this, this.level.spawn.x, this.level.spawn.y, (left, top, right, bottom) =>
+            hasHeadroom(this.level.solids, left, top, right, bottom));
         this.enemies = new Enemies(this, this.level.enemies);
         this.physics.add.collider(this.player.sprite, this.terrain, undefined, (a, b) => {
             const solid = (b as Phaser.GameObjects.GameObject).getData('solid') as SolidDef;
@@ -469,6 +470,6 @@ export class GameScene extends Phaser.Scene {
         }
     }
     snapshot() {
-        return { mode: this.mode, time: this.now, player: { x: this.player.sprite.x, y: this.player.sprite.y, vx: this.player.body.velocity.x, vy: this.player.body.velocity.y, grounded: this.player.body.blocked.down, feet: this.player.body.bottom }, ...this.status, invulnerableUntil: this.player.invulnerableUntil, kibble: this.count, checkpoint: this.checkpoint, secrets: [...this.secrets], camera: this.cameras.main.scrollX, enemies: this.enemies.list.map(e => ({ id: e.def.id, kind: e.def.kind, x: e.sprite.x, y: e.sprite.y, hp: e.hp, active: e.sprite.active })), levelIndex: this.levelIndex, level: this.level };
+        return { mode: this.mode, time: this.now, player: { x: this.player.sprite.x, y: this.player.sprite.y, vx: this.player.body.velocity.x, vy: this.player.body.velocity.y, grounded: this.player.body.blocked.down, feet: this.player.body.bottom, bodyHeight: this.player.body.height, crouched: this.player.crouched }, ...this.status, invulnerableUntil: this.player.invulnerableUntil, kibble: this.count, checkpoint: this.checkpoint, secrets: [...this.secrets], camera: this.cameras.main.scrollX, enemies: this.enemies.list.map(e => ({ id: e.def.id, kind: e.def.kind, x: e.sprite.x, y: e.sprite.y, hp: e.hp, active: e.sprite.active })), levelIndex: this.levelIndex, level: this.level };
     }
 }

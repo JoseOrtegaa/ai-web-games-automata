@@ -39,9 +39,9 @@
       <div id="toast" role="status">
       </div>
       <nav id="controls" aria-label="Controles del juego" hidden>
-        <div id="swipe-zone" aria-label="Desliza a izquierda o derecha para moverte">
+        <div id="swipe-zone" aria-label="Desliza a los lados para moverte o hacia abajo para agacharte">
           <div class="swipe-track"><span>◀</span><span class="swipe-thumb"></span><span>▶</span></div>
-          <small>Desliza para moverte</small>
+          <small>← → Mover · ↓ Agacharse</small>
         </div>
         <div id="directions" class="directions" hidden>
           <button data-control="left" aria-label="Mover izquierda">
@@ -49,6 +49,9 @@
           </button>
           <button data-control="right" aria-label="Mover derecha">
             ▶
+          </button>
+          <button data-control="crouch" aria-label="Agacharse">
+            ▼
           </button>
         </div>
         <button class="jump" data-control="jump" aria-label="Saltar">
@@ -113,7 +116,7 @@
             <label><input type="radio" name="movement" value="buttons"> Botones</label>
           </div>
         </fieldset>
-        <p>Desliza a izquierda o derecha en la zona izquierda y mantén el dedo para caminar. Suelta para detenerte.</p>
+        <p>Desliza a los lados para caminar o hacia abajo para agacharte. Mantén el dedo y suelta para levantarte.</p>
         <p>Salta con el botón de la derecha.</p>
         <button id="close-settings" class="primary">Listo</button>
       </dialog>

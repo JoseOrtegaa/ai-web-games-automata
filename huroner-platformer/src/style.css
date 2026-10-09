@@ -166,6 +166,7 @@ canvas {
   transform:translateX(var(--swipe-offset,0px));
 }
 #swipe-zone.active .swipe-thumb { background:#f5bd77; }
+#swipe-zone.crouching .swipe-thumb { transform:translateY(10px); }
 #swipe-zone small { font-size:12px; color:#fff7df; }
 #open-settings {
   position:absolute;
@@ -410,6 +411,7 @@ p {
     height:80px;
     width:88px;
   }
+  .directions { gap:10px; }
   #swipe-zone { width:224px; height:104px; }
   #controls .jump {
     height:66px;
