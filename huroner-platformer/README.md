@@ -1,6 +1,6 @@
-# Ferret Jump · La casa dormida
+# Ferret Jump · Más allá del nido
 
-Plataformas 2D pixel art original. Un hurón bípedo explora una casa enorme, recoge croquetas, descubre pasadizos y supera enemigos sin reutilizar código de Huroner Survivor.
+Plataformas 2D pixel art original. Un hurón bípedo recorre cinco ambientes con fondos y plataformas propios: casa por dentro, cochera, parque, montaña y castillo. Recoge croquetas, descubre pasadizos y supera enemigos.
 
 **Demo:** https://joseortegaa.github.io/ai-web-games-automata/huroner-platformer/dist/
 
@@ -12,6 +12,10 @@ Plataformas 2D pixel art original. Un hurón bípedo explora una casa enorme, re
 - **Vida:** tres corazones; daño lateral y pisotón a enemigos; los protegidos necesitan dos golpes. Hay checkpoint intermedio, rutas alternativas y secretos.
 - **Objetos:** carne recupera vida, aceite aumenta temporalmente velocidad y pompón absorbe un golpe.
 - El juego conserva croquetas acumuladas y mejor resultado al terminar; no incluye cuentas, tiendas ni backend.
+
+## Escenarios
+
+Cinco tramos conectados de 2.800 px: muebles y estanterías en casa; vigas y bancos metálicos en cochera; troncos y ramas en parque; terrazas de roca y gruta en montaña; escalinatas y murallas en castillo. Fondos estáticos originales en Canvas, paletas sobrias y profundidad ambiental. Siete huecos de hasta 100 px y subidas obligatorias de hasta 70 px; checkpoint en el parque.
 
 ## Desarrollo
 
@@ -29,7 +33,7 @@ Otros comandos: `npm run typecheck` y `npm run preview`. La validación de naveg
 
 ## Mantenimiento y publicación
 
-- `src/scene.ts` coordina la partida; `input.ts`/`settings.ts` gestionan controles; `player.ts`/`collision.ts` la física; `art.ts` el pixel art; `level-data.ts` la geometría y entidades; `balance.ts` los ajustes; `ui.ts` la interfaz.
+- `src/scene.ts` coordina la partida; `input.ts`/`settings.ts` gestionan controles; `player.ts`/`collision.ts` la física; `art.ts` el personaje y objetos; `environment.ts` los panoramas y materiales; `level-data.ts` la geometría y entidades; `balance.ts` los ajustes; `ui.ts` la interfaz.
 - No introducir mundos, bosses, tiendas o nuevos ataques salvo petición. Conservar salto variable, coyote time, buffer, checkpoints, entrada táctil multitouch, pausa al girar y guardado local versionado. Evitar scroll/zoom accidental en partida.
 - Para QA dirigido: `?qa=1` habilita `window.__ferretQA`; probar también un recorrido real, no solo teletransportes. Una emulación táctil no equivale a Safari físico.
 - **Se versiona `dist/`** tras `npm run build` porque Pages sirve `main` desde raíz. No modificar ni borrar otros juegos ni el catálogo al publicar.

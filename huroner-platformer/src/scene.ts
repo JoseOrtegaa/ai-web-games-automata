@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { createArt } from './art';
+import { createEnvironment, createSurfaceArt } from './environment';
 import { LEVEL } from './level-data';
 import { B } from './balance';
 import { Player } from './player';
@@ -47,6 +48,7 @@ export class GameScene extends Phaser.Scene {
     }
     create() {
         createArt(this);
+        createSurfaceArt(this);
         this.drawWorld();
         this.controls = new Input();
         this.player = new Player(this, LEVEL.spawn.x, LEVEL.spawn.y);
@@ -88,31 +90,19 @@ export class GameScene extends Phaser.Scene {
         }
     }
     private drawWorld() {
-        const colors = { nest: [0x647671, 0xaeb7a0, 0x80938a], lounge: [0x505871, 0x8b8c9c, 0x676d85], kitchen: [0x60877e, 0xb1cec0, 0x7aa799] };
-        LEVEL.sections.forEach((s, i) => {
-            const width = (LEVEL.sections[i + 1]?.x ?? LEVEL.width) - s.x;
-            const c = colors[s.palette];
-            this.add.rectangle(s.x, 0, width, 540, c[0]).setOrigin(0).setDepth(-30);
-            this.add.rectangle(s.x, 52, width, 310, c[1], .38).setOrigin(0).setDepth(-29);
-            for (let x = s.x; x < s.x + width; x += 160) {
-                this.add.rectangle(x, 56, 3, 310, c[2], .7).setOrigin(0).setDepth(-28);
-                this.add.rectangle(x + 14, 75, 130, 266, c[0], .14).setOrigin(0).setDepth(-28);
-            }
-            this.add.rectangle(s.x, 365, width, 14, c[2]).setOrigin(0).setDepth(-26);
-            this.add.rectangle(s.x, 379, width, 51, c[0]).setOrigin(0).setDepth(-26);
-        });
+        createEnvironment(this);
         LEVEL.scenery.forEach(d => this.add.image(d.x, d.y, d.kind).setOrigin(.5, 1).setScale(d.scale ?? 1).setFlipX(d.flip ?? false).setDepth(-10).setAlpha(.88));
         this.terrain = this.physics.add.staticGroup();
         LEVEL.solids.forEach(def => {
             this.add.tileSprite(def.x, def.y, def.width, def.height, `surface-${def.surface}`).setOrigin(0).setDepth(5);
-            this.add.rectangle(def.x, def.y, def.width, 3, 0xf5d9aa, .65).setOrigin(0).setDepth(6);
+            this.add.rectangle(def.x, def.y, def.width, def.surface === 'grass' ? 7 : 3, ({ grass: 0x80955e, rock: 0xa9afac, stone: 0xb4afa2, metal: 0x93a5aa, concrete: 0xaaa9a2, bark: 0xb09a6e } as Partial<Record<SolidDef['surface'], number>>)[def.surface] ?? 0xd6bb8a, .85).setOrigin(0).setDepth(6);
             const r = this.add.rectangle(def.x + def.width / 2, def.y + def.height / 2, def.width, def.height, 0, 0);
             this.terrain.add(r);
             r.setData('solid', def);
         });
         LEVEL.secrets.forEach(s => {
             const panel = this.add.container(s.x, s.y).setDepth(25);
-            const tex = this.add.tileSprite(0, 0, s.width, s.height, s.id.includes('vent') ? 'surface-pipe' : 'surface-wood').setOrigin(0);
+            const tex = this.add.tileSprite(0, 0, s.width, s.height, `surface-${s.surface}`).setOrigin(0);
             panel.add(tex);
             for (let x = 18; x < s.width; x += 38)
                 panel.add(this.add.rectangle(x, 10, 4, s.height - 20, 0x172e3d, .4).setOrigin(0));
@@ -121,7 +111,7 @@ export class GameScene extends Phaser.Scene {
         });
         this.checkpointSprite = this.add.image(LEVEL.checkpoint.x, 430, 'checkpoint').setOrigin(.5, 1).setDepth(10);
         this.add.image(LEVEL.goal.x, 430, 'goal').setOrigin(.5, 1).setDepth(10);
-        const label = this.add.text(LEVEL.goal.x, 238, 'JARDÍN', { fontFamily: 'Trebuchet MS', fontSize: '13px', color: '#fff3c0', letterSpacing: 3 }).setOrigin(.5).setDepth(11);
+        const label = this.add.text(LEVEL.goal.x, 238, 'EL CASTILLO', { fontFamily: 'Trebuchet MS', fontSize: '13px', color: '#fff3c0', letterSpacing: 3 }).setOrigin(.5).setDepth(11);
         this.tweens.add({ targets: label, alpha: .6, yoyo: true, repeat: -1, duration: 1000 });
         this.add.text(480, 270, 'MANTÉN EL SALTO\nPARA LLEGAR MÁS ALTO', { fontFamily: 'Trebuchet MS', fontSize: '12px', color: '#e4e8ce', align: 'center', lineSpacing: 5 }).setOrigin(.5).setAlpha(.8).setDepth(3);
     }
@@ -328,6 +318,7 @@ export class GameScene extends Phaser.Scene {
         });
         if (nextSection !== this.section) {
             this.section = nextSection;
+            document.getElementById('location')!.textContent = LEVEL.sections[this.section].name;
             if (this.section > 0)
                 this.ui.toast(LEVEL.sections[this.section].name);
         }

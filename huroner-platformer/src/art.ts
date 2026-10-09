@@ -218,22 +218,18 @@ export function createArt(scene: Phaser.Scene): void {
         rect(c, '#ffcf73', 8, 18, 3, 3);
     });
     texture(scene, 'goal', 64, 80, c => {
-        rect(c, '#4b5d61', 5, 6, 54, 74);
-        rect(c, '#c3b997', 8, 8, 48, 72);
-        rect(c, '#718e83', 12, 12, 40, 68);
-        rect(c, '#b0d3b0', 16, 15, 32, 61);
-        rect(c, '#d3e6b6', 19, 17, 26, 58);
-        poly(c, '#92b285', [16, 60, 25, 48, 33, 58, 40, 43, 48, 59, 48, 76, 16, 76]);
-        rect(c, '#f6db9d', 10, 7, 44, 4);
-        rect(c, '#5d8b73', 31, 14, 2, 63);
-        rect(c, '#5d8b73', 15, 38, 34, 3);
-        rect(c, '#eacb77', 43, 49, 3, 4);
-        rect(c, '#836c5e', 3, 77, 58, 3);
-        poly(c, '#f9d985', [23, 3, 27, 0, 38, 0, 42, 3, 42, 11, 23, 11]);
-        rect(c, '#947852', 30, 5, 6, 4);
-        rect(c, '#947852', 27, 3, 2, 3);
-        rect(c, '#947852', 32, 1, 2, 3);
-        rect(c, '#947852', 37, 3, 2, 3);
+        // Stone arch and timber gate at the castle arrival.
+        poly(c, '#514f49', [2,80,2,27,10,12,23,3,41,3,54,12,62,27,62,80]);
+        poly(c, '#aaa18b', [7,80,7,29,14,16,26,8,38,8,50,16,57,29,57,80]);
+        poly(c, '#252c2c', [15,80,15,31,20,22,29,16,35,16,44,22,49,31,49,80]);
+        rect(c, '#614d38', 18, 32, 28, 48);
+        poly(c, '#614d38', [18,33,23,24,30,20,35,20,41,25,46,33]);
+        for (let x = 22; x < 46; x += 6) rect(c, '#40382d', x, 30, 1, 48);
+        for (const y of [42, 65]) { rect(c, '#303b3c', 18, y, 28, 4); rect(c, '#a09b81', 21, y+1, 2, 2); }
+        rect(c, '#c6a769', 39, 53, 3, 5);
+        for (const y of [32, 48, 64]) { rect(c, '#686558', 7, y, 8, 2); rect(c, '#686558', 49, y, 8, 2); }
+        rect(c, '#c3b99e', 27, 7, 10, 7);
+        rect(c, '#8f794e', 30, 9, 4, 3);
     });
     // Material tiles: an unbroken highlight distinguishes solid ground from scenery.
     for (const surface of ['wood', 'cushion', 'book', 'pipe', 'tile', 'cardboard'])
