@@ -1,7 +1,8 @@
 import Phaser from 'phaser';
 import { createArt } from './art';
 import { createEnvironment, createSurfaceArt } from './environment';
-import { LEVEL } from './level-data';
+import { LEVELS, CHAPTERS, WORLDS } from './level-data';
+import { readProgress, isUnlocked, completeLevel } from './progress';
 import { B } from './balance';
 import { Player } from './player';
 import { Input } from './input';
@@ -15,6 +16,10 @@ import { updateCamera } from './camera';
 import type { PowerUpDef, SolidDef } from './types';
 type Mode = 'menu' | 'playing' | 'paused' | 'dead' | 'won';
 export class GameScene extends Phaser.Scene {
+    levelIndex = 0;
+    level = LEVELS[0];
+    private launchPlaying = false;
+    private listenersBound = false;
     player!: Player;
     controls!: Input;
     sounds = new Audio();
@@ -28,7 +33,7 @@ export class GameScene extends Phaser.Scene {
     checkpoint = false;
     secrets = new Set<string>();
     collected = new Set<string>();
-    safe = { ...LEVEL.spawn };
+    safe = { ...this.level.spawn };
     private terrain!: Phaser.Physics.Arcade.StaticGroup;
     private pickups!: Phaser.Physics.Arcade.StaticGroup;
     private food!: Phaser.Physics.Arcade.StaticGroup;
@@ -46,13 +51,24 @@ export class GameScene extends Phaser.Scene {
     constructor() {
         super('FerretJump');
     }
+    init(data: { levelIndex?: number; play?: boolean } = {}) {
+        this.levelIndex = data.levelIndex ?? 0;
+        this.level = LEVELS[this.levelIndex];
+        this.launchPlaying = data.play ?? false;
+        this.mode = 'menu';
+        this.status = { health:3, shield:false, oilUntil:0 };
+        this.now = 0; this.count = 0; this.deathAt = 0; this.checkpoint = false;
+        this.secrets.clear(); this.collected.clear(); this.panels = []; this.bob = [];
+        this.section = -1; this.hudAt = 0; this.autoPaused = false; this.particleCount = 0;
+        this.safe = { ...this.level.spawn };
+    }
     create() {
         createArt(this);
         createSurfaceArt(this);
         this.drawWorld();
-        this.controls = new Input();
-        this.player = new Player(this, LEVEL.spawn.x, LEVEL.spawn.y);
-        this.enemies = new Enemies(this, LEVEL.enemies);
+        this.controls ??= new Input();
+        this.player = new Player(this, this.level.spawn.x, this.level.spawn.y);
+        this.enemies = new Enemies(this, this.level.enemies);
         this.physics.add.collider(this.player.sprite, this.terrain, undefined, (a, b) => {
             const solid = (b as Phaser.GameObjects.GameObject).getData('solid') as SolidDef;
             const body = (a as Phaser.Physics.Arcade.Sprite).body as Phaser.Physics.Arcade.Body;
@@ -75,32 +91,35 @@ export class GameScene extends Phaser.Scene {
         this.ui.hud(this.status, this.count, this.now);
         this.input.keyboard?.on('keydown-ESC', () => this.togglePause());
         this.input.keyboard?.on('keydown-P', () => this.togglePause());
-        document.addEventListener('visibilitychange', () => {
-            if (document.hidden)
-                this.pauseForEnvironment();
-        });
-        window.addEventListener('blur', () => this.pauseForEnvironment());
-        window.addEventListener('resize', () => this.orientation());
+        if (!this.listenersBound) {
+            this.listenersBound = true;
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) this.pauseForEnvironment();
+            });
+            window.addEventListener('blur', () => this.pauseForEnvironment());
+            window.addEventListener('resize', () => this.orientation());
+        }
         this.orientation();
+        if (this.launchPlaying) this.start();
         if (new URLSearchParams(location.search).has('qa')) {
             (window as unknown as Record<string, unknown>).__ferretQA = { scene: this, state: () => this.snapshot(), teleport: (x: number, y: number) => {
                     this.player.reset(x, y);
-                    this.cameras.main.scrollX = Phaser.Math.Clamp(x - 440, 0, LEVEL.width - 960);
+                    this.cameras.main.scrollX = Phaser.Math.Clamp(x - 440, 0, this.level.width - 960);
                 }, start: () => this.start(), damage: () => this.damage(this.player.sprite.x - 20), restart: () => this.restart() };
         }
     }
     private drawWorld() {
-        createEnvironment(this);
-        LEVEL.scenery.forEach(d => this.add.image(d.x, d.y, d.kind).setOrigin(.5, 1).setScale(d.scale ?? 1).setFlipX(d.flip ?? false).setDepth(-10).setAlpha(.88));
+        createEnvironment(this, CHAPTERS[this.levelIndex].environment);
+        this.level.scenery.forEach(d => this.add.image(d.x, d.y, d.kind).setOrigin(.5, 1).setScale(d.scale ?? 1).setFlipX(d.flip ?? false).setDepth(-10).setAlpha(.88));
         this.terrain = this.physics.add.staticGroup();
-        LEVEL.solids.forEach(def => {
+        this.level.solids.forEach(def => {
             this.add.tileSprite(def.x, def.y, def.width, def.height, `surface-${def.surface}`).setOrigin(0).setDepth(5);
             this.add.rectangle(def.x, def.y, def.width, def.surface === 'grass' ? 7 : 3, ({ grass: 0x80955e, rock: 0xa9afac, stone: 0xb4afa2, metal: 0x93a5aa, concrete: 0xaaa9a2, bark: 0xb09a6e } as Partial<Record<SolidDef['surface'], number>>)[def.surface] ?? 0xd6bb8a, .85).setOrigin(0).setDepth(6);
             const r = this.add.rectangle(def.x + def.width / 2, def.y + def.height / 2, def.width, def.height, 0, 0);
             this.terrain.add(r);
             r.setData('solid', def);
         });
-        LEVEL.secrets.forEach(s => {
+        this.level.secrets.forEach(s => {
             const panel = this.add.container(s.x, s.y).setDepth(25);
             const tex = this.add.tileSprite(0, 0, s.width, s.height, `surface-${s.surface}`).setOrigin(0);
             panel.add(tex);
@@ -109,22 +128,22 @@ export class GameScene extends Phaser.Scene {
             panel.add(this.add.rectangle(s.width - 8, s.height - 20, 3, 13, 0xf5d9aa, .65));
             this.panels.push({ id: s.id, rect: panel });
         });
-        this.checkpointSprite = this.add.image(LEVEL.checkpoint.x, 430, 'checkpoint').setOrigin(.5, 1).setDepth(10);
-        this.add.image(LEVEL.goal.x, 430, 'goal').setOrigin(.5, 1).setDepth(10);
-        const label = this.add.text(LEVEL.goal.x, 238, 'EL CASTILLO', { fontFamily: 'Trebuchet MS', fontSize: '13px', color: '#fff3c0', letterSpacing: 3 }).setOrigin(.5).setDepth(11);
+        this.checkpointSprite = this.add.image(this.level.checkpoint.x, 430, 'checkpoint').setOrigin(.5, 1).setDepth(10);
+        this.add.image(this.level.goal.x, 430, 'goal').setOrigin(.5, 1).setDepth(10);
+        const label = this.add.text(this.level.goal.x, 238, this.levelIndex < 2 ? 'AL SIGUIENTE NIVEL →' : 'FIN DEL MUNDO 1', { fontFamily: 'Trebuchet MS', fontSize: '13px', color: '#fff3c0', letterSpacing: 3 }).setOrigin(.5).setDepth(11);
         this.tweens.add({ targets: label, alpha: .6, yoyo: true, repeat: -1, duration: 1000 });
         this.add.text(480, 270, 'MANTÉN EL SALTO\nPARA LLEGAR MÁS ALTO', { fontFamily: 'Trebuchet MS', fontSize: '12px', color: '#e4e8ce', align: 'center', lineSpacing: 5 }).setOrigin(.5).setAlpha(.8).setDepth(3);
     }
     private addPickups() {
         this.pickups = this.physics.add.staticGroup();
         this.food = this.physics.add.staticGroup();
-        LEVEL.collectibles.forEach(d => {
+        this.level.collectibles.forEach(d => {
             const p = this.pickups.create(d.x, d.y, 'kibble') as Phaser.Physics.Arcade.Image;
             p.setDepth(14).setData('id', d.id).setData('baseY', d.y);
             (p.body as Phaser.Physics.Arcade.StaticBody).setSize(23, 23);
             this.bob.push(p);
         });
-        LEVEL.powerUps.forEach(d => {
+        this.level.powerUps.forEach(d => {
             const p = this.food.create(d.x, d.y, d.kind) as Phaser.Physics.Arcade.Image;
             p.setDepth(14).setData('def', d).setData('baseY', d.y);
             this.bob.push(p);
@@ -154,7 +173,11 @@ export class GameScene extends Phaser.Scene {
         });
     }
     private bindUI() {
-        this.ui.bind('start', () => this.start());
+        this.ui.bind('start', () => this.openMap());
+        this.ui.bind('map-back', () => { this.ui.show('world-map', false); this.ui.show('menu', true); });
+        this.ui.bind('pause-map', () => this.openMap());
+        this.ui.bind('win-map', () => this.openMap());
+        this.ui.bind('next-level', () => this.levelIndex < 2 ? this.selectLevel(this.levelIndex+1) : this.openMap());
         this.ui.bind('pause', () => this.togglePause());
         this.ui.bind('resume', () => this.resume());
         this.ui.bind('restart', () => this.restart());
@@ -166,9 +189,39 @@ export class GameScene extends Phaser.Scene {
             document.getElementById('sound')!.setAttribute('aria-label', this.sounds.muted ? 'Activar audio' : 'Silenciar audio');
         });
     }
+    private openMap() {
+        this.mode = 'menu';
+        this.controls.clear(); this.physics.pause(); this.tweens.pauseAll();
+        for (const id of ['menu','pause-menu','win','controls','hud']) this.ui.show(id, false);
+        const progress = readProgress();
+        const levels = document.getElementById('level-list')!;
+        levels.replaceChildren();
+        CHAPTERS.forEach((chapter, i) => {
+            const unlocked = isUnlocked(i, progress);
+            const button = document.createElement('button');
+            button.className = 'level-node'; button.dataset.level = String(i);
+            button.disabled = !unlocked;
+            button.innerHTML = unlocked
+                ? `<span class="level-number">${chapter.id}</span><strong>${chapter.name}</strong><small>${chapter.summary}</small><em>${progress.completed.includes(chapter.id) ? 'Completado · Volver a jugar' : 'Disponible · Explorar →'}</em>`
+                : `<span class="level-number">?</span><strong>${chapter.id} · Sin descubrir</strong><small>Completa el nivel ${CHAPTERS[i-1].id} para desbloquearlo.</small>`;
+            button.onclick = () => this.selectLevel(i);
+            levels.append(button);
+        });
+        document.getElementById('world-summary')!.textContent = WORLDS[0].summary;
+        document.getElementById('future-worlds')!.innerHTML = WORLDS.slice(1).map((_,i) => `<div class="future-world"><b>?</b><span>Mundo ${i+2}</span><small>Próximamente</small></div>`).join('');
+        this.ui.show('world-map', true);
+        (levels.querySelector('button:not(:disabled)') as HTMLButtonElement)?.focus();
+    }
+    private selectLevel(index: number) {
+        if (!isUnlocked(index)) return;
+        this.controls.clear();
+        for (const id of ['world-map','menu','pause-menu','win','controls','hud']) this.ui.show(id, false);
+        this.scene.restart({ levelIndex:index, play:true });
+    }
     start() {
         this.sounds.unlock();
         this.mode = 'playing';
+        this.ui.show('world-map', false);
         this.ui.show('menu', false);
         this.ui.show('hud', true);
         this.ui.show('controls', true);
@@ -220,7 +273,7 @@ export class GameScene extends Phaser.Scene {
         this.checkpoint = false;
         this.secrets.clear();
         this.collected.clear();
-        this.safe = { ...LEVEL.spawn };
+        this.safe = { ...this.level.spawn };
         this.section = -1;
         this.pickups.getChildren().forEach(o => (o as Phaser.Physics.Arcade.Image).enableBody(false, 0, 0, true, true));
         this.food.getChildren().forEach(o => (o as Phaser.Physics.Arcade.Image).enableBody(false, 0, 0, true, true));
@@ -239,7 +292,7 @@ export class GameScene extends Phaser.Scene {
             e.sprite.enableBody(true, e.def.x, e.def.y, true, true).setScale(1).setAlpha(1).clearTint();
         });
         this.tweens.killTweensOf(this.player.sprite);
-        this.player.reset(LEVEL.spawn.x, LEVEL.spawn.y);
+        this.player.reset(this.level.spawn.x, this.level.spawn.y);
         this.player.invulnerableUntil = 0;
         this.cameras.main.scrollX = 0;
         this.controls.clear();
@@ -268,9 +321,9 @@ export class GameScene extends Phaser.Scene {
         this.now += dt;
         this.player.update(this.controls, this.now, this.status.oilUntil > this.now, () => this.sounds.play('jump'));
         this.controls.consume();
-        this.player.sprite.x = Phaser.Math.Clamp(this.player.sprite.x, 18, LEVEL.width - 18);
+        this.player.sprite.x = Phaser.Math.Clamp(this.player.sprite.x, 18, this.level.width - 18);
         this.enemies.update(this.now, this.player.sprite.x);
-        updateCamera(this.cameras.main, this.player.sprite.x, this.player.facing, LEVEL.width, dt);
+        updateCamera(this.cameras.main, this.player.sprite.x, this.player.facing, this.level.width, dt);
         this.shield.setPosition(this.player.sprite.x, this.player.sprite.y).setVisible(this.status.shield).setScale(1 + Math.sin(this.now / 180) * .06);
         if (this.status.shield)
             this.player.sprite.setTint(0xf5ffd2);
@@ -283,7 +336,7 @@ export class GameScene extends Phaser.Scene {
         const p = this.player.sprite;
         const b = this.player.body;
         if (b.blocked.down && this.now > this.player.hurtUntil && Math.abs(b.velocity.x) < 240) {
-            const floor = LEVEL.solids.find(s => !s.oneWay && Math.abs(s.y - b.bottom) < 5 && p.x > s.x + 35 && p.x < s.x + s.width - 35);
+            const floor = this.level.solids.find(s => !s.oneWay && Math.abs(s.y - b.bottom) < 5 && p.x > s.x + 35 && p.x < s.x + s.width - 35);
             if (floor)
                 this.safe = { x: p.x, y: p.y };
         }
@@ -295,15 +348,15 @@ export class GameScene extends Phaser.Scene {
             }
             return;
         }
-        if (!this.checkpoint && Math.abs(p.x - LEVEL.checkpoint.x) < 45) {
+        if (!this.checkpoint && Math.abs(p.x - this.level.checkpoint.x) < 45) {
             this.checkpoint = true;
-            this.safe = { x: LEVEL.checkpoint.x, y: 385 };
+            this.safe = { x: this.level.checkpoint.x, y: 385 };
             this.checkpointSprite.setTint(0xffe48b);
             this.sounds.play('checkpoint');
             this.burst(p.x, p.y, 0xffe48b, 12);
             this.ui.toast('Calcetín de descanso · Punto guardado');
         }
-        LEVEL.secrets.forEach(s => {
+        this.level.secrets.forEach(s => {
             if (!this.secrets.has(s.id) && p.x > s.x && p.x < s.x + s.width && p.y > s.y && p.y < s.y + s.height) {
                 this.secrets.add(s.id);
                 this.tweens.add({ targets: this.panels.find(v => v.id === s.id)!.rect, alpha: .13, duration: 400 });
@@ -312,17 +365,17 @@ export class GameScene extends Phaser.Scene {
             }
         });
         let nextSection = 0;
-        LEVEL.sections.forEach((s, i) => {
+        this.level.sections.forEach((s, i) => {
             if (p.x >= s.x)
                 nextSection = i;
         });
         if (nextSection !== this.section) {
             this.section = nextSection;
-            document.getElementById('location')!.textContent = LEVEL.sections[this.section].name;
+            document.getElementById('location')!.textContent = this.level.sections[this.section].name;
             if (this.section > 0)
-                this.ui.toast(LEVEL.sections[this.section].name);
+                this.ui.toast(this.level.sections[this.section].name);
         }
-        if (p.x > LEVEL.goal.x - 35 && p.y > 250)
+        if (p.x > this.level.goal.x - 35 && p.y > 250)
             this.victory();
         if (this.now > this.hudAt) {
             this.ui.hud(this.status, this.count, this.now);
@@ -376,7 +429,7 @@ export class GameScene extends Phaser.Scene {
         this.shield.setVisible(false);
     }
     private respawn() {
-        const spawn = this.checkpoint ? { x: LEVEL.checkpoint.x, y: 385 } : LEVEL.spawn;
+        const spawn = this.checkpoint ? { x: this.level.checkpoint.x, y: 385 } : this.level.spawn;
         this.status.health = 3;
         this.status.shield = false;
         this.status.oilUntil = 0;
@@ -387,7 +440,7 @@ export class GameScene extends Phaser.Scene {
         this.mode = 'playing';
         this.physics.resume();
         this.ui.hud(this.status, this.count, this.now);
-        this.cameras.main.scrollX = Phaser.Math.Clamp(spawn.x - 440, 0, LEVEL.width - 960);
+        this.cameras.main.scrollX = Phaser.Math.Clamp(spawn.x - 440, 0, this.level.width - 960);
         this.ui.toast(this.checkpoint ? 'De vuelta al calcetín. ¡Seguimos!' : 'Otra oportunidad. ¡Tú puedes!');
     }
     private victory() {
@@ -397,7 +450,11 @@ export class GameScene extends Phaser.Scene {
         this.controls.clear();
         this.sounds.play('win');
         saveRun(this.count);
-        this.ui.results(this.count, this.secrets.size, LEVEL.secrets.length, this.now / 1000);
+        completeLevel(this.levelIndex);
+        document.getElementById('win-title')!.textContent = this.levelIndex === 2 ? '¡Castillo medieval completado!' : `¡${CHAPTERS[this.levelIndex].id} completado!`;
+        document.getElementById('win-description')!.textContent = this.levelIndex === 2 ? 'Has conquistado sus tres niveles. Los demás castillos llegarán en próximas aventuras.' : `La puerta abre el camino a ${CHAPTERS[this.levelIndex+1].name.toLowerCase()}.`;
+        document.getElementById('next-level')!.textContent = this.levelIndex === 2 ? 'Volver al mapa →' : `Jugar ${CHAPTERS[this.levelIndex+1].id} →`;
+        this.ui.results(this.count, this.secrets.size, this.level.secrets.length, this.now / 1000);
         this.ui.show('win', true);
         this.ui.show('controls', false);
     }
@@ -412,6 +469,6 @@ export class GameScene extends Phaser.Scene {
         }
     }
     snapshot() {
-        return { mode: this.mode, time: this.now, player: { x: this.player.sprite.x, y: this.player.sprite.y, vx: this.player.body.velocity.x, vy: this.player.body.velocity.y, grounded: this.player.body.blocked.down, feet: this.player.body.bottom }, ...this.status, invulnerableUntil: this.player.invulnerableUntil, kibble: this.count, checkpoint: this.checkpoint, secrets: [...this.secrets], camera: this.cameras.main.scrollX, enemies: this.enemies.list.map(e => ({ id: e.def.id, kind: e.def.kind, x: e.sprite.x, y: e.sprite.y, hp: e.hp, active: e.sprite.active })), level: LEVEL };
+        return { mode: this.mode, time: this.now, player: { x: this.player.sprite.x, y: this.player.sprite.y, vx: this.player.body.velocity.x, vy: this.player.body.velocity.y, grounded: this.player.body.blocked.down, feet: this.player.body.bottom }, ...this.status, invulnerableUntil: this.player.invulnerableUntil, kibble: this.count, checkpoint: this.checkpoint, secrets: [...this.secrets], camera: this.cameras.main.scrollX, enemies: this.enemies.list.map(e => ({ id: e.def.id, kind: e.def.kind, x: e.sprite.x, y: e.sprite.y, hp: e.hp, active: e.sprite.active })), levelIndex: this.levelIndex, level: this.level };
     }
 }

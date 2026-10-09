@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
     <meta name="theme-color" content="#17262c">
-    <meta name="description" content="Ferret Jump. Casa, cochera, parque, montaña y castillo: cinco lugares en una aventura de plataformas.">
+    <meta name="description" content="Ferret Jump. Una aventura entre castillos, con niveles independientes y un mapa por descubrir.">
     <title>
-      Ferret Jump · Más allá del nido
+      Ferret Jump · La ruta de los castillos
     </title>
-    <script type="module" crossorigin src="./assets/index-Dk5UKuKT.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-DluVOgJs.css">
+    <script type="module" crossorigin src="./assets/index-BkXLhPQn.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-Bowfnz3C.css">
   </head>
   <body>
     <main id="app">
@@ -71,15 +71,15 @@
             </span>
           </h1>
           <p class="subtitle">
-            Más allá del nido
+            La ruta de los castillos
           </p>
           <p class="intro">
             Un pequeño hurón.
             <br>
-            Cinco lugares por descubrir.
+            Un reino de castillos por descubrir.
           </p>
           <button id="start" class="primary">
-            ¡A explorar!
+            Elegir nivel
             <span>
               →
             </span>
@@ -92,9 +92,18 @@
           <div class="chapter">
             01
             <span>
-              DE CASA AL CASTILLO
+              EL CASTILLO MEDIEVAL
             </span>
           </div>
+        </div>
+      </section>
+      <section id="world-map" class="overlay" aria-labelledby="map-title" hidden>
+        <div class="map-card">
+          <div class="map-heading"><div><div class="eyebrow">LA RUTA DE LOS CASTILLOS</div><h2 id="map-title">Mundo 1 · Castillo medieval</h2></div><button id="map-back" class="secondary">Inicio</button></div>
+          <p id="world-summary"></p>
+          <div id="level-list" aria-label="Niveles del castillo medieval"></div>
+          <div id="future-worlds" aria-label="Mundos futuros"></div>
+          <p class="map-hint">Cada puerta abre el siguiente nivel. Tu progreso se guarda en este dispositivo.</p>
         </div>
       </section>
       <dialog id="settings" class="card compact" aria-labelledby="settings-title">
@@ -124,8 +133,9 @@
           <button id="resume" class="primary">
             Seguir explorando →
           </button>
+          <button id="pause-map" class="secondary">Mapa de niveles</button>
           <button id="restart" class="secondary">
-            Volver al nido
+            Reiniciar nivel
           </button>
         </div>
       </section>
@@ -134,18 +144,14 @@
           <div class="eyebrow">
             ¡MENUDO EXPLORADOR!
           </div>
-          <h2>
-            Cinco lugares.
-            <br>
-            Mil aventuras.
-          </h2>
-          <p>
-            Has llegado al castillo.
-          </p>
+          <h2 id="win-title">¡Nivel completado!</h2>
+          <p id="win-description"></p>
           <div id="results">
           </div>
-          <button id="replay" class="primary">
-            Otra pequeña aventura →
+          <button id="next-level" class="primary">Siguiente nivel →</button>
+          <button id="win-map" class="secondary">Mapa de niveles</button>
+          <button id="replay" class="secondary">
+            Repetir nivel
           </button>
           <p class="hint">
             ¿Descubriste todos los escondites?

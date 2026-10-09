@@ -21,7 +21,7 @@ try {
     await page.screenshot({ path: 'test-results/controls-settings.png' });
     await page.keyboard.press('Escape');
     assert(!await page.locator('#settings').isVisible());
-    await page.click('#start');
+    await page.click('#start'); await page.click('[data-level="0"]'); await page.waitForFunction(()=>window.__ferretQA.state().mode==='playing');
     assert(await page.locator('#swipe-zone').isVisible());
     assert(!await page.locator('#directions').isVisible());
     const origin = { ...await center('#swipe-zone'), id: 1 };
@@ -75,7 +75,7 @@ try {
     await page.click('#open-settings');
     assert(await page.locator('[value="buttons"]').isChecked(), 'setting persists');
     await page.click('#close-settings');
-    await page.click('#start');
+    await page.click('#start'); await page.click('[data-level="0"]'); await page.waitForFunction(()=>window.__ferretQA.state().mode==='playing');
     assert(await page.locator('#directions').isVisible());
     assert(!await page.locator('#swipe-zone').isVisible());
     await page.waitForFunction(() => window.__ferretQA.state().player.grounded);
@@ -99,7 +99,7 @@ try {
     await page.screenshot({ path: 'test-results/controls-buttons-mobile.png' });
     await page.evaluate(() => localStorage.setItem('ferret-jump-controls-v1', 'invalid'));
     await load();
-    await page.click('#start');
+    await page.click('#start'); await page.click('[data-level="0"]'); await page.waitForFunction(()=>window.__ferretQA.state().mode==='playing');
     assert(await page.locator('#swipe-zone').isVisible(), 'invalid preference defaults to swipe');
     await page.addInitScript(() => {
         Storage.prototype.getItem = () => { throw new Error('storage blocked'); };
@@ -110,7 +110,7 @@ try {
     assert(await page.locator('[value="swipe"]').isChecked());
     await page.check('[value="buttons"]');
     await page.click('#close-settings');
-    await page.click('#start');
+    await page.click('#start'); await page.click('[data-level="0"]'); await page.waitForFunction(()=>window.__ferretQA.state().mode==='playing');
     assert(await page.locator('#directions').isVisible(), 'blocked storage remains usable');
     assert.deepEqual(errors, []);
     console.log('PASS: default, settings, persistence, horizontal swipe, multitouch jump, reverse, release, capture, cancel, pause, keyboard, larger buttons, viewports, invalid/blocked storage; Chromium touch emulation.');

@@ -436,3 +436,29 @@ p {
 
 #location { font-size:12px; color:#e5ded0; background:#182c31b3; padding:7px 10px; border-radius:8px; white-space:nowrap; }
 @media(max-width:740px) { #location { font-size:10px; padding:6px; } #hud { gap:8px; } }
+
+/* The map remains usable on short landscape screens and with keyboard focus. */
+#world-map { background:linear-gradient(145deg,#17242aef,#263d43f5); padding:max(14px,env(safe-area-inset-top)) max(24px,env(safe-area-inset-right)) max(14px,env(safe-area-inset-bottom)) max(24px,env(safe-area-inset-left)); overflow:auto; touch-action:pan-y; }
+.map-card { width:min(960px,100%); margin:auto; }
+.map-heading { display:flex; align-items:center; justify-content:space-between; gap:16px; }
+.map-heading h2 { margin:7px 0; font-size:clamp(20px,3vw,30px); }
+.map-heading .secondary { width:auto; margin:0; padding:12px 22px; }
+#world-summary,.map-hint { font-size:13px; color:#becbc4; margin:10px 0 16px; }
+#level-list { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; position:relative; }
+.level-node { display:flex; flex-direction:column; align-items:flex-start; gap:10px; text-align:left; background:#314c51; border:1px solid #91a59c; border-radius:14px; padding:18px; min-height:170px; }
+.level-node:not(:disabled):hover { background:#405d60; }
+.level-number { border:1px solid #d8bc7d; color:#ffe1a0; padding:6px 12px; border-radius:8px; font-size:20px; font-weight:bold; }
+.level-node small { font-size:12px; line-height:1.5; color:#c5d1cc; }
+.level-node em { font-size:11px; color:#ffe1a0; font-style:normal; margin-top:auto; }
+.level-node:disabled { cursor:default; background:#24373d; border-color:#4a6064; color:#9aabad; }
+.level-node:disabled .level-number { border-color:#556c70; color:#9aabad; }
+#future-worlds { display:flex; gap:16px; margin-top:16px; }
+.future-world { display:flex; align-items:center; gap:12px; flex:1; border-top:1px solid #53686b; padding:12px 4px; color:#9aaeb0; }
+.future-world b { font-size:25px; } .future-world small { margin-left:auto; font-size:10px; }
+.map-hint { font-size:11px; margin-bottom:0; }
+@media(max-height:500px) { #level-list {gap:12px} .level-node {padding:12px;min-height:145px;gap:6px} #future-worlds {margin-top:8px} .future-world {padding:8px 4px} #world-summary {margin:6px 0 10px} .map-heading h2 {font-size:22px} }
+@media(max-width:600px) { #level-list {grid-template-columns:1fr} #future-worlds {flex-wrap:wrap} }
+
+#win, #pause-menu { overflow:auto; }
+#win .compact, #pause-menu .compact { margin:auto; max-height:calc(100dvh - 40px); overflow:auto; touch-action:pan-y; }
+@media(max-height:450px) { #win .compact {width:540px;padding:14px 22px} #win .compact h2 {font-size:23px;margin:8px 0} #win .compact p {margin:6px 0} #win #results {padding:5px 0 10px;font-size:17px} #win .secondary {display:inline-block;width:48%;padding-top:10px} #win .hint {display:none} }
