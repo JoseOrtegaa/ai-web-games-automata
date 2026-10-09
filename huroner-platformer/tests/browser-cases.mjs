@@ -10,6 +10,24 @@ const check=(v,msg)=>{if(!v)throw Error(msg)};const test=async(name,fn)=>{if(pro
 await test('movimiento aceleración deceleración teclado',async()=>{await restart();let a=await state();await page.keyboard.down('ArrowRight');await wait(70);let b=await state();await wait(300);let c=await state();await page.keyboard.up('ArrowRight');await wait(300);let d=await state();check(b.player.vx>0&&b.player.vx<c.player.vx&&c.player.x>a.player.x&&Math.abs(d.player.vx)<1,'accel/braking');return {vx70:b.player.vx,vx370:c.player.vx,vxStop:d.player.vx};});
 async function jump(hold){await restart();const base=(await state()).player.y;let min=base;await page.keyboard.down('Space');const t=Date.now();let released=false;while(Date.now()-t<1100){if(Date.now()-t>=hold&&!released){await page.keyboard.up('Space');released=true}min=Math.min(min,(await state()).player.y);await wait(15)}await page.keyboard.up('Space');return base-min;}
 await test('salto corto y salto mantenido',async()=>{const short=await jump(45),long=await jump(550);check(long>short*1.8&&long>85&&short>10,'height ratio');return {short,long};});
+await test('arco de salto y dirección en el aire',async()=>{
+    await restart();
+    const start=await state();
+    await page.keyboard.down('ArrowRight');
+    await page.keyboard.down('Space');
+    const samples=[];
+    for(let i=0;i<22;i++){samples.push((await state()).player);await wait(35);}
+    await page.keyboard.up('Space');
+    await page.keyboard.up('ArrowRight');
+    const apex=Math.min(...samples.map(p=>p.y));
+    check(apex<start.player.y-100,'held jump did not form a useful arc');
+    check(samples.some(p=>p.vy<0)&&samples.some(p=>p.vy>0),'rise or fall missing');
+    check(samples.at(-1).x>start.player.x+90,'no horizontal control in jump');
+    await page.waitForFunction(()=>window.__ferretQA.state().player.grounded);
+    const landed=await state();
+    check(Math.abs(landed.player.feet-430)<4,'jump did not return to ground');
+    return {height:start.player.y-apex,travel:samples.at(-1).x-start.player.x};
+});
 await test('coyote real al salir del borde',async()=>{await restart();await tele(1005,395);await wait(200);await page.keyboard.down('ArrowRight');await page.waitForFunction(()=>{const s=window.__ferretQA.state();return s.player.x>1064&&!s.player.grounded});await wait(35);await page.keyboard.down('Space');await wait(30);const s=await state();await page.keyboard.up('Space');await page.keyboard.up('ArrowRight');check(s.player.vy< -200,'no coyote jump');return s.player;});
 await test('buffer de salto antes de aterrizar',async()=>{await restart();await tele(300,340);await page.waitForFunction(()=>{const s=window.__ferretQA.state();return s.player.feet>408&&s.player.vy>100});await page.keyboard.down('Space');await wait(120);const s=await state();await page.keyboard.up('Space');check(s.player.vy< -150,'buffer did not jump');return s.player;});
 await test('colisión pared sólida y plataforma one-way',async()=>{await restart();await tele(565,398);await wait(100);await page.keyboard.down('ArrowRight');await wait(500);const wall=await state();await page.keyboard.up('ArrowRight');check(wall.player.x<590,'walked through wall');await tele(1760,335);await wait(200);await page.keyboard.down('ArrowRight');await page.keyboard.down('Space');await wait(410);const above=await state();await wait(240);await page.keyboard.up('Space');await page.keyboard.up('ArrowRight');await wait(250);const landed=await state();check(above.player.feet<300&&Math.abs(landed.player.feet-300)<3,'oneway pass/landing');return {wall:wall.player.x,above:above.player.feet,landed:landed.player.feet};});

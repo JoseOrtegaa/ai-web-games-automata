@@ -15,7 +15,7 @@ Plataformas 2D pixel art original. La campaña se organiza por castillos y nivel
 
 ## Controles
 
-- **Móvil horizontal:** desliza horizontalmente en la zona izquierda y mantén el dedo para caminar; suelta para detenerte. Salta con el botón derecho; mantén para mayor altura.
+- **Móvil horizontal:** desliza horizontalmente en la zona izquierda y mantén el dedo para caminar; suelta para detenerte. Salta con el botón derecho; mantén para un arco más alto y suelta para un salto corto. Puedes corregir la dirección durante el vuelo.
 - Configuración inicial: **Deslizar** (predeterminado) o **Botones** grandes. Elección guardada localmente.
 - **Teclado:** A/D o flechas, espacio/W/arriba para saltar, Escape/P para pausar. El mapa admite Tab y Enter.
 

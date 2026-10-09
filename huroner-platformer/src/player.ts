@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { B } from './balance';
+import { B, verticalGravity } from './balance';
 import { jumpAllowed } from './collision';
 import type { Input } from './input';
 export class Player {
@@ -26,8 +26,8 @@ export class Player {
             this.pressedAt = now;
         if (now >= this.hurtUntil) {
             const axis = input.axis;
-            this.sprite.setAccelerationX(axis * B.acceleration * (grounded ? 1 : .85));
-            this.sprite.setDragX(grounded ? B.drag : 550);
+            this.sprite.setAccelerationX(axis * (grounded ? B.acceleration : B.airAcceleration));
+            this.sprite.setDragX(grounded ? B.drag : B.airDrag);
             this.sprite.setMaxVelocity(B.speed * (oil ? B.oilMultiplier : 1), B.maxFall);
             if (axis) {
                 this.facing = axis;
@@ -42,13 +42,15 @@ export class Player {
             if (input.released && body.velocity.y < -B.cutJump)
                 body.setVelocityY(-B.cutJump);
         }
+        // Phaser adds body gravity to the world's 1200 px/s²; only the ferret changes.
+        body.setGravityY(grounded ? 0 : B.gravity * (verticalGravity(body.velocity.y, input.jump) - 1));
         const anim = now < this.hurtUntil ? 'hurt' : !grounded ? (body.velocity.y < 0 ? 'jump' : 'fall') : Math.abs(body.velocity.x) > 15 ? 'run' : 'idle';
         this.sprite.play(`ferret-${anim}`, true);
         this.sprite.alpha = now < this.invulnerableUntil ? (matchMedia('(prefers-reduced-motion: reduce)').matches ? .65 : Math.floor(now / 90) % 2 ? .4 : 1) : 1;
     }
     reset(x: number, y: number) {
         this.sprite.enableBody(true, x, y, true, true);
-        this.sprite.setAcceleration(0, 0).setVelocity(0, 0).setAlpha(1).setAngle(0);
+        this.sprite.setAcceleration(0, 0).setVelocity(0, 0).setGravityY(0).setAlpha(1).setAngle(0);
         this.lastGround = -9999;
         this.pressedAt = -9999;
         this.hurtUntil = 0;
