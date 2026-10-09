@@ -433,3 +433,6 @@ p {
     transition:none!important;
   }
 }
+
+#location { font-size:12px; color:#e5ded0; background:#182c31b3; padding:7px 10px; border-radius:8px; white-space:nowrap; }
+@media(max-width:740px) { #location { font-size:10px; padding:6px; } #hud { gap:8px; } }

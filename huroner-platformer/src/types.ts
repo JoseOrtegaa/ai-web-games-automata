@@ -5,7 +5,7 @@ export interface Rect {
     width: number;
     height: number;
 }
-export type Surface = 'wood' | 'cushion' | 'book' | 'pipe' | 'tile' | 'cardboard';
+export type Surface = 'wood' | 'cushion' | 'book' | 'pipe' | 'tile' | 'cardboard' | 'metal' | 'concrete' | 'grass' | 'bark' | 'rock' | 'stone';
 export interface SolidDef extends Rect {
     surface: Surface;
     oneWay?: boolean;
@@ -33,6 +33,7 @@ export interface PowerUpDef {
 }
 /** Secrets are non-solid occluding furniture panels over walkable optional routes. */
 export interface SecretDef extends Rect {
+    surface: Surface;
     id: string;
     label: string;
 }
@@ -46,7 +47,7 @@ export interface SceneryDef {
 export interface SectionDef {
     x: number;
     name: string;
-    palette: 'nest' | 'lounge' | 'kitchen';
+    palette: 'house' | 'garage' | 'park' | 'mountain' | 'castle';
 }
 export interface LevelDef {
     width: number;
