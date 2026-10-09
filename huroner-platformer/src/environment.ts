@@ -227,10 +227,10 @@ function keep(c: Ctx) {
     }
     grain(c,91);
 }
-export function createEnvironment(scene: Phaser.Scene, environment: 'ramparts' | 'courtyard' | 'keep'): void {
+export function createEnvironment(scene: Phaser.Scene, environment: 'ramparts' | 'courtyard' | 'keep', width = WIDTH): void {
     const key = `castle-${environment}`;
     texture(scene, key, WIDTH, HEIGHT, { ramparts:castle, courtyard, keep }[environment]);
-    scene.add.image(0,0,key).setOrigin(0,0).setDepth(-30);
+    scene.add.tileSprite(0,0,width,HEIGHT,key).setOrigin(0,0).setDepth(-30);
 }
 
 /** Seamless material bodies. Collision lips are drawn once per platform in scene.ts. */

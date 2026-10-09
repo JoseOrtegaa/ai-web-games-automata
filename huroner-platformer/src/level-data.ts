@@ -27,7 +27,23 @@ const layouts: SolidDef[][] = [
      floor(1760, 160, 320), floor(1920, 220, 265), floor(2220, 160, 320),
      floor(2380, 160, 375), floor(2540, 260), ledge(1330, 285, 240, true)],
 ];
-export const LEVELS: LevelDef[] = layouts.map((solids, i) => {
+const extensions: SolidDef[][] = [
+    // Broken battlements, stepping stones and a high optional bridge.
+    [floor(2800,300), floor(3180,420), floor(3680,120),
+     ledge(2820,375,100), ledge(2980,320,100,true), ledge(3220,365,110),
+     ledge(3400,305,180,true)],
+    // Two tiers of courtyard balconies above the lower route.
+    [floor(2800,520), floor(3400,400),
+     ledge(2850,375,120), ledge(3010,310,180,true),
+     ledge(3210,255,190,true), ledge(3450,365,130), ledge(3610,300,100,true)],
+    // A second staircase and a descent to the final doorway.
+    [floor(2800,150,375), floor(2950,150,320), floor(3100,210,265),
+     floor(3390,140,320), floor(3530,140,375), floor(3670,130),
+     ledge(2890,230,150,true)],
+];
+export const LEVELS: LevelDef[] = layouts.map((base, i) => {
+    const tunnel = { x: 2670, y: 380 };
+    const solids = [...base, ...extensions[i], {x:tunnel.x-46,y:tunnel.y,width:92,height:50,surface:'stone' as const}];
     // Reward trails follow reachable surfaces; every level has its own IDs and safe checkpoint.
     const collectibles = solids.flatMap((s, n) => Array.from({ length: Math.max(1, Math.floor((s.width-80)/75)) }, (_, j) => ({
         id: `${i}-k-${n}-${j}`, x: s.x+45+j*75, y: s.y-40,
@@ -48,7 +64,7 @@ export const LEVELS: LevelDef[] = layouts.map((solids, i) => {
         { id:'gate', kind:'rabbit', x:2030, y:235, minX:1960, maxX:2100 },
     ];
     return {
-        width:2800, height:540, spawn:{x:180,y:385}, checkpoint:{x:1420,y:402}, goal:{x:2700,y:366},
+        width:3800, height:540, spawn:{x:180,y:385}, checkpoint:{x:1420,y:402}, goal:{x:3740,y:366}, tunnel,
         sections:[{x:0, name:`${CHAPTERS[i].id} · ${CHAPTERS[i].name}`, palette:'castle'}],
         solids, collectibles, enemies,
         powerUps:[{id:'oil',kind:'oil',x:1200,y:i===2?290:390},{id:'puff',kind:'puff',x:350,y:392},{id:'meat',kind:'meat',x:1690,y:i===2?335:390}],
@@ -59,3 +75,15 @@ export const LEVELS: LevelDef[] = layouts.map((solids, i) => {
     };
 });
 export const LEVEL = LEVELS[0];
+
+/** Shared prototype room. Each chapter run keeps its own room progress. */
+export const SECRET_LEVEL: LevelDef = {
+    width:1500, height:540, spawn:{x:130,y:385}, checkpoint:{x:130,y:402}, goal:{x:1410,y:366},
+    sections:[{x:0,name:'Cámara secreta · Bajo el castillo',palette:'castle'}],
+    solids:[floor(0,1500),ledge(330,375,140),ledge(530,310,180,true),
+        ledge(800,365,130),ledge(1000,300,180,true)],
+    collectibles:Array.from({length:15},(_,i)=>({id:`secret-k-${i}`,x:230+i*75,
+        y:i>=2&&i<=3?335:i>=4&&i<=6?270:i>=8&&i<=9?325:i>=11&&i<=12?260:390})),
+    enemies:[], powerUps:[{id:'secret-meat',kind:'meat',x:1230,y:390}],
+    secrets:[], scenery:[],
+};

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { LEVELS } from '../src/level-data.ts';
+import { LEVELS, SECRET_LEVEL } from '../src/level-data.ts';
 for(const [index,level] of LEVELS.entries()) {
     test(`1-${index+1}: continuous theme and traversable ground profile`,()=>{
         assert.equal(level.sections.length,1);
@@ -20,3 +20,14 @@ for(const [index,level] of LEVELS.entries()) {
     });
 }
 test('levels have different geometry',()=>assert.equal(new Set(LEVELS.map(l=>JSON.stringify(l.solids))).size,3));
+
+test('secret entrances have solid landing surfaces and the room has reachable rewards',()=>{
+    for(const level of LEVELS){
+        assert.equal(level.width,3800);
+        const t=level.tunnel;
+        assert(level.solids.some(s=>s.y===t.y&&s.x<t.x-12&&s.x+s.width>t.x+12));
+        assert(t.x<level.goal.x-500);
+    }
+    for(const p of SECRET_LEVEL.collectibles)
+        assert(!SECRET_LEVEL.solids.some(s=>!s.oneWay&&p.x>s.x&&p.x<s.x+s.width&&p.y>s.y&&p.y<s.y+s.height));
+});

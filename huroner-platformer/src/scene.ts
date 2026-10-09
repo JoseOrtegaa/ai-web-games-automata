@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { createArt } from './art';
 import { createEnvironment, createSurfaceArt } from './environment';
-import { LEVELS, CHAPTERS, WORLDS } from './level-data';
+import { LEVELS, SECRET_LEVEL, CHAPTERS, WORLDS } from './level-data';
 import { readProgress, isUnlocked, completeLevel } from './progress';
 import { B } from './balance';
 import { Player } from './player';
@@ -15,8 +15,19 @@ import { saveRun } from './collectibles';
 import { updateCamera } from './camera';
 import type { PowerUpDef, SolidDef } from './types';
 type Mode = 'menu' | 'playing' | 'paused' | 'dead' | 'won';
+interface AreaState {
+    collected: string[]; secrets: string[]; checkpoint: boolean;
+    enemies: { hp:number; x:number; y:number; direction:number }[];
+}
+interface Journey {
+    status: Status; now: number; count: number;
+    main?: AreaState; secret?: AreaState;
+}
 export class GameScene extends Phaser.Scene {
     levelIndex = 0;
+    inSecret = false;
+    private journey?: Journey;
+    private tunnelReady = true;
     level = LEVELS[0];
     private launchPlaying = false;
     private listenersBound = false;
@@ -51,9 +62,12 @@ export class GameScene extends Phaser.Scene {
     constructor() {
         super('FerretJump');
     }
-    init(data: { levelIndex?: number; play?: boolean } = {}) {
+    init(data: { levelIndex?: number; play?: boolean; secret?: boolean; journey?: Journey } = {}) {
         this.levelIndex = data.levelIndex ?? 0;
-        this.level = LEVELS[this.levelIndex];
+        this.inSecret = data.secret ?? false;
+        this.journey = data.journey;
+        this.tunnelReady = !data.journey;
+        this.level = this.inSecret ? SECRET_LEVEL : LEVELS[this.levelIndex];
         this.launchPlaying = data.play ?? false;
         this.mode = 'menu';
         this.status = { health:3, shield:false, oilUntil:0 };
@@ -87,6 +101,7 @@ export class GameScene extends Phaser.Scene {
         });
         this.addPickups();
         this.shield = this.add.circle(0, 0, 31, 0xf4efbd, .15).setStrokeStyle(3, 0xe6f3ba, .85).setDepth(19).setVisible(false);
+        this.restoreJourney();
         this.bindUI();
         this.physics.pause();
         this.ui.hud(this.status, this.count, this.now);
@@ -110,7 +125,8 @@ export class GameScene extends Phaser.Scene {
         }
     }
     private drawWorld() {
-        createEnvironment(this, CHAPTERS[this.levelIndex].environment);
+        createEnvironment(this, this.inSecret ? 'keep' : CHAPTERS[this.levelIndex].environment, this.level.width);
+        if (this.inSecret) this.add.rectangle(0,0,this.level.width,430,0x10202b,.38).setOrigin(0).setDepth(-20);
         this.level.scenery.forEach(d => this.add.image(d.x, d.y, d.kind).setOrigin(.5, 1).setScale(d.scale ?? 1).setFlipX(d.flip ?? false).setDepth(-10).setAlpha(.88));
         this.terrain = this.physics.add.staticGroup();
         this.level.solids.forEach(def => {
@@ -129,11 +145,59 @@ export class GameScene extends Phaser.Scene {
             panel.add(this.add.rectangle(s.width - 8, s.height - 20, 3, 13, 0xf5d9aa, .65));
             this.panels.push({ id: s.id, rect: panel });
         });
-        this.checkpointSprite = this.add.image(this.level.checkpoint.x, 430, 'checkpoint').setOrigin(.5, 1).setDepth(10);
+        const tunnel = this.level.tunnel;
+        if (tunnel) {
+            this.add.rectangle(tunnel.x,tunnel.y+25,78,50,0x3c5758).setStrokeStyle(3,0x92a18c).setDepth(7);
+            this.add.rectangle(tunnel.x,tunnel.y+5,104,14,0xa99a69).setStrokeStyle(2,0xd8c38a).setDepth(8);
+            this.add.ellipse(tunnel.x,tunnel.y+2,70,9,0x14242c).setDepth(9);
+            this.add.text(tunnel.x,tunnel.y-52,'↓ AGÁCHATE', {fontFamily:'Trebuchet MS',fontSize:'12px',color:'#fff3c0'}).setOrigin(.5).setDepth(11);
+        }
+        this.checkpointSprite = this.add.image(this.level.checkpoint.x, 430, 'checkpoint').setOrigin(.5, 1).setDepth(10).setVisible(!this.inSecret);
         this.add.image(this.level.goal.x, 430, 'goal').setOrigin(.5, 1).setDepth(10);
-        const label = this.add.text(this.level.goal.x, 238, this.levelIndex < 2 ? 'AL SIGUIENTE NIVEL →' : 'FIN DEL MUNDO 1', { fontFamily: 'Trebuchet MS', fontSize: '13px', color: '#fff3c0', letterSpacing: 3 }).setOrigin(.5).setDepth(11);
+        const label = this.add.text(this.level.goal.x, 238, this.inSecret ? 'VOLVER AL CASTILLO →' : this.levelIndex < 2 ? 'AL SIGUIENTE NIVEL →' : 'FIN DEL MUNDO 1', { fontFamily: 'Trebuchet MS', fontSize: '13px', color: '#fff3c0', letterSpacing: 3 }).setOrigin(.5).setDepth(11);
         this.tweens.add({ targets: label, alpha: .6, yoyo: true, repeat: -1, duration: 1000 });
-        this.add.text(480, 270, 'MANTÉN EL SALTO\nPARA LLEGAR MÁS ALTO', { fontFamily: 'Trebuchet MS', fontSize: '12px', color: '#e4e8ce', align: 'center', lineSpacing: 5 }).setOrigin(.5).setAlpha(.8).setDepth(3);
+        if (!this.inSecret) this.add.text(480, 270, 'MANTÉN EL SALTO\nPARA LLEGAR MÁS ALTO', { fontFamily: 'Trebuchet MS', fontSize: '12px', color: '#e4e8ce', align: 'center', lineSpacing: 5 }).setOrigin(.5).setAlpha(.8).setDepth(3);
+    }
+    private restoreJourney() {
+        const journey = this.journey;
+        if (!journey) return;
+        this.status = { ...journey.status }; this.now = journey.now; this.count = journey.count;
+        const area = this.inSecret ? journey.secret : journey.main;
+        if (area) {
+            this.collected = new Set(area.collected); this.secrets = new Set(area.secrets);
+            this.checkpoint = area.checkpoint;
+            for (const obj of [...this.pickups.getChildren(), ...this.food.getChildren()]) {
+                const item = obj as Phaser.Physics.Arcade.Image;
+                if (this.collected.has(item.getData('id') ?? item.getData('def').id)) item.disableBody(true,true);
+            }
+            this.panels.forEach(p => { if (this.secrets.has(p.id)) p.rect.setAlpha(.13); });
+            this.enemies.list.forEach((e,i) => {
+                const saved = area.enemies[i];
+                e.hp = saved.hp; e.direction = saved.direction; e.nextShot = this.now + 1700;
+                e.sprite.setPosition(saved.x,saved.y);
+                if (e.hp <= 0) e.sprite.disableBody(true,true);
+            });
+            if (this.checkpoint) this.checkpointSprite.setTint(0xffe48b);
+        }
+        const tunnel = LEVELS[this.levelIndex].tunnel!;
+        const spawn = this.inSecret ? this.level.spawn : {x:tunnel.x,y:tunnel.y-30};
+        this.player.reset(spawn.x,spawn.y);
+        this.player.invulnerableUntil = this.now + 1000;
+        this.safe = {...spawn};
+        this.cameras.main.scrollX = Phaser.Math.Clamp(spawn.x-440,0,this.level.width-960);
+    }
+    private travel(secret: boolean) {
+        const area: AreaState = {
+            collected:[...this.collected], secrets:[...this.secrets], checkpoint:this.checkpoint,
+            enemies:this.enemies.list.map(e => ({hp:e.hp,x:e.sprite.x,y:e.sprite.y,direction:e.direction})),
+        };
+        const journey: Journey = { ...this.journey, status:{...this.status}, now:this.now, count:this.count,
+            [this.inSecret ? 'secret' : 'main']:area };
+        this.controls.clear();
+        this.sounds.play('secret');
+        this.mode = 'paused';
+        this.physics.pause();
+        this.scene.restart({levelIndex:this.levelIndex,play:true,secret,journey});
     }
     private addPickups() {
         this.pickups = this.physics.add.staticGroup();
@@ -267,6 +331,12 @@ export class GameScene extends Phaser.Scene {
             this.resume();
     }
     restart() {
+        if (this.inSecret) {
+            this.controls.clear(); this.ui.show('pause-menu',false);
+            this.scene.restart({levelIndex:this.levelIndex,play:true});
+            return;
+        }
+        this.journey = undefined; this.tunnelReady = true;
         this.status = { health: 3, shield: false, oilUntil: 0 };
         this.count = 0;
         this.now = 0;
@@ -336,6 +406,13 @@ export class GameScene extends Phaser.Scene {
         });
         const p = this.player.sprite;
         const b = this.player.body;
+        if (!this.controls.crouch) this.tunnelReady = true;
+        const tunnel = this.level.tunnel;
+        if (tunnel && this.tunnelReady && this.player.crouched && b.blocked.down
+            && Math.abs(p.x-tunnel.x)<30 && Math.abs(b.bottom-tunnel.y)<5) {
+            this.travel(true);
+            return;
+        }
         if (b.blocked.down && this.now > this.player.hurtUntil && Math.abs(b.velocity.x) < 240) {
             const floor = this.level.solids.find(s => !s.oneWay && Math.abs(s.y - b.bottom) < 5 && p.x > s.x + 35 && p.x < s.x + s.width - 35);
             if (floor)
@@ -349,7 +426,7 @@ export class GameScene extends Phaser.Scene {
             }
             return;
         }
-        if (!this.checkpoint && Math.abs(p.x - this.level.checkpoint.x) < 45) {
+        if (!this.inSecret && !this.checkpoint && Math.abs(p.x - this.level.checkpoint.x) < 45) {
             this.checkpoint = true;
             this.safe = { x: this.level.checkpoint.x, y: 385 };
             this.checkpointSprite.setTint(0xffe48b);
@@ -376,8 +453,11 @@ export class GameScene extends Phaser.Scene {
             if (this.section > 0)
                 this.ui.toast(this.level.sections[this.section].name);
         }
-        if (p.x > this.level.goal.x - 35 && p.y > 250)
-            this.victory();
+        if (p.x > this.level.goal.x - 35 && p.y > 250) {
+            if (this.inSecret) this.travel(false);
+            else this.victory();
+            return;
+        }
         if (this.now > this.hudAt) {
             this.ui.hud(this.status, this.count, this.now);
             this.hudAt = this.now + 100;
@@ -470,6 +550,6 @@ export class GameScene extends Phaser.Scene {
         }
     }
     snapshot() {
-        return { mode: this.mode, time: this.now, player: { x: this.player.sprite.x, y: this.player.sprite.y, vx: this.player.body.velocity.x, vy: this.player.body.velocity.y, grounded: this.player.body.blocked.down, feet: this.player.body.bottom, bodyHeight: this.player.body.height, crouched: this.player.crouched }, ...this.status, invulnerableUntil: this.player.invulnerableUntil, kibble: this.count, checkpoint: this.checkpoint, secrets: [...this.secrets], camera: this.cameras.main.scrollX, enemies: this.enemies.list.map(e => ({ id: e.def.id, kind: e.def.kind, x: e.sprite.x, y: e.sprite.y, hp: e.hp, active: e.sprite.active })), levelIndex: this.levelIndex, level: this.level };
+        return { inSecret: this.inSecret, mode: this.mode, time: this.now, player: { x: this.player.sprite.x, y: this.player.sprite.y, vx: this.player.body.velocity.x, vy: this.player.body.velocity.y, grounded: this.player.body.blocked.down, feet: this.player.body.bottom, bodyHeight: this.player.body.height, crouched: this.player.crouched }, ...this.status, invulnerableUntil: this.player.invulnerableUntil, kibble: this.count, checkpoint: this.checkpoint, secrets: [...this.secrets], camera: this.cameras.main.scrollX, enemies: this.enemies.list.map(e => ({ id: e.def.id, kind: e.def.kind, x: e.sprite.x, y: e.sprite.y, hp: e.hp, active: e.sprite.active })), levelIndex: this.levelIndex, level: this.level };
     }
 }

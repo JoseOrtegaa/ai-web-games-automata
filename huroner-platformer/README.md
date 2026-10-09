@@ -13,6 +13,8 @@ Plataformas 2D pixel art original. La campaña se organiza por castillos y nivel
 - Tres corazones, pisotón, enemigos protegidos de dos golpes, checkpoints por nivel y pasadizos opcionales. Carne cura, aceite aumenta velocidad y pompón absorbe un golpe.
 - Pausa permite volver al mapa o reiniciar **el nivel seleccionado**. Cambiar o reiniciar nivel restablece su checkpoint y objetos; los desbloqueos permanecen. Las croquetas se contabilizan al completar el nivel.
 
+Los tres recorridos miden ahora 3800 unidades (antes 2800): nuevas almenas, balcones a dos alturas y otra escalinata. Cada nivel tiene un túnel de piedra antes del tramo añadido: súbete y agáchate con cualquiera de los controles para entrar en la cámara secreta de prueba. Su puerta devuelve al mismo túnel. Conserva corazones, croquetas, checkpoint, objetos recogidos y enemigos derrotados; la cámara no completa ni desbloquea niveles. Reiniciar dentro de ella reinicia el nivel principal. La sala es compartida en diseño y sus recompensas solo se pueden recoger una vez por partida de cada nivel.
+
 ## Controles
 
 - **Móvil horizontal:** desliza a los lados en la zona izquierda para caminar o hacia abajo para agacharte; suelta para levantarte. En modo Botones, usa ▼ para agacharte. Puedes avanzar lentamente agachado. Salta con el botón derecho; mantén para un arco más alto y suelta para un salto corto.
