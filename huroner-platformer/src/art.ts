@@ -229,7 +229,12 @@ function plant(c: Ctx) {
     rect(c, '#684a50', 24, 96, 50, 4);
 }
 export function createArt(scene: Phaser.Scene): void {
-    if (!scene.textures.exists('ferret')) {
+    const coats = [
+        {key:'ferret',fur:P.fur,cream:P.cream,dark:P.dark},
+        {key:'ferret-snow',fur:'#9bc9d3',cream:'#f7faf2',dark:'#647e89'},
+        {key:'ferret-violet',fur:'#a278c6',cream:'#e7c7f2',dark:'#624a79'},
+    ];
+    for(const coat of coats) if (!scene.textures.exists(coat.key)) {
         const lo = canvas(24 * 12, 32), c = lo.getContext('2d')!;
         for (let i = 0; i < 12; i++) {
             c.save();
@@ -237,18 +242,28 @@ export function createArt(scene: Phaser.Scene): void {
             ferret(c, i);
             c.restore();
         }
+        if(coat.key!=='ferret'){
+            const pixels=c.getImageData(0,0,lo.width,lo.height);
+            const from=[P.fur,P.cream,P.dark].map(hex=>[1,3,5].map(n=>parseInt(hex.slice(n,n+2),16)));
+            const to=[coat.fur,coat.cream,coat.dark].map(hex=>[1,3,5].map(n=>parseInt(hex.slice(n,n+2),16)));
+            for(let i=0;i<pixels.data.length;i+=4)for(let n=0;n<from.length;n++)
+                if(pixels.data[i]===from[n][0]&&pixels.data[i+1]===from[n][1]&&pixels.data[i+2]===from[n][2]){
+                    pixels.data[i]=to[n][0];pixels.data[i+1]=to[n][1];pixels.data[i+2]=to[n][2];break;
+                }
+            c.putImageData(pixels,0,0);
+        }
         const hi = canvas(48 * 12, 64);
         const out = hi.getContext('2d')!;
         out.imageSmoothingEnabled = false;
         out.drawImage(lo, 0, 0, hi.width, hi.height);
         // Passing a Texture to addSpriteSheet preserves its key (Phaser 3).
-        const atlas = scene.textures.addCanvas('ferret', hi)!;
-        scene.textures.addSpriteSheet('ferret', atlas, { frameWidth: 48, frameHeight: 64 });
+        const atlas = scene.textures.addCanvas(coat.key, hi)!;
+        scene.textures.addSpriteSheet(coat.key, atlas, { frameWidth: 48, frameHeight: 64 });
     }
     const anims = [['idle', 0, 1, 3, -1], ['run', 2, 5, 11, -1], ['jump', 6, 6, 1, 0], ['fall', 7, 7, 1, 0], ['hurt', 8, 8, 1, 0], ['dead', 9, 10, 4, 0], ['crouch', 11, 11, 1, 0]] as const;
-    for (const [name, start, end, frameRate, repeat] of anims)
-        if (!scene.anims.exists(`ferret-${name}`))
-            scene.anims.create({ key: `ferret-${name}`, frames: scene.anims.generateFrameNumbers('ferret', { start, end }), frameRate, repeat });
+    for(const coat of coats)for (const [name, start, end, frameRate, repeat] of anims)
+        if (!scene.anims.exists(`${coat.key}-${name}`))
+            scene.anims.create({ key: `${coat.key}-${name}`, frames: scene.anims.generateFrameNumbers(coat.key, { start, end }), frameRate, repeat });
     for (const kind of Object.keys(ENEMY_PROFILES))
         texture(scene, kind, kind === 'armored' ? 26 : 24, 24, c => {
             if(['snowhare','owl','frostbug'].includes(kind)) {
@@ -259,8 +274,12 @@ export function createArt(scene: Phaser.Scene): void {
             } else ['rabbit','armored','quail','spitter'].includes(kind) ? animal(c, kind) : undergroundAnimal(c, kind);
         });
     texture(scene,'relic-ice',18,22,c=>{poly(c,'#2b6382',[9,0,18,11,9,22,0,11]);poly(c,'#b9f5f1',[9,2,16,11,9,19,2,11]);rect(c,'#fff8e2',8,5,2,10);});
-    texture(scene,'hat-beret',24,12,c=>{ellipse(c,'#346b7d',12,7,10,4);rect(c,'#19465a',4,9,18,2);rect(c,'#e7d29c',12,1,2,4);});
-    texture(scene,'hat-crown',24,15,c=>{poly(c,'#eac578',[2,13,1,2,6,7,11,0,16,7,22,2,21,13]);rect(c,'#8f683e',2,12,20,3);rect(c,'#f7eaba',11,9,3,3);});
+    texture(scene,'hat-beret',20,10,c=>{ellipse(c,'#306276',10,6,9,3);rect(c,'#163f56',2,8,17,2);rect(c,'#e7d29c',10,1,2,3);});
+    texture(scene,'hat-crown',18,11,c=>{
+        poly(c,'#493d43',[1,10,0,1,5,5,9,0,13,5,18,1,17,10]);
+        poly(c,'#e8bc59',[2,9,2,3,5,7,9,2,13,7,16,3,16,9]);
+        rect(c,'#91604c',2,9,14,2);rect(c,'#fff2aa',8,6,2,2);
+    });
     for(const ice of [false,true])texture(scene,ice?'boss-ice':'boss-oak',56,50,c=>{
         const shell=ice?'#7bd0dc':'#956847',shine=ice?'#daf7f0':'#d6ae78';
         ellipse(c,'#294356',28,30,25,20);ellipse(c,shell,28,27,22,17);

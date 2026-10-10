@@ -314,38 +314,98 @@ function treasury(c: Ctx) {
     }
     grain(c,139);
 }
-function frozen(c:Ctx) {
-    gradient(c,['#19374f','#4e849c','#add2d5']);
-    ellipse(c,'#f0f9ed',2250,90,44,44);
-    poly(c,'#507d90',[0,315,290,180,490,320,820,160,1150,330,1450,150,1760,300,2020,145,2400,310,2660,170,2800,315,2800,540,0,540]);
-    poly(c,'#9bc2ca',[0,330,290,182,490,322,820,163,1150,332,1450,153,1760,302,2020,148,2400,312,2660,173,2800,317,2800,340,0,340]);
-    for(const x of [200,930,1680,2390]) {
-        rect(c,'#476879',x,222,150,315);rect(c,'#82b5bd',x+8,226,132,302);
-        poly(c,'#c9edf0',[x-16,225,x+75,142,x+166,225]);
-        arch(c,'#31546b',x+52,282,52,78);
-        for(let y=345;y<520;y+=42)line(c,'#5c93a2',[x+10,y,x+138,y],2);
+// The three frozen chapters use separate architecture and sky palettes. Geometry remains
+// decorative; only the bright tile surfaces in scene.ts define collision.
+function iceBridge(c:Ctx) {
+    gradient(c,['#122b48','#5789a5','#a4ced2']);
+    ellipse(c,'#fff1cb',2230,92,45,45);
+    poly(c,'#3b657e',[0,345,260,255,560,335,900,175,1200,336,1540,220,1830,350,2240,190,2590,325,2800,250,2800,540,0,540]);
+    poly(c,'#b4dce0',[0,352,260,264,560,344,900,183,1200,344,1540,228,1830,358,2240,198,2590,333,2800,258,2800,375,0,375]);
+    rect(c,'#3c738b',0,367,WIDTH,173);
+    for(let x=0;x<WIDTH;x+=170){line(c,'#9bcbd0',[x,390,x+85,381,x+170,394],3);line(c,'#6bafbb',[x+26,440,x+112,430,x+157,438],2);}
+    for(const x of [235,1050,1900,2580]){
+        rect(c,'#33576d',x,191,46,213);rect(c,'#77a5b3',x+6,194,34,194);
+        poly(c,'#e3f5ed',[x-13,196,x+22,151,x+57,196]);
+        rect(c,'#d4e8df',x+15,204,13,68);
     }
-    for(let x=100;x<WIDTH;x+=330){
-        poly(c,'#d6f1ed',[x,420,x+22,355,x+42,420]);
-        poly(c,'#9fdae1',[x+100,440,x+120,350,x+146,440]);
+    for(let x=40;x<WIDTH;x+=460){
+        poly(c,'#244c64',[x,350,x+74,283,x+148,350]);
+        poly(c,'#d9f0eb',[x+8,346,x+74,288,x+140,346]);
+        line(c,'#bedee2',[x+92,332,x+245,318,x+405,330],4);
+        for(let j=0;j<4;j++)line(c,'#759fb0',[x+125+j*67,327,x+125+j*67,365],2);
     }
-    grain(c,412);
+    grain(c,511);
 }
-export function createEnvironment(scene: Phaser.Scene, environment: 'ramparts' | 'courtyard' | 'keep' | 'cistern' | 'roots' | 'treasury' | 'frozen', width = WIDTH): void {
+function iceHall(c:Ctx) {
+    gradient(c,['#162a43','#315b70','#456979']);
+    rect(c,'#38566c',0,120,WIDTH,420);
+    for(let x=0;x<WIDTH;x+=465){
+        rect(c,'#aeced3',x+7,58,449,11);rect(c,'#769eae',x+12,69,438,8);
+        arch(c,'#a5ccd0',x+33,87,391,453);arch(c,'#304b66',x+47,101,363,439);
+        arch(c,'#518ea1',x+66,118,326,406);arch(c,'#8fc8d0',x+80,131,298,390);
+        poly(c,'#d8f5e9',[x+224,135,x+94,398,x+202,392,x+347,136]);
+        poly(c,'#608ca6',[x+225,137,x+370,410,x+264,400,x+114,137]);
+        line(c,'#e2f5e9',[x+229,142,x+229,417],6);
+        for(const y of [190,278,366])line(c,'#53798a',[x+84,y,x+375,y],3);
+        rect(c,'#708c9c',x,70,29,470);rect(c,'#b4d5d3',x+5,70,8,470);
+    }
+    rect(c,'#7faab5',0,482,WIDTH,7);
+    for(let x=45;x<WIDTH;x+=215){poly(c,'#d5f7ee',[x,471,x+23,424,x+48,471]);rect(c,'#9bcbd0',x+16,468,25,4);}
+    grain(c,547);
+}
+function iceTower(c:Ctx) {
+    gradient(c,['#17263e','#455779','#7c98a5']);
+    ellipse(c,'#cce4dc',2060,110,55,55);
+    poly(c,'#556b88',[0,359,230,290,380,330,760,180,1060,357,1470,180,1830,330,2130,211,2500,360,2800,250,2800,540,0,540]);
+    for(const x of [130,850,1570,2290]){
+        rect(c,'#36465d',x,112,210,428);
+        poly(c,'#a6c7d1',[x-20,116,x+103,10,x+230,116]);
+        for(let y=160;y<470;y+=64){rect(c,'#647b90',x+15,y,180,4);rect(c,'#4c6077',x+94,y+4,4,60);}
+        arch(c,'#90b1bf',x+78,200,55,112);arch(c,'#243f5a',x+84,207,43,100);
+        rect(c,'#b6d3d5',x+100,216,7,70);
+        for(let n=0;n<4;n++)poly(c,'#d5edf0',[x+n*51,114,x+n*51+12,135,x+n*51+26,114]);
+    }
+    for(let x=0;x<WIDTH;x+=340){
+        line(c,'#c6e6e6',[x,145,x+95,125,x+187,141],3);
+        line(c,'#8fb9cb',[x+83,252,x+223,231,x+290,241],2);
+        poly(c,'#e0f2e9',[x+95,355,x+109,314,x+123,355]);
+    }
+    grain(c,589);
+}
+function iceCrystal(c:Ctx){iceBridge(c);for(let x=100;x<WIDTH;x+=290){poly(c,'#90d6e0',[x,468,x+39,226,x+88,468]);poly(c,'#d5f6ea',[x+39,228,x+47,456,x+82,464]);}}
+function iceLake(c:Ctx){iceHall(c);rect(c,'#38809a',0,465,WIDTH,75);for(let x=0;x<WIDTH;x+=240){line(c,'#d2f0e9',[x,505,x+130,492,x+239,504],3);}}
+function iceObservatory(c:Ctx){iceTower(c);for(const x of [510,1450,2460]){ellipse(c,'#d8eff0',x,300,110,110);ellipse(c,'#37576e',x,300,93,93);line(c,'#bddee2',[x-76,300,x+76,300],4);line(c,'#bddee2',[x,225,x,375],4);}}
+export type Environment = 'ramparts' | 'courtyard' | 'keep' | 'cistern' | 'roots' | 'treasury' | 'frozen-bridge' | 'frozen-hall' | 'frozen-tower' | 'frozen-crystal' | 'frozen-lake' | 'frozen-observatory';
+export function createEnvironment(scene: Phaser.Scene, environment: Environment, width = WIDTH): void {
     const key = `castle-${environment}`;
-    texture(scene, key, WIDTH, HEIGHT, { ramparts:castle, courtyard, keep, cistern, roots, treasury, frozen }[environment]);
+    texture(scene, key, WIDTH, HEIGHT, { ramparts:castle, courtyard, keep, cistern, roots, treasury,
+        'frozen-bridge':iceBridge,'frozen-hall':iceHall,'frozen-tower':iceTower,
+        'frozen-crystal':iceCrystal,'frozen-lake':iceLake,'frozen-observatory':iceObservatory }[environment]);
     scene.add.tileSprite(0,0,width,HEIGHT,key).setOrigin(0,0).setDepth(-30);
 }
 
 /** Seamless material bodies. Collision lips are drawn once per platform in scene.ts. */
 export function createSurfaceArt(scene: Phaser.Scene): void {
-    for (const material of ['metal', 'concrete', 'grass', 'bark', 'rock', 'stone', 'ice']) {
+    for (const material of ['metal', 'concrete', 'grass', 'bark', 'rock', 'stone', 'ice', 'glass', 'snow']) {
         texture(scene, `surface-${material}`, material === 'rock' ? 256 : 64, material === 'rock' ? 256 : 64, c => {
             const rand = random(material.length * 135 + material.charCodeAt(0));
             if(material==='ice') {
                 rect(c,'#609dab',0,0,64,64);rect(c,'#d9f8ed',0,0,64,5);
                 rect(c,'#92d4dd',0,6,64,13);rect(c,'#6cb4c6',0,21,64,42);
                 for(let x=8;x<64;x+=22)line(c,'#c7ebea',[x,25,x+6,40,x+1,52],2);
+            }
+            if(material==='glass') {
+                rect(c,'#32677e',0,0,64,64);rect(c,'#e2f8ec',0,0,64,5);
+                rect(c,'#7ec8d1',0,6,64,9);rect(c,'#3b849b',0,16,64,48);
+                poly(c,'#bddfe0',[4,20,22,20,45,57,33,57]);
+                poly(c,'#6eb2c1',[40,18,57,18,63,36,51,43]);
+                line(c,'#cceee8',[6,44,25,29,39,42],2);
+            }
+            if(material==='snow') {
+                rect(c,'#617989',0,0,64,64);rect(c,'#eff8ed',0,0,64,8);
+                poly(c,'#c6e3e5',[0,8,9,13,25,7,41,11,57,6,64,9,64,36,0,36]);
+                for(const x of [5,22,45])poly(c,'#a5c6cf',[x,36,x+11,28,x+20,41]);
+                rect(c,'#546b80',0,46,64,18);
             }
             if (material === 'metal') {
                 rect(c, '#4c5b60', 0, 0, 64, 64);

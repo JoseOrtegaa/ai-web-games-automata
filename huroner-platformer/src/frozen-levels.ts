@@ -1,11 +1,11 @@
 import type { LevelDef, SolidDef, EnemyDef } from './types';
 const ice=(x:number,width:number,y=430):SolidDef=>({x,y,width,height:540-y,surface:'ice'});
 const stone=(x:number,width:number,y=430):SolidDef=>({x,y,width,height:540-y,surface:'stone'});
-const platform=(x:number,y:number,width:number):SolidDef=>({x,y,width,height:22,surface:'ice',oneWay:true});
+const platform=(x:number,y:number,width:number,surface:'ice'|'glass'|'snow'='ice'):SolidDef=>({x,y,width,height:22,surface,oneWay:true});
 const layouts:SolidDef[][]=[
     [stone(0,630),ice(710,600),stone(1390,560),ice(2030,530),stone(2640,610),ice(3330,410),stone(3740,300),platform(820,335,170),platform(1040,280,150),platform(1520,340,170),platform(2250,330,190),platform(2800,335,180),platform(3500,315,170)],
-    [stone(0,520),ice(600,480,395),ice(1160,510),stone(1750,550),ice(2380,500,385),stone(2960,510),ice(3550,490),platform(640,300,160),platform(1210,330,180),platform(1490,275,180),platform(1880,325,190),platform(2440,285,180),platform(3120,330,180),platform(3620,310,170)],
-    [stone(0,600),ice(680,520),stone(1280,480,390),ice(1840,530,350),stone(2450,490,390),ice(3020,510),stone(3610,430),platform(760,325,180),platform(1350,305,170),platform(1960,260,170),platform(2550,315,160),platform(3140,315,170)],
+    [stone(0,520),ice(600,480,395),ice(1160,510),stone(1750,550),ice(2380,500,385),stone(2960,510),ice(3550,490),platform(640,300,160,'glass'),platform(1210,330,180,'glass'),platform(1490,275,180,'glass'),platform(1880,325,190,'glass'),platform(2440,285,180,'glass'),platform(3120,330,180,'glass'),platform(3620,310,170,'glass')],
+    [stone(0,600),ice(680,520),stone(1280,480,390),ice(1840,530,350),stone(2450,490,390),ice(3020,510),stone(3610,430),platform(760,325,180,'ice'),platform(1350,305,170,'snow'),platform(1960,260,170,'snow'),platform(2550,315,160,'snow'),platform(3140,315,170,'snow')],
 ];
 const names=['El puente de escarcha','El salón de los espejos','La torre de la ventisca'];
 const enemySets:EnemyDef[][]=[

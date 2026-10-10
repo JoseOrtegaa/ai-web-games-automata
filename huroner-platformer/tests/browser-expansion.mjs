@@ -6,7 +6,7 @@ const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH,he
 const page=await browser.newPage({viewport:{width:844,height:390},hasTouch:true});
 const errors=[];page.on('pageerror',e=>errors.push(e.message));
 try {
- await page.goto('http://127.0.0.1:8123/huroner-platformer/dist/?qa=1');
+ await page.goto(process.env.BASE_URL||'http://127.0.0.1:8123/huroner-platformer/dist/?qa=1');
  await page.waitForFunction(()=>window.__ferretQA);
  await page.evaluate(()=>localStorage.setItem('ferret-jump-v1',JSON.stringify({version:1,total:500,best:65})));
  await page.click('#start');
@@ -31,6 +31,8 @@ try {
    await page.evaluate(()=>{const q=window.__ferretQA;q.teleport(q.state().level.goal.x,365)});
    await page.waitForTimeout(120);
    assert.equal(await page.evaluate(()=>window.__ferretQA.state().mode),'playing','boss guards gate');
+   const hitbox=await page.evaluate(()=>{const b=window.__ferretQA.scene.boss,body=b.body;return {sprite:b.x,bodyX:body.x,bodyWidth:body.width,offsetX:body.offset.x};});
+   assert(Math.abs(hitbox.bodyX+hitbox.bodyWidth/2-hitbox.sprite)<2,`boss hitbox follows its visible patrol: ${JSON.stringify(hitbox)}`);
    for(let hit=0;hit<3;hit++){
     await page.evaluate(()=>{const q=window.__ferretQA,scene=q.scene;q.teleport(scene.boss.x,295);scene.player.body.setVelocityY(360);});
     await page.waitForFunction(hit=>window.__ferretQA.state().boss.hp<=2-hit,hit,{timeout:3500});

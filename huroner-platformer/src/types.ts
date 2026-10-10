@@ -5,7 +5,7 @@ export interface Rect {
     width: number;
     height: number;
 }
-export type Surface = 'wood' | 'cushion' | 'book' | 'pipe' | 'tile' | 'cardboard' | 'metal' | 'concrete' | 'grass' | 'bark' | 'rock' | 'stone' | 'ice';
+export type Surface = 'wood' | 'cushion' | 'book' | 'pipe' | 'tile' | 'cardboard' | 'metal' | 'concrete' | 'grass' | 'bark' | 'rock' | 'stone' | 'ice' | 'glass' | 'snow';
 export interface SolidDef extends Rect {
     surface: Surface;
     oneWay?: boolean;

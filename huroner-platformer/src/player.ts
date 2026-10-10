@@ -10,6 +10,7 @@ export class Player {
     facing = 1;
     hurtUntil = 0;
     invulnerableUntil = 0;
+    coat: 'classic' | 'snow' | 'violet' = 'classic';
     constructor(scene: Phaser.Scene, x: number, y: number, private canStand: (left: number, top: number, right: number, bottom: number) => boolean) {
         this.sprite = scene.physics.add.sprite(x, y, 'ferret', 0);
         this.sprite.setSize(24, 42).setOffset(12, 20).setMaxVelocity(310, B.maxFall);
@@ -18,6 +19,8 @@ export class Player {
     get body() {
         return this.sprite.body as Phaser.Physics.Arcade.Body;
     }
+    animation(name:string) { return `${this.coat==='classic'?'ferret':`ferret-${this.coat}`}-${name}`; }
+    setCoat(coat:string) { this.coat=coat==='snow'||coat==='violet'?coat:'classic'; }
     update(input: Input, now: number, oil: boolean, onJump: () => void, icy = false) {
         const body = this.body;
         const grounded = body.blocked.down || body.touching.down;
@@ -49,7 +52,7 @@ export class Player {
         // Phaser adds body gravity to the world's 1200 px/s²; only the ferret changes.
         body.setGravityY(grounded ? 0 : B.gravity * (verticalGravity(body.velocity.y, input.jump) - 1));
         const anim = now < this.hurtUntil ? 'hurt' : this.crouched ? 'crouch' : !grounded ? (body.velocity.y < 0 ? 'jump' : 'fall') : Math.abs(body.velocity.x) > 15 ? 'run' : 'idle';
-        this.sprite.play(`ferret-${anim}`, true);
+        this.sprite.play(this.animation(anim), true);
         this.sprite.alpha = now < this.invulnerableUntil ? (matchMedia('(prefers-reduced-motion: reduce)').matches ? .65 : Math.floor(now / 90) % 2 ? .4 : 1) : 1;
     }
     private setCrouched(value: boolean) {

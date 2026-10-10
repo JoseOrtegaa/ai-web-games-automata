@@ -11,9 +11,9 @@ export const CHAPTERS = [
     { id: '1-1', name: 'Las murallas', summary: 'Almenas, fosos cortos y un pasadizo bajo el adarve.', environment: 'ramparts' },
     { id: '1-2', name: 'El patio interior', summary: 'Arcadas, fuentes y dos caminos entre los jardines del castillo.', environment: 'courtyard' },
     { id: '1-3', name: 'Torre del homenaje', summary: 'Escalinatas de piedra y galerías elevadas hasta el gran portón.', environment: 'keep' },
-    { id: '2-1', name: 'El puente de escarcha', summary: 'Suelo resbaladizo, puentes altos y fauna de nieve.', environment: 'frozen' },
-    { id: '2-2', name: 'El salón de los espejos', summary: 'Plataformas escalonadas y corredores helados.', environment: 'frozen' },
-    { id: '2-3', name: 'La torre de la ventisca', summary: 'Asciende por el hielo y desafía a la Reina Ventisca.', environment: 'frozen' },
+    { id: '2-1', name: 'El puente de escarcha', summary: 'Suelo resbaladizo, puentes altos y fauna de nieve.', environment: 'frozen-bridge' },
+    { id: '2-2', name: 'El salón de los espejos', summary: 'Plataformas escalonadas y corredores helados.', environment: 'frozen-hall' },
+    { id: '2-3', name: 'La torre de la ventisca', summary: 'Asciende por el hielo y desafía a la Reina Ventisca.', environment: 'frozen-tower' },
 ] as const;
 const floor = (x: number, width: number, y = 430): SolidDef => ({ x, y, width, height: 540-y, surface: 'stone' });
 const ledge = (x: number, y: number, width: number, oneWay = false): SolidDef => ({ x, y, width, height: oneWay ? 24 : 430-y, surface: 'stone', oneWay });

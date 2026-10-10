@@ -99,7 +99,8 @@ export class GameScene extends Phaser.Scene {
         this.controls ??= new Input();
         this.player = new Player(this, this.level.spawn.x, this.level.spawn.y, (left, top, right, bottom) =>
             hasHeadroom(this.level.solids, left, top, right, bottom));
-        this.hat=this.add.image(0,0,'hat-beret').setDepth(21).setVisible(false);
+        this.player.setCoat(readWardrobe().coat);
+        this.hat=this.add.image(0,0,'hat-beret').setDepth(21).setOrigin(.5,1).setVisible(false);
         this.setupBoss();
         this.enemies = new Enemies(this, this.level.enemies);
         this.physics.add.collider(this.player.sprite, this.terrain, undefined, (a, b) => {
@@ -143,12 +144,12 @@ export class GameScene extends Phaser.Scene {
         }
     }
     private drawWorld() {
-        createEnvironment(this, this.inSecret ? (this.levelIndex<3?SECRET_CHAPTERS[this.levelIndex].environment:'frozen') : CHAPTERS[this.levelIndex].environment, this.level.width);
+        createEnvironment(this, this.inSecret ? (this.levelIndex<3?SECRET_CHAPTERS[this.levelIndex].environment:['frozen-crystal','frozen-lake','frozen-observatory'][this.levelIndex-3] as 'frozen-crystal'|'frozen-lake'|'frozen-observatory') : CHAPTERS[this.levelIndex].environment, this.level.width);
         this.level.scenery.forEach(d => this.add.image(d.x, d.y, d.kind).setOrigin(.5, 1).setScale(d.scale ?? 1).setFlipX(d.flip ?? false).setDepth(-10).setAlpha(.88));
         this.terrain = this.physics.add.staticGroup();
         this.level.solids.forEach(def => {
             this.add.tileSprite(def.x, def.y, def.width, def.height, `surface-${def.surface}`).setOrigin(0).setDepth(5);
-            this.add.rectangle(def.x, def.y, def.width, def.surface === 'grass' ? 7 : 3, ({ grass: 0x80955e, rock: 0xa9afac, stone: 0xb4afa2, metal: 0x93a5aa, concrete: 0xaaa9a2, bark: 0xb09a6e, ice:0xedffff } as Partial<Record<SolidDef['surface'], number>>)[def.surface] ?? 0xd6bb8a, .85).setOrigin(0).setDepth(6);
+            this.add.rectangle(def.x, def.y, def.width, def.surface === 'grass' ? 7 : 3, ({ grass: 0x80955e, rock: 0xa9afac, stone: 0xb4afa2, metal: 0x93a5aa, concrete: 0xaaa9a2, bark: 0xb09a6e, ice:0xedffff, glass:0xf4fffa, snow:0xfff9e9 } as Partial<Record<SolidDef['surface'], number>>)[def.surface] ?? 0xd6bb8a, .85).setOrigin(0).setDepth(6);
             const r = this.add.rectangle(def.x + def.width / 2, def.y + def.height / 2, def.width, def.height, 0, 0);
             this.terrain.add(r);
             r.setData('solid', def);
@@ -218,7 +219,11 @@ export class GameScene extends Phaser.Scene {
             else if(Math.abs(this.wave.x-this.player.sprite.x)<27 && Math.abs(this.player.sprite.y-418)<42){this.damage(this.wave.x);this.wave.destroy();this.wave=undefined;}
         }
         // Short deliberate patrol between attacks; the arena stays readable.
-        if(!this.bossChargeUntil && this.now<this.bossNext-1400) boss.x=Phaser.Math.Clamp(boss.x+(this.player.sprite.x<boss.x?-1:1)*dt*.045,def.minX,def.maxX);
+        if(!this.bossChargeUntil && this.now<this.bossNext-1400) {
+            const x=Phaser.Math.Clamp(boss.x+(this.player.sprite.x<boss.x?-1:1)*dt*.045,def.minX,def.maxX);
+            boss.setPosition(x,boss.y);
+            (boss.body as Phaser.Physics.Arcade.Body).updateFromGameObject();
+        }
         this.bossWarning?.setPosition(boss.x,320);
     }
     private restoreJourney() {
@@ -485,7 +490,7 @@ export class GameScene extends Phaser.Scene {
         this.checkpointSprite.clearTint();
         this.enemies.projectiles.clear(true, true);
         this.wave?.destroy();this.wave=undefined;
-        if(this.boss){this.boss.enableBody(true,this.level.boss!.x,390,true,true).clearTint();this.bossHP=3;this.bossNext=1800;this.bossChargeUntil=0;this.bossWarning?.setText(`${this.level.boss!.name}  ♥ ♥ ♥`);}
+        if(this.boss){this.boss.enableBody(true,this.level.boss!.x,390,true,true).clearTint();(this.boss.body as Phaser.Physics.Arcade.Body).updateFromGameObject();this.bossHP=3;this.bossNext=1800;this.bossChargeUntil=0;this.bossWarning?.setText(`${this.level.boss!.name}  ♥ ♥ ♥`);}
         this.enemies.list.forEach(e => {
             this.tweens.killTweensOf(e.sprite);
             e.hp = ENEMY_PROFILES[e.def.kind].hp;
@@ -523,7 +528,7 @@ export class GameScene extends Phaser.Scene {
             return;
         this.now += dt;
         const feet=this.player.body.bottom;
-        const icy=this.player.body.blocked.down && this.level.solids.some(s=>s.surface==='ice'&&Math.abs(s.y-feet)<6&&this.player.sprite.x>s.x&&this.player.sprite.x<s.x+s.width);
+        const icy=this.player.body.blocked.down && this.level.solids.some(s=>(s.surface==='ice'||s.surface==='glass')&&Math.abs(s.y-feet)<6&&this.player.sprite.x>s.x&&this.player.sprite.x<s.x+s.width);
         this.player.update(this.controls, this.now, this.status.oilUntil > this.now, () => this.sounds.play('jump'),icy);
         this.controls.consume();
         this.player.sprite.x = Phaser.Math.Clamp(this.player.sprite.x, 18, this.level.width - 18);
@@ -532,11 +537,13 @@ export class GameScene extends Phaser.Scene {
         updateCamera(this.cameras.main, this.player.sprite.x, this.player.facing, this.level.width, dt);
         this.shield.setPosition(this.player.sprite.x, this.player.sprite.y).setVisible(this.status.shield).setScale(1 + Math.sin(this.now / 180) * .06);
         const wardrobe=readWardrobe();
-        this.hat?.setVisible(wardrobe.hat!=='none'&&!this.player.crouched).setTexture(wardrobe.hat==='crown'?'hat-crown':'hat-beret').setPosition(this.player.sprite.x+(this.player.facing<0?7:-7),this.player.sprite.y-29).setFlipX(this.player.facing<0).setAlpha(this.player.sprite.alpha);
+        this.hat?.setVisible(wardrobe.hat!=='none'&&!this.player.crouched)
+            .setTexture(wardrobe.hat==='crown'?'hat-crown':'hat-beret')
+            .setDisplaySize(wardrobe.hat==='crown'?28:30,wardrobe.hat==='crown'?17:15)
+            .setPosition(this.player.sprite.x+(this.player.facing<0?-6:6),this.player.sprite.y-21+(this.player.sprite.frame.name==='1'?2:0))
+            .setFlipX(this.player.facing<0).setAlpha(this.player.sprite.alpha);
         if (this.status.shield)
             this.player.sprite.setTint(0xf5ffd2);
-        else if(wardrobe.coat==='snow')this.player.sprite.setTint(0xd8f4f2);
-        else if(wardrobe.coat==='violet')this.player.sprite.setTint(0xc2a0dc);
         else this.player.sprite.clearTint();
         this.bob.forEach((p, i) => {
             if (p.active)
@@ -641,7 +648,8 @@ export class GameScene extends Phaser.Scene {
         this.mode = 'dead';
         this.deathAt = this.now + 750;
         this.controls.clear();
-        this.player.sprite.play('ferret-dead');
+        this.player.sprite.play(this.player.animation('dead'));
+        this.hat?.setVisible(false);
         this.player.body.enable = false;
         this.sounds.play('dead');
         this.tweens.add({ targets: this.player.sprite, y: this.player.sprite.y - 35, angle: 15, alpha: 0, duration: 650 });
@@ -665,7 +673,7 @@ export class GameScene extends Phaser.Scene {
     }
     private victory() {
         this.mode = 'won';
-        this.player.sprite.setVelocity(0).setAcceleration(0).play('ferret-idle');
+        this.player.sprite.setVelocity(0).setAcceleration(0).play(this.player.animation('idle'));
         this.physics.pause();
         this.controls.clear();
         this.sounds.play('win');
