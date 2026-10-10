@@ -2,6 +2,9 @@ export const RELICS = [
     {id:'cistern-key',name:'Llave antigua',texture:'relic-key',hint:'La cisterna del adarve'},
     {id:'roots-seed',name:'Semilla brillante',texture:'relic-seed',hint:'El jardín de las raíces'},
     {id:'treasury-gem',name:'Gema del castillo',texture:'relic-gem',hint:'La cámara del tesoro'},
+    {id:'crystal',name:'Cristal aurora',texture:'relic-ice',hint:'Gruta de los cristales'},
+    {id:'mirror',name:'Espejo del lago',texture:'relic-ice',hint:'Galería del lago azul'},
+    {id:'snowstar',name:'Estrella polar',texture:'relic-ice',hint:'Observatorio de nieve'},
 ] as const;
 const KEY='ferret-jump-relics-v1';
 let memory: string[]=[];

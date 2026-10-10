@@ -314,17 +314,39 @@ function treasury(c: Ctx) {
     }
     grain(c,139);
 }
-export function createEnvironment(scene: Phaser.Scene, environment: 'ramparts' | 'courtyard' | 'keep' | 'cistern' | 'roots' | 'treasury', width = WIDTH): void {
+function frozen(c:Ctx) {
+    gradient(c,['#19374f','#4e849c','#add2d5']);
+    ellipse(c,'#f0f9ed',2250,90,44,44);
+    poly(c,'#507d90',[0,315,290,180,490,320,820,160,1150,330,1450,150,1760,300,2020,145,2400,310,2660,170,2800,315,2800,540,0,540]);
+    poly(c,'#9bc2ca',[0,330,290,182,490,322,820,163,1150,332,1450,153,1760,302,2020,148,2400,312,2660,173,2800,317,2800,340,0,340]);
+    for(const x of [200,930,1680,2390]) {
+        rect(c,'#476879',x,222,150,315);rect(c,'#82b5bd',x+8,226,132,302);
+        poly(c,'#c9edf0',[x-16,225,x+75,142,x+166,225]);
+        arch(c,'#31546b',x+52,282,52,78);
+        for(let y=345;y<520;y+=42)line(c,'#5c93a2',[x+10,y,x+138,y],2);
+    }
+    for(let x=100;x<WIDTH;x+=330){
+        poly(c,'#d6f1ed',[x,420,x+22,355,x+42,420]);
+        poly(c,'#9fdae1',[x+100,440,x+120,350,x+146,440]);
+    }
+    grain(c,412);
+}
+export function createEnvironment(scene: Phaser.Scene, environment: 'ramparts' | 'courtyard' | 'keep' | 'cistern' | 'roots' | 'treasury' | 'frozen', width = WIDTH): void {
     const key = `castle-${environment}`;
-    texture(scene, key, WIDTH, HEIGHT, { ramparts:castle, courtyard, keep, cistern, roots, treasury }[environment]);
+    texture(scene, key, WIDTH, HEIGHT, { ramparts:castle, courtyard, keep, cistern, roots, treasury, frozen }[environment]);
     scene.add.tileSprite(0,0,width,HEIGHT,key).setOrigin(0,0).setDepth(-30);
 }
 
 /** Seamless material bodies. Collision lips are drawn once per platform in scene.ts. */
 export function createSurfaceArt(scene: Phaser.Scene): void {
-    for (const material of ['metal', 'concrete', 'grass', 'bark', 'rock', 'stone']) {
+    for (const material of ['metal', 'concrete', 'grass', 'bark', 'rock', 'stone', 'ice']) {
         texture(scene, `surface-${material}`, material === 'rock' ? 256 : 64, material === 'rock' ? 256 : 64, c => {
             const rand = random(material.length * 135 + material.charCodeAt(0));
+            if(material==='ice') {
+                rect(c,'#609dab',0,0,64,64);rect(c,'#d9f8ed',0,0,64,5);
+                rect(c,'#92d4dd',0,6,64,13);rect(c,'#6cb4c6',0,21,64,42);
+                for(let x=8;x<64;x+=22)line(c,'#c7ebea',[x,25,x+6,40,x+1,52],2);
+            }
             if (material === 'metal') {
                 rect(c, '#4c5b60', 0, 0, 64, 64);
                 rect(c, '#6e7f81', 0, 8, 64, 13);

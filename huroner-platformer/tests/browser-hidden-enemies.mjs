@@ -1,3 +1,4 @@
+import { defeatBoss } from './boss-helper.mjs';
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -43,6 +44,7 @@ try {
   await enter();for(const e of (await state()).enemies)assert.equal(e.hp,e.kind==='mimic'?2:1);
   await page.evaluate(()=>{const q=window.__ferretQA;q.teleport(q.state().level.goal.x,385);});
   await page.waitForFunction(()=>!window.__ferretQA.state().inSecret);
+  if(i===2)await defeatBoss(page);
   await page.evaluate(()=>{const q=window.__ferretQA;q.teleport(q.state().level.goal.x,385);});
   await page.waitForFunction(()=>window.__ferretQA.state().mode==='won');await page.click('#win-map');
  }

@@ -1,3 +1,4 @@
+import { defeatBoss } from './boss-helper.mjs';
 import {chromium} from 'playwright';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -25,7 +26,7 @@ try{
  for(let i=0;i<3;i++){
   await page.click(`[data-level="${i}"]`);
   await page.waitForFunction(i=>window.__ferretQA.state().levelIndex===i&&window.__ferretQA.state().mode==='playing',i);
-  assert.equal((await state()).level.width,4940);
+  assert((await state()).level.width>=4940);
   await tele(1420,385);
   await page.evaluate(()=>{const s=window.__ferretQA.scene;s.status.health=2;const e=s.enemies.list[0];e.hp=0;e.sprite.disableBody(true,true);});
   const t=(await state()).level.tunnel;
@@ -42,7 +43,7 @@ try{
   await page.waitForTimeout(600);assert(!(await state()).inSecret,'no automatic reentry');
   await enter();await tele(coin.x,coin.y);assert.equal((await state()).kibble,collected,'no duplicate secret rewards');
   await leave();
-  await tele((await state()).level.goal.x,385);await page.waitForFunction(()=>window.__ferretQA.state().mode==='won');
+  if(i===2)await defeatBoss(page);await tele((await state()).level.goal.x,385);await page.waitForFunction(()=>window.__ferretQA.state().mode==='won');
   await page.click('#win-map');
  }
  // Wheel entry, then restarting from the room resets the parent chapter.

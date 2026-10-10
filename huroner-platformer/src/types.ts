@@ -5,12 +5,12 @@ export interface Rect {
     width: number;
     height: number;
 }
-export type Surface = 'wood' | 'cushion' | 'book' | 'pipe' | 'tile' | 'cardboard' | 'metal' | 'concrete' | 'grass' | 'bark' | 'rock' | 'stone';
+export type Surface = 'wood' | 'cushion' | 'book' | 'pipe' | 'tile' | 'cardboard' | 'metal' | 'concrete' | 'grass' | 'bark' | 'rock' | 'stone' | 'ice';
 export interface SolidDef extends Rect {
     surface: Surface;
     oneWay?: boolean;
 }
-export type EnemyKind = 'rabbit' | 'armored' | 'quail' | 'spitter' | 'rat' | 'bat' | 'beetle' | 'moth' | 'mimic' | 'ghost';
+export type EnemyKind = 'rabbit' | 'armored' | 'quail' | 'spitter' | 'rat' | 'bat' | 'beetle' | 'moth' | 'mimic' | 'ghost' | 'snowhare' | 'owl' | 'frostbug';
 export interface EnemyDef {
     id: string;
     kind: EnemyKind;
@@ -50,6 +50,7 @@ export interface SectionDef {
     palette: 'house' | 'garage' | 'park' | 'mountain' | 'castle';
 }
 export interface LevelDef {
+    boss?: { name: string; x: number; minX: number; maxX: number; color: number };
     rewards?: { chest: {id: string; x: number; y: number}; relic: {id: string; x: number; y: number} };
     /** Center and top of a solid tunnel entrance. Crouch while standing on it. */
     tunnel?: { x: number; y: number };

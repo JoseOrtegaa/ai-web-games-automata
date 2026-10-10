@@ -1,3 +1,4 @@
+import { defeatBoss } from './boss-helper.mjs';
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -41,6 +42,7 @@ try {
   assert(s.health>0,'secret route must remain survivable');
   summaries[i]={level:i+1,width:room.width,jumps,upperLandings:upper.size,kibble:s.kibble,furthest};
   console.log('SECRET ROUTE PASS',summaries[i]);
+  if(i===2)await defeatBoss(page);
   await page.evaluate(()=>{const qa=window.__ferretQA;qa.teleport(qa.state().level.goal.x,385);});
   await page.waitForFunction(()=>window.__ferretQA.state().mode==='won'); await page.click('#win-map');
  }

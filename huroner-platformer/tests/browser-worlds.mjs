@@ -1,3 +1,4 @@
+import { defeatBoss } from './boss-helper.mjs';
 import {chromium} from 'playwright';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -13,7 +14,7 @@ try {
     await page.click('#start');
     assert(await page.locator('[data-level="1"]').isDisabled());
     assert(await page.locator('[data-level="2"]').isDisabled());
-    assert.equal(await page.locator('.future-world b').allTextContents().then(a=>a.join('')),'???');
+    assert.equal(await page.locator('.future-world b').allTextContents().then(a=>a.join('')),'??');
     await page.screenshot({path:'test-results/castle-map-mobile.png'});
     for(let i=0;i<3;i++) {
         await page.click(`[data-level="${i}"]`);
@@ -22,6 +23,7 @@ try {
         await page.screenshot({path:`test-results/castle-${i+1}-mobile.png`});
         assert(await page.locator('#swipe-zone').isVisible());
         assert(await page.locator('#hud').evaluate(e=>e.scrollWidth<=e.clientWidth));
+        if(i===2)await defeatBoss(page);
         await page.evaluate(()=>{const q=window.__ferretQA;q.teleport(q.state().level.goal.x,385);});
         await page.waitForFunction(()=>window.__ferretQA.state().mode==='won');
         assert((await page.locator('#win-title').textContent()).includes(i===2?'Castillo medieval':'completado'));
@@ -30,7 +32,7 @@ try {
     }
     assert((await page.evaluate(()=>JSON.parse(localStorage.getItem('ferret-jump-v1')))).total>=42,'legacy kibble preserved');
     await load(); await page.click('#start');
-    assert.equal(await page.locator('.level-node:disabled').count(),0,'unlocks persist');
+    assert.equal(await page.locator('.level-node:disabled').count(),2,'frozen world follows the castle');
     await page.screenshot({path:'test-results/castle-map-complete.png'});
     await page.click('[data-level="1"]');
     await page.waitForFunction(()=>window.__ferretQA.state().levelIndex===1&&window.__ferretQA.state().mode==='playing');

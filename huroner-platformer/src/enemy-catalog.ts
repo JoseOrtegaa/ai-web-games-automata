@@ -11,4 +11,7 @@ export const ENEMY_PROFILES: Record<EnemyKind, { hp: number; flying: boolean; pa
     moth: {hp:1,flying:true,patrol:30,chase:48},
     mimic: {hp:2,flying:false,patrol:24,chase:36},
     ghost: {hp:1,flying:true,patrol:28,chase:46},
+    snowhare: {hp:1,flying:false,patrol:55,chase:75},
+    owl: {hp:1,flying:true,patrol:40,chase:63},
+    frostbug: {hp:2,flying:false,patrol:28,chase:40},
 };

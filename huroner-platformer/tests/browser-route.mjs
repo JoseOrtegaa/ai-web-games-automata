@@ -1,13 +1,15 @@
+import { defeatBoss } from './boss-helper.mjs';
 import { chromium } from 'playwright';
 import fs from 'node:fs';
 fs.mkdirSync('test-results',{recursive:true});
 const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH,headless:true,args:['--no-sandbox']});
 const page=await browser.newPage({viewport:{width:1280,height:720}});page.setDefaultTimeout(6000);const errors=[];page.on('pageerror',e=>errors.push(e.message));
 await page.goto(process.env.BASE_URL||'http://127.0.0.1:8123/huroner-platformer/dist/?qa=1');await page.waitForFunction(()=>window.__ferretQA);await page.screenshot({path:'test-results/menu.png'});await page.click('#start');await page.click('[data-level="0"]');await page.waitForFunction(()=>window.__ferretQA.state().mode==='playing');await page.screenshot({path:'test-results/gameplay.png'});
-for(let levelIndex=0;levelIndex<3;levelIndex++){
+for(let levelIndex=0;levelIndex<6;levelIndex++){
 await page.keyboard.down('ArrowRight');let jumpUntil=0,lastX=180,lastProgress=Date.now(),jumped=0;let result, checkpoints=[], lastHealth=3, lastMode='playing', history=[];const began=Date.now();
 while(Date.now()-began<180000){
 const s=await page.evaluate(()=>window.__ferretQA.state()); result=s; const p=s.player,t=Date.now();
+if(s.boss?.active&&p.x>s.boss.x-170){await page.keyboard.up('ArrowRight');await page.keyboard.up('Space');await defeatBoss(page);await page.keyboard.down('ArrowRight');lastProgress=Date.now();}
 history.push({x:p.x,y:p.y,feet:p.feet,health:s.health,mode:s.mode}); if(history.length>40)history.shift(); if(s.health<lastHealth)console.log('DAMAGE',JSON.stringify({x:p.x,y:p.y,health:s.health})); lastHealth=s.health; if(s.mode==='won')break; if(s.mode==='playing'&&lastMode==='dead'){await page.keyboard.down('ArrowRight');lastProgress=t;lastX=p.x;} lastMode=s.mode;
 if(p.x>lastX+100){lastX=p.x;lastProgress=t;if(Math.floor(p.x/1000)>checkpoints.length){checkpoints.push({x:p.x,time:s.time,health:s.health});console.log('progress',JSON.stringify(checkpoints.at(-1))); if(p.x>6000&&p.x<7000)await page.screenshot({path:'test-results/salon.png'}); if(p.x>10000&&p.x<11000)await page.screenshot({path:'test-results/kitchen.png'});}}
 if(t-lastProgress>8000){console.log('STUCK',JSON.stringify({p,health:s.health,mode:s.mode}));break;}
@@ -21,6 +23,6 @@ await page.waitForTimeout(35);
 }
 await page.keyboard.up('ArrowRight');await page.keyboard.up('Space');await page.screenshot({path:'test-results/route-end.png'});fs.writeFileSync('test-results/route-result.json',JSON.stringify({mode:result.mode,time:result.time,player:result.player,health:result.health,kibble:result.kibble,secrets:result.secrets,checkpoint:result.checkpoint,jumped,errors,checkpoints},null,2));console.log(fs.readFileSync('test-results/route-result.json','utf8'));if(result.mode!=='won'||errors.length)throw Error(`Route failed in level ${levelIndex+1}`);
 await page.screenshot({path:`test-results/level-${levelIndex+1}-won.png`});
-if(levelIndex<2){await page.click('#next-level');await page.waitForFunction(i=>window.__ferretQA.state().levelIndex===i&&window.__ferretQA.state().mode==='playing',levelIndex+1);}
+if(levelIndex<5){await page.click('#next-level');await page.waitForFunction(i=>window.__ferretQA.state().levelIndex===i&&window.__ferretQA.state().mode==='playing',levelIndex+1);}
 }
 await browser.close();

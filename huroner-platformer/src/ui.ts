@@ -20,6 +20,10 @@ export class UI {
         element('toast').classList.add('visible');
         this.toastTimer = setTimeout(() => element('toast').classList.remove('visible'), 2500);
     }
+    clearToast() {
+        clearTimeout(this.toastTimer);
+        element('toast').classList.remove('visible');
+    }
     results(kibble: number, secrets: number, totalSecrets: number, seconds: number) {
         element('results').innerHTML = `◆ ${kibble} croquetas<br><small>${secrets}/${totalSecrets} secretos · ${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, '0')}</small>`;
     }

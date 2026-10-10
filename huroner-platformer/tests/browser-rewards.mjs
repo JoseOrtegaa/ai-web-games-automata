@@ -1,3 +1,4 @@
+import { defeatBoss } from './boss-helper.mjs';
 import {chromium} from 'playwright';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -30,7 +31,7 @@ try {
   await page.evaluate(()=>{const s=window.__ferretQA.scene;s.status.shield=false;for(let n=0;n<3;n++)s.damage(s.player.sprite.x,true);});
   await page.waitForFunction(()=>window.__ferretQA.state().mode==='playing'&&window.__ferretQA.state().health===3);
   await tele(rewards.chest);assert.equal((await state()).kibble,returned,'death cannot farm chest');
-  await leave();await tele({x:(await state()).level.goal.x,y:385});await page.waitForFunction(()=>window.__ferretQA.state().mode==='won');await page.click('#win-map');
+  await leave();if(i===2)await defeatBoss(page);await tele({x:(await state()).level.goal.x,y:385});await page.waitForFunction(()=>window.__ferretQA.state().mode==='won');await page.click('#win-map');
   assert.equal(await page.locator('#relic-list .found').count(),i+1);
   await page.screenshot({path:`test-results/collection-${i+1}.png`});
   await page.reload();await page.waitForFunction(()=>window.__ferretQA);await page.click('#start');

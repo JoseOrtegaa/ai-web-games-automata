@@ -3,6 +3,7 @@ import { createArt } from './art';
 import { createEnvironment, createSurfaceArt } from './environment';
 import { LEVELS, CHAPTERS, WORLDS } from './level-data';
 import { SECRET_LEVELS, SECRET_CHAPTERS } from './secret-levels';
+import { FROZEN_SECRETS } from './frozen-levels';
 import { readProgress, isUnlocked, completeLevel } from './progress';
 import { B } from './balance';
 import { Player } from './player';
@@ -14,6 +15,7 @@ import { ENEMY_PROFILES } from './enemy-catalog';
 import { canStomp, canLandOneWay, hasHeadroom } from './collision';
 import { applyPower, type Status } from './powerups';
 import { saveRun } from './collectibles';
+import { COSMETICS, readWardrobe, selectCosmetic, balance } from './cosmetics';
 import { RELICS, readRelics, discoverRelic, CHEST_CROQUETTES } from './rewards';
 import { updateCamera } from './camera';
 import type { PowerUpDef, SolidDef } from './types';
@@ -62,6 +64,15 @@ export class GameScene extends Phaser.Scene {
     private hudAt = 0;
     private autoPaused = false;
     private particleCount = 0;
+    private hat?: Phaser.GameObjects.Image;
+    private boss?: Phaser.Physics.Arcade.Sprite;
+    private bossHP = 0;
+    private bossNext = 0;
+    private bossChargeUntil = 0;
+    private bossImmune = 0;
+    private bossWarning?: Phaser.GameObjects.Text;
+    private wave?: Phaser.GameObjects.Rectangle;
+    private waveStart = 0;
     constructor() {
         super('FerretJump');
     }
@@ -70,22 +81,26 @@ export class GameScene extends Phaser.Scene {
         this.inSecret = data.secret ?? false;
         this.journey = data.journey;
         this.tunnelReady = !data.journey;
-        this.level = this.inSecret ? SECRET_LEVELS[this.levelIndex] : LEVELS[this.levelIndex];
+        this.level = this.inSecret ? (this.levelIndex<3?SECRET_LEVELS[this.levelIndex]:FROZEN_SECRETS[this.levelIndex-3]) : LEVELS[this.levelIndex];
         this.launchPlaying = data.play ?? false;
         this.mode = 'menu';
         this.status = { health:3, shield:false, oilUntil:0 };
         this.now = 0; this.count = 0; this.deathAt = 0; this.checkpoint = false;
         this.secrets.clear(); this.collected.clear(); this.panels = []; this.bob = [];
         this.section = -1; this.hudAt = 0; this.autoPaused = false; this.particleCount = 0;
+        this.hat=undefined;this.boss=undefined;this.bossHP=0;this.wave=undefined;
         this.safe = { ...this.level.spawn };
     }
     create() {
+        this.ui.clearToast();
         createArt(this);
         createSurfaceArt(this);
         this.drawWorld();
         this.controls ??= new Input();
         this.player = new Player(this, this.level.spawn.x, this.level.spawn.y, (left, top, right, bottom) =>
             hasHeadroom(this.level.solids, left, top, right, bottom));
+        this.hat=this.add.image(0,0,'hat-beret').setDepth(21).setVisible(false);
+        this.setupBoss();
         this.enemies = new Enemies(this, this.level.enemies);
         this.physics.add.collider(this.player.sprite, this.terrain, undefined, (a, b) => {
             const solid = (b as Phaser.GameObjects.GameObject).getData('solid') as SolidDef;
@@ -128,12 +143,12 @@ export class GameScene extends Phaser.Scene {
         }
     }
     private drawWorld() {
-        createEnvironment(this, this.inSecret ? SECRET_CHAPTERS[this.levelIndex].environment : CHAPTERS[this.levelIndex].environment, this.level.width);
+        createEnvironment(this, this.inSecret ? (this.levelIndex<3?SECRET_CHAPTERS[this.levelIndex].environment:'frozen') : CHAPTERS[this.levelIndex].environment, this.level.width);
         this.level.scenery.forEach(d => this.add.image(d.x, d.y, d.kind).setOrigin(.5, 1).setScale(d.scale ?? 1).setFlipX(d.flip ?? false).setDepth(-10).setAlpha(.88));
         this.terrain = this.physics.add.staticGroup();
         this.level.solids.forEach(def => {
             this.add.tileSprite(def.x, def.y, def.width, def.height, `surface-${def.surface}`).setOrigin(0).setDepth(5);
-            this.add.rectangle(def.x, def.y, def.width, def.surface === 'grass' ? 7 : 3, ({ grass: 0x80955e, rock: 0xa9afac, stone: 0xb4afa2, metal: 0x93a5aa, concrete: 0xaaa9a2, bark: 0xb09a6e } as Partial<Record<SolidDef['surface'], number>>)[def.surface] ?? 0xd6bb8a, .85).setOrigin(0).setDepth(6);
+            this.add.rectangle(def.x, def.y, def.width, def.surface === 'grass' ? 7 : 3, ({ grass: 0x80955e, rock: 0xa9afac, stone: 0xb4afa2, metal: 0x93a5aa, concrete: 0xaaa9a2, bark: 0xb09a6e, ice:0xedffff } as Partial<Record<SolidDef['surface'], number>>)[def.surface] ?? 0xd6bb8a, .85).setOrigin(0).setDepth(6);
             const r = this.add.rectangle(def.x + def.width / 2, def.y + def.height / 2, def.width, def.height, 0, 0);
             this.terrain.add(r);
             r.setData('solid', def);
@@ -156,9 +171,55 @@ export class GameScene extends Phaser.Scene {
         }
         this.checkpointSprite = this.add.image(this.level.checkpoint.x, 430, 'checkpoint').setOrigin(.5, 1).setDepth(10).setVisible(!this.inSecret);
         this.add.image(this.level.goal.x, 430, 'goal').setOrigin(.5, 1).setDepth(10);
-        const label = this.add.text(this.level.goal.x, 238, this.inSecret ? 'VOLVER AL CASTILLO →' : this.levelIndex < 2 ? 'AL SIGUIENTE NIVEL →' : 'FIN DEL MUNDO 1', { fontFamily: 'Trebuchet MS', fontSize: '13px', color: '#fff3c0', letterSpacing: 3 }).setOrigin(.5).setDepth(11);
+        const label = this.add.text(this.level.goal.x, 238, this.inSecret ? 'VOLVER AL CASTILLO →' : this.level.boss ? 'DERROTA AL JEFE →' : this.levelIndex===5 ? 'FIN DEL MUNDO 2' : 'AL SIGUIENTE NIVEL →', { fontFamily: 'Trebuchet MS', fontSize: '13px', color: '#fff3c0', letterSpacing: 3 }).setOrigin(.5).setDepth(11);
         this.tweens.add({ targets: label, alpha: .6, yoyo: true, repeat: -1, duration: 1000 });
         if (!this.inSecret) this.add.text(480, 270, 'MANTÉN EL SALTO\nPARA LLEGAR MÁS ALTO', { fontFamily: 'Trebuchet MS', fontSize: '12px', color: '#e4e8ce', align: 'center', lineSpacing: 5 }).setOrigin(.5).setAlpha(.8).setDepth(3);
+    }
+    private setupBoss() {
+        const def=this.level.boss;
+        if(!def)return;
+        this.bossHP=3;this.bossNext=1800;this.bossChargeUntil=0;this.bossImmune=0;
+        this.boss=this.physics.add.sprite(def.x,390,this.levelIndex===2?'boss-oak':'boss-ice').setDepth(16);
+        this.boss.setSize(48,45).setImmovable(true);
+        (this.boss.body as Phaser.Physics.Arcade.Body).setAllowGravity(false);
+        this.bossWarning=this.add.text(def.x,320,`${def.name}  ♥ ♥ ♥`,{fontFamily:'Trebuchet MS',fontSize:'15px',color:'#f4f5d3',backgroundColor:'#244252'}).setOrigin(.5).setDepth(22);
+        this.physics.add.overlap(this.player.sprite,this.boss,()=>{
+            if(this.mode!=='playing'||!this.boss?.active)return;
+            const b=this.player.body;
+            if(b.velocity.y>60 && b.prev.y+b.height<this.boss.y-15 && this.now>this.bossImmune){
+                this.bossHP--;this.bossImmune=this.now+850;b.setVelocityY(-B.bounce);
+                this.sounds.play('stomp');this.burst(this.boss.x,this.boss.y-20,def.color,16);
+                if(this.bossHP<=0){this.boss.disableBody(true,true);this.bossWarning?.setText(`¡${def.name} derrotado!`);this.wave?.destroy();this.wave=undefined;this.ui.toast('¡Jefe derrotado! La puerta está abierta');}
+                else {this.bossNext=this.now+1800;this.bossWarning?.setText(`${def.name}  ${'♥ '.repeat(this.bossHP)}`);}
+            }else this.damage(this.boss.x);
+        });
+    }
+    private updateBoss(dt:number) {
+        const boss=this.boss,def=this.level.boss;
+        if(!boss?.active||!def)return;
+        const near=Math.abs(this.player.sprite.x-boss.x)<550;
+        if(!near) {this.bossNext=Math.max(this.bossNext,this.now+900);return;}
+        if(this.now>=this.bossNext && !this.bossChargeUntil){
+            this.bossChargeUntil=this.now+850;
+            boss.setTint(0xffd278);
+            this.bossWarning?.setText(`${def.name} · ¡PREPARA EL SALTO!`);
+        }
+        if(this.bossChargeUntil && this.now>=this.bossChargeUntil){
+            this.bossChargeUntil=0;boss.clearTint();this.bossNext=this.now+2900;
+            this.bossWarning?.setText(`${def.name}  ${'♥ '.repeat(this.bossHP)}`);
+            const dir=this.player.sprite.x<boss.x?-1:1;
+            this.wave?.destroy();
+            this.wave=this.add.rectangle(boss.x+dir*42,418,36,18,def.color).setStrokeStyle(2,0xffffff).setDepth(18);
+            this.wave.setData('dir',dir);this.waveStart=this.wave.x;
+        }
+        if(this.wave){
+            this.wave.x+=this.wave.getData('dir')*dt*.22;
+            if(Math.abs(this.wave.x-this.waveStart)>310){this.wave.destroy();this.wave=undefined;}
+            else if(Math.abs(this.wave.x-this.player.sprite.x)<27 && Math.abs(this.player.sprite.y-418)<42){this.damage(this.wave.x);this.wave.destroy();this.wave=undefined;}
+        }
+        // Short deliberate patrol between attacks; the arena stays readable.
+        if(!this.bossChargeUntil && this.now<this.bossNext-1400) boss.x=Phaser.Math.Clamp(boss.x+(this.player.sprite.x<boss.x?-1:1)*dt*.045,def.minX,def.maxX);
+        this.bossWarning?.setPosition(boss.x,320);
     }
     private restoreJourney() {
         const journey = this.journey;
@@ -277,7 +338,7 @@ export class GameScene extends Phaser.Scene {
         this.ui.bind('map-back', () => { this.ui.show('world-map', false); this.ui.show('menu', true); });
         this.ui.bind('pause-map', () => this.openMap());
         this.ui.bind('win-map', () => this.openMap());
-        this.ui.bind('next-level', () => this.levelIndex < 2 ? this.selectLevel(this.levelIndex+1) : this.openMap());
+        this.ui.bind('next-level', () => this.levelIndex < CHAPTERS.length-1 ? this.selectLevel(this.levelIndex+1) : this.openMap());
         this.ui.bind('pause', () => this.togglePause());
         this.ui.bind('resume', () => this.resume());
         this.ui.bind('restart', () => this.restart());
@@ -298,6 +359,7 @@ export class GameScene extends Phaser.Scene {
         const levels = document.getElementById('level-list')!;
         levels.replaceChildren();
         CHAPTERS.forEach((chapter, i) => {
+            if(i===0||i===3){const heading=document.createElement('h3');heading.className='world-heading';heading.textContent=`Mundo ${i===0?1:2} · ${WORLDS[i===0?0:1].name}`;levels.append(heading);}
             const unlocked = isUnlocked(i, progress);
             const button = document.createElement('button');
             button.className = 'level-node'; button.dataset.level = String(i);
@@ -305,7 +367,12 @@ export class GameScene extends Phaser.Scene {
             button.innerHTML = unlocked
                 ? `<span class="level-number">${chapter.id}</span><strong>${chapter.name}</strong><small>${chapter.summary}</small><em>${progress.completed.includes(chapter.id) ? 'Completado · Volver a jugar' : 'Disponible · Explorar →'}</em>`
                 : `<span class="level-number">?</span><strong>${chapter.id} · Sin descubrir</strong><small>Completa el nivel ${CHAPTERS[i-1].id} para desbloquearlo.</small>`;
-            if(unlocked){const tag=document.createElement('span');tag.className='relic-status';tag.textContent=relics.includes(RELICS[i].id)?'Reliquia encontrada':'Reliquia pendiente';button.append(tag);}
+            if(unlocked){
+                const target=i<3?45:35;
+                const objectives=document.createElement('span');objectives.className='level-objectives';
+                objectives.textContent=`${progress.completed.includes(chapter.id)?'✓':'○'} Completar  ·  ${relics.includes(RELICS[i].id)?'✓':'○'} Reliquia  ·  ${(progress.best[chapter.id]??0)>=target?'✓':'○'} ${target} croquetas`;
+                button.append(objectives);
+            }
             button.onclick = () => this.selectLevel(i);
             levels.append(button);
         });
@@ -317,12 +384,28 @@ export class GameScene extends Phaser.Scene {
             if(found){const img=document.createElement('img');img.src=(this.textures.get(relic.texture).getSourceImage() as HTMLCanvasElement).toDataURL();img.alt='';card.append(img);}
             else {const mark=document.createElement('span');mark.className='relic-mark';mark.textContent='?';card.append(mark);}
             const text=document.createElement('div');const title=document.createElement('strong');title.textContent=found?relic.name:'Reliquia por descubrir';
-            const detail=document.createElement('small');detail.textContent=`1-${i+1} · ${found?'Encontrada':relic.hint}`;text.append(title,detail);card.append(text);collection.append(card);
+            const detail=document.createElement('small');detail.textContent=`${CHAPTERS[i].id} · ${found?'Encontrada':relic.hint}`;text.append(title,detail);card.append(text);collection.append(card);
         });
-        document.getElementById('world-summary')!.textContent = WORLDS[0].summary;
-        document.getElementById('future-worlds')!.innerHTML = WORLDS.slice(1).map((_,i) => `<div class="future-world"><b>?</b><span>Mundo ${i+2}</span><small>Próximamente</small></div>`).join('');
+        document.getElementById('map-title')!.textContent='Dos castillos por explorar';
+        document.getElementById('world-summary')!.textContent = `${WORLDS[0].summary} ${WORLDS[1].summary}`;
+        document.getElementById('future-worlds')!.innerHTML = WORLDS.slice(2).map((_,i) => `<div class="future-world"><b>?</b><span>Mundo ${i+3}</span><small>Próximamente</small></div>`).join('');
+        this.renderShop();
         this.ui.show('world-map', true);
         (levels.querySelector('button:not(:disabled)') as HTMLButtonElement)?.focus();
+    }
+    private renderShop() {
+        document.getElementById('shop-balance')!.textContent=`◆ ${balance()} croquetas disponibles`;
+        const list=document.getElementById('shop-list')!;list.replaceChildren();
+        const wardrobe=readWardrobe();
+        COSMETICS.forEach(item=>{
+            const owned=wardrobe.owned.includes(item.id),selected=wardrobe[item.type]===item.id;
+            const button=document.createElement('button');button.className='shop-item';button.dataset.cosmetic=item.id;
+            button.disabled=selected||(!owned&&balance()<item.price);
+            const name=document.createElement('strong');name.textContent=item.name;
+            const action=document.createElement('span');action.textContent=selected?'Equipado':owned?'Equipar':`◆ ${item.price}`;
+            button.append(name,action);
+            button.onclick=()=>{if(selectCosmetic(item.id))this.renderShop();};list.append(button);
+        });
     }
     private selectLevel(index: number) {
         if (!isUnlocked(index)) return;
@@ -401,6 +484,8 @@ export class GameScene extends Phaser.Scene {
         });
         this.checkpointSprite.clearTint();
         this.enemies.projectiles.clear(true, true);
+        this.wave?.destroy();this.wave=undefined;
+        if(this.boss){this.boss.enableBody(true,this.level.boss!.x,390,true,true).clearTint();this.bossHP=3;this.bossNext=1800;this.bossChargeUntil=0;this.bossWarning?.setText(`${this.level.boss!.name}  ♥ ♥ ♥`);}
         this.enemies.list.forEach(e => {
             this.tweens.killTweensOf(e.sprite);
             e.hp = ENEMY_PROFILES[e.def.kind].hp;
@@ -437,16 +522,22 @@ export class GameScene extends Phaser.Scene {
         if (this.mode !== 'playing')
             return;
         this.now += dt;
-        this.player.update(this.controls, this.now, this.status.oilUntil > this.now, () => this.sounds.play('jump'));
+        const feet=this.player.body.bottom;
+        const icy=this.player.body.blocked.down && this.level.solids.some(s=>s.surface==='ice'&&Math.abs(s.y-feet)<6&&this.player.sprite.x>s.x&&this.player.sprite.x<s.x+s.width);
+        this.player.update(this.controls, this.now, this.status.oilUntil > this.now, () => this.sounds.play('jump'),icy);
         this.controls.consume();
         this.player.sprite.x = Phaser.Math.Clamp(this.player.sprite.x, 18, this.level.width - 18);
         this.enemies.update(this.now, this.player.sprite.x, this.player.sprite.y);
+        this.updateBoss(dt);
         updateCamera(this.cameras.main, this.player.sprite.x, this.player.facing, this.level.width, dt);
         this.shield.setPosition(this.player.sprite.x, this.player.sprite.y).setVisible(this.status.shield).setScale(1 + Math.sin(this.now / 180) * .06);
+        const wardrobe=readWardrobe();
+        this.hat?.setVisible(wardrobe.hat!=='none'&&!this.player.crouched).setTexture(wardrobe.hat==='crown'?'hat-crown':'hat-beret').setPosition(this.player.sprite.x+(this.player.facing<0?7:-7),this.player.sprite.y-29).setFlipX(this.player.facing<0).setAlpha(this.player.sprite.alpha);
         if (this.status.shield)
             this.player.sprite.setTint(0xf5ffd2);
-        else
-            this.player.sprite.clearTint();
+        else if(wardrobe.coat==='snow')this.player.sprite.setTint(0xd8f4f2);
+        else if(wardrobe.coat==='violet')this.player.sprite.setTint(0xc2a0dc);
+        else this.player.sprite.clearTint();
         this.bob.forEach((p, i) => {
             if (p.active)
                 p.y = p.getData('baseY') + Math.sin(this.now / 250 + i) * 3;
@@ -502,6 +593,7 @@ export class GameScene extends Phaser.Scene {
         }
         if (p.x > this.level.goal.x - 35 && p.y > 250) {
             if (this.inSecret) this.travel(false);
+            else if(this.boss?.active){this.ui.toast(`Derrota a ${this.level.boss!.name} para abrir la puerta`);this.player.sprite.x=this.level.goal.x-50;}
             else this.victory();
             return;
         }
@@ -578,10 +670,10 @@ export class GameScene extends Phaser.Scene {
         this.controls.clear();
         this.sounds.play('win');
         saveRun(this.count);
-        completeLevel(this.levelIndex);
-        document.getElementById('win-title')!.textContent = this.levelIndex === 2 ? '¡Castillo medieval completado!' : `¡${CHAPTERS[this.levelIndex].id} completado!`;
-        document.getElementById('win-description')!.textContent = this.levelIndex === 2 ? 'Has conquistado sus tres niveles. Los demás castillos llegarán en próximas aventuras.' : `La puerta abre el camino a ${CHAPTERS[this.levelIndex+1].name.toLowerCase()}.`;
-        document.getElementById('next-level')!.textContent = this.levelIndex === 2 ? 'Volver al mapa →' : `Jugar ${CHAPTERS[this.levelIndex+1].id} →`;
+        completeLevel(this.levelIndex,this.count);
+        document.getElementById('win-title')!.textContent = this.levelIndex === 2 ? '¡Castillo medieval completado!' : this.levelIndex===5 ? '¡Fortaleza congelada completada!' : `¡${CHAPTERS[this.levelIndex].id} completado!`;
+        document.getElementById('win-description')!.textContent = this.levelIndex===5 ? 'La ventisca ha cesado. Repite niveles para reunir reliquias y croquetas.' : `La puerta abre el camino a ${CHAPTERS[this.levelIndex+1].name.toLowerCase()}.`;
+        document.getElementById('next-level')!.textContent = this.levelIndex===5 ? 'Volver al mapa →' : `Jugar ${CHAPTERS[this.levelIndex+1].id} →`;
         this.ui.results(this.count, this.secrets.size, this.level.secrets.length, this.now / 1000);
         this.ui.show('win', true);
         this.ui.show('controls', false);
@@ -597,6 +689,6 @@ export class GameScene extends Phaser.Scene {
         }
     }
     snapshot() {
-        return { inSecret: this.inSecret, mode: this.mode, time: this.now, player: { x: this.player.sprite.x, y: this.player.sprite.y, vx: this.player.body.velocity.x, vy: this.player.body.velocity.y, grounded: this.player.body.blocked.down, feet: this.player.body.bottom, bodyHeight: this.player.body.height, crouched: this.player.crouched }, ...this.status, invulnerableUntil: this.player.invulnerableUntil, kibble: this.count, checkpoint: this.checkpoint, secrets: [...this.secrets], camera: this.cameras.main.scrollX, enemies: this.enemies.list.map(e => ({ id: e.def.id, kind: e.def.kind, x: e.sprite.x, y: e.sprite.y, hp: e.hp, active: e.sprite.active })), levelIndex: this.levelIndex, level: this.level };
+        return { inSecret: this.inSecret, mode: this.mode, time: this.now, player: { x: this.player.sprite.x, y: this.player.sprite.y, vx: this.player.body.velocity.x, vy: this.player.body.velocity.y, grounded: this.player.body.blocked.down, feet: this.player.body.bottom, bodyHeight: this.player.body.height, crouched: this.player.crouched }, ...this.status, invulnerableUntil: this.player.invulnerableUntil, kibble: this.count, checkpoint: this.checkpoint, secrets: [...this.secrets], camera: this.cameras.main.scrollX, boss:this.boss?{hp:this.bossHP,x:this.boss.x,active:this.boss.active,warning:this.bossChargeUntil>0}:null, enemies: this.enemies.list.map(e => ({ id: e.def.id, kind: e.def.kind, x: e.sprite.x, y: e.sprite.y, hp: e.hp, active: e.sprite.active })), levelIndex: this.levelIndex, level: this.level };
     }
 }

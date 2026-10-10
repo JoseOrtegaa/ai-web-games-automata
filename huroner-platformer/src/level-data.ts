@@ -1,4 +1,5 @@
 import type { LevelDef, SolidDef } from './types';
+import { FROZEN_LEVELS } from './frozen-levels.ts';
 
 export const WORLDS = [
     { name: 'Castillo medieval', summary: 'Cruza las murallas, explora el patio y conquista la torre del homenaje.' },
@@ -10,6 +11,9 @@ export const CHAPTERS = [
     { id: '1-1', name: 'Las murallas', summary: 'Almenas, fosos cortos y un pasadizo bajo el adarve.', environment: 'ramparts' },
     { id: '1-2', name: 'El patio interior', summary: 'Arcadas, fuentes y dos caminos entre los jardines del castillo.', environment: 'courtyard' },
     { id: '1-3', name: 'Torre del homenaje', summary: 'Escalinatas de piedra y galerías elevadas hasta el gran portón.', environment: 'keep' },
+    { id: '2-1', name: 'El puente de escarcha', summary: 'Suelo resbaladizo, puentes altos y fauna de nieve.', environment: 'frozen' },
+    { id: '2-2', name: 'El salón de los espejos', summary: 'Plataformas escalonadas y corredores helados.', environment: 'frozen' },
+    { id: '2-3', name: 'La torre de la ventisca', summary: 'Asciende por el hielo y desafía a la Reina Ventisca.', environment: 'frozen' },
 ] as const;
 const floor = (x: number, width: number, y = 430): SolidDef => ({ x, y, width, height: 540-y, surface: 'stone' });
 const ledge = (x: number, y: number, width: number, oneWay = false): SolidDef => ({ x, y, width, height: oneWay ? 24 : 430-y, surface: 'stone', oneWay });
@@ -59,6 +63,7 @@ const finalStretch: SolidDef[][] = [
 export const LEVELS: LevelDef[] = layouts.map((base, i) => {
     const tunnel = { x: 2670, y: 380 };
     const solids = [...base, ...extensions[i], ...finalStretch[i], {x:tunnel.x-46,y:tunnel.y,width:92,height:50,surface:'stone' as const}];
+    if(i===2) solids.push(floor(4940,500));
     // Reward trails follow reachable surfaces; every level has its own IDs and safe checkpoint.
     const collectibles = solids.flatMap((s, n) => Array.from({ length: Math.max(1, Math.floor((s.width-80)/75)) }, (_, j) => ({
         id: `${i}-k-${n}-${j}`, x: s.x+45+j*75, y: s.y-40,
@@ -92,7 +97,7 @@ export const LEVELS: LevelDef[] = layouts.map((base, i) => {
     ];
     enemies.push(...extra[i]);
     return {
-        width:4940, height:540, spawn:{x:180,y:385}, checkpoint:{x:1420,y:402}, goal:{x:4880,y:366}, tunnel,
+        width:i===2?5440:4940, height:540, spawn:{x:180,y:385}, checkpoint:{x:1420,y:402}, goal:{x:i===2?5370:4880,y:366}, tunnel,
         sections:[{x:0, name:`${CHAPTERS[i].id} · ${CHAPTERS[i].name}`, palette:'castle'}],
         solids, collectibles, enemies,
         powerUps:[{id:'oil',kind:'oil',x:1200,y:i===2?290:390},{id:'puff',kind:'puff',x:350,y:392},{id:'meat',kind:'meat',x:1690,y:i===2?335:390}],
@@ -100,6 +105,8 @@ export const LEVELS: LevelDef[] = layouts.map((base, i) => {
             : i===1 ? [{id:'arcade',label:'¡La galería oculta!',x:1730,y:330,width:200,height:100,surface:'stone'}]
             : [{id:'vault',label:'¡La cámara de la torre!',x:1340,y:320,width:220,height:110,surface:'stone'}],
         scenery:[],
+        ...(i===2?{boss:{name:'Barón Bellota',x:5110,minX:4970,maxX:5260,color:0xc58d61}}:{}),
     };
 });
+LEVELS.push(...FROZEN_LEVELS);
 export const LEVEL = LEVELS[0];

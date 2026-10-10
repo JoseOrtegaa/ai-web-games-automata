@@ -18,7 +18,7 @@ export class Player {
     get body() {
         return this.sprite.body as Phaser.Physics.Arcade.Body;
     }
-    update(input: Input, now: number, oil: boolean, onJump: () => void) {
+    update(input: Input, now: number, oil: boolean, onJump: () => void, icy = false) {
         const body = this.body;
         const grounded = body.blocked.down || body.touching.down;
         if (input.crouch && grounded && !this.crouched) this.setCrouched(true);
@@ -30,8 +30,8 @@ export class Player {
         if (this.crouched) this.pressedAt = -9999;
         if (now >= this.hurtUntil) {
             const axis = input.axis;
-            this.sprite.setAccelerationX(axis * (this.crouched ? B.acceleration * .65 : grounded ? B.acceleration : B.airAcceleration));
-            this.sprite.setDragX(this.crouched ? B.drag * 1.5 : grounded ? B.drag : B.airDrag);
+            this.sprite.setAccelerationX(axis * (this.crouched ? B.acceleration * .65 : grounded ? B.acceleration * (icy ? .38 : 1) : B.airAcceleration));
+            this.sprite.setDragX(this.crouched ? B.drag * 1.5 : grounded ? B.drag * (icy ? .08 : 1) : B.airDrag);
             this.sprite.setMaxVelocity((this.crouched ? 85 : B.speed) * (oil ? B.oilMultiplier : 1), B.maxFall);
             if (axis) {
                 this.facing = axis;

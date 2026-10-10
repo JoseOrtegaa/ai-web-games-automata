@@ -15,7 +15,7 @@ test('shots expire by travel or lifetime, independently of the player', () => {
     assert.equal(projectileExpired(100, 100, ENEMY_RULES.projectileLifetime), true);
 });
 test('extended levels retain sparse, supported enemy placements', () => {
-    for (const level of LEVELS) {
+    for (const level of LEVELS.slice(0,3)) {
         assert(level.enemies.length >= 6 && level.enemies.length <= 7);
         const extra = level.enemies.filter(e => e.x > 2800);
         assert.equal(extra.length, 3);
@@ -23,6 +23,13 @@ test('extended levels retain sparse, supported enemy placements', () => {
         for (const e of level.enemies.filter(e => e.kind !== 'quail')) {
             assert(level.solids.some(s => s.x <= e.minX-15 && s.x+s.width >= e.maxX+15 && s.y > e.y), e.id);
         }
+    }
+});
+test('frozen routes use spaced local wildlife',()=>{
+    for(const level of LEVELS.slice(3)) {
+        assert(level.enemies.length>=4 && level.enemies.length<=6);
+        assert(level.enemies.every(e=>['snowhare','owl','frostbug'].includes(e.kind)));
+        for(let i=1;i<level.enemies.length;i++)assert(level.enemies[i].minX-level.enemies[i-1].maxX>200);
     }
 });
 

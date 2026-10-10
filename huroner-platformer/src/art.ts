@@ -250,7 +250,26 @@ export function createArt(scene: Phaser.Scene): void {
         if (!scene.anims.exists(`ferret-${name}`))
             scene.anims.create({ key: `ferret-${name}`, frames: scene.anims.generateFrameNumbers('ferret', { start, end }), frameRate, repeat });
     for (const kind of Object.keys(ENEMY_PROFILES))
-        texture(scene, kind, kind === 'armored' ? 26 : 24, kind === 'quail' ? 24 : 24, c => ['rabbit','armored','quail','spitter'].includes(kind) ? animal(c, kind) : undergroundAnimal(c, kind));
+        texture(scene, kind, kind === 'armored' ? 26 : 24, 24, c => {
+            if(['snowhare','owl','frostbug'].includes(kind)) {
+                ellipse(c,'#2b556c',12,15,11,8);ellipse(c,kind==='frostbug'?'#86b9c7':'#e0f0e5',12,14,9,6);
+                if(kind==='snowhare'){poly(c,'#e8f8ed',[5,10,4,0,8,1,11,10,14,1,18,2,18,11]);rect(c,'#284b66',17,11,2,2);}
+                if(kind==='owl'){poly(c,'#a1dbe1',[2,15,0,10,8,12,12,19,17,12,24,10,22,17]);ellipse(c,'#3e6472',9,12,2,2);ellipse(c,'#3e6472',16,12,2,2);}
+                if(kind==='frostbug'){for(const x of [5,10,16,21])rect(c,'#d7f0ed',x,19,2,4);poly(c,'#d9f6f4',[6,8,12,2,17,8]);}
+            } else ['rabbit','armored','quail','spitter'].includes(kind) ? animal(c, kind) : undergroundAnimal(c, kind);
+        });
+    texture(scene,'relic-ice',18,22,c=>{poly(c,'#2b6382',[9,0,18,11,9,22,0,11]);poly(c,'#b9f5f1',[9,2,16,11,9,19,2,11]);rect(c,'#fff8e2',8,5,2,10);});
+    texture(scene,'hat-beret',24,12,c=>{ellipse(c,'#346b7d',12,7,10,4);rect(c,'#19465a',4,9,18,2);rect(c,'#e7d29c',12,1,2,4);});
+    texture(scene,'hat-crown',24,15,c=>{poly(c,'#eac578',[2,13,1,2,6,7,11,0,16,7,22,2,21,13]);rect(c,'#8f683e',2,12,20,3);rect(c,'#f7eaba',11,9,3,3);});
+    for(const ice of [false,true])texture(scene,ice?'boss-ice':'boss-oak',56,50,c=>{
+        const shell=ice?'#7bd0dc':'#956847',shine=ice?'#daf7f0':'#d6ae78';
+        ellipse(c,'#294356',28,30,25,20);ellipse(c,shell,28,27,22,17);
+        poly(c,shine,[8,20,5,5,18,17,27,6,35,17,50,4,47,24]);
+        rect(c,'#e6f2db',17,23,7,7);rect(c,'#e6f2db',33,23,7,7);
+        rect(c,'#263745',21,25,3,4);rect(c,'#263745',33,25,3,4);
+        rect(c,'#263745',18,40,8,8);rect(c,'#263745',32,40,8,8);
+        rect(c,shine,25,34,7,3);
+    });
     for(const open of [false,true])texture(scene,open?'reward-chest-open':'reward-chest',28,24,c=>{
         rect(c,P.ink,2,10,24,13);rect(c,'#388c96',4,12,20,9);
         rect(c,'#edc874',5,12,3,9);rect(c,'#edc874',20,12,3,9);
