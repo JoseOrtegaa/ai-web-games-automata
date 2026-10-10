@@ -41,9 +41,24 @@ const extensions: SolidDef[][] = [
      floor(3390,140,320), floor(3530,140,375), floor(3670,130),
      ledge(2890,230,150,true)],
 ];
+// Another 30% of route, with architecture specific to each chapter.
+const finalStretch: SolidDef[][] = [
+    // Small battlements lead to an optional chain of raised stone bridges.
+    [floor(3800,330), floor(4210,400), floor(4690,250),
+     ledge(3850,370,120), ledge(4030,310,130,true), ledge(4250,375,100),
+     ledge(4400,315,160,true), ledge(4590,260,120,true)],
+    // Garden terraces and staggered balconies create upper and lower paths.
+    [floor(3800,440), floor(4320,340), floor(4740,200),
+     ledge(3820,370,120), ledge(3980,310,180,true), ledge(4190,250,140,true),
+     ledge(4370,375,100), ledge(4520,315,200,true)],
+    // Broad stairs climb to the gallery, then descend towards the great gate.
+    [floor(3800,170,380), floor(3970,170,330), floor(4140,210,275),
+     floor(4430,170,330), floor(4600,170,380), floor(4770,170),
+     ledge(4020,230,160,true), ledge(4470,240,170,true)],
+];
 export const LEVELS: LevelDef[] = layouts.map((base, i) => {
     const tunnel = { x: 2670, y: 380 };
-    const solids = [...base, ...extensions[i], {x:tunnel.x-46,y:tunnel.y,width:92,height:50,surface:'stone' as const}];
+    const solids = [...base, ...extensions[i], ...finalStretch[i], {x:tunnel.x-46,y:tunnel.y,width:92,height:50,surface:'stone' as const}];
     // Reward trails follow reachable surfaces; every level has its own IDs and safe checkpoint.
     const collectibles = solids.flatMap((s, n) => Array.from({ length: Math.max(1, Math.floor((s.width-80)/75)) }, (_, j) => ({
         id: `${i}-k-${n}-${j}`, x: s.x+45+j*75, y: s.y-40,
@@ -64,7 +79,7 @@ export const LEVELS: LevelDef[] = layouts.map((base, i) => {
         { id:'gate', kind:'rabbit', x:2030, y:235, minX:1960, maxX:2100 },
     ];
     return {
-        width:3800, height:540, spawn:{x:180,y:385}, checkpoint:{x:1420,y:402}, goal:{x:3740,y:366}, tunnel,
+        width:4940, height:540, spawn:{x:180,y:385}, checkpoint:{x:1420,y:402}, goal:{x:4880,y:366}, tunnel,
         sections:[{x:0, name:`${CHAPTERS[i].id} · ${CHAPTERS[i].name}`, palette:'castle'}],
         solids, collectibles, enemies,
         powerUps:[{id:'oil',kind:'oil',x:1200,y:i===2?290:390},{id:'puff',kind:'puff',x:350,y:392},{id:'meat',kind:'meat',x:1690,y:i===2?335:390}],

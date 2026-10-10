@@ -23,7 +23,7 @@ test('levels have different geometry',()=>assert.equal(new Set(LEVELS.map(l=>JSO
 
 test('secret entrances have solid landing surfaces and the room has reachable rewards',()=>{
     for(const level of LEVELS){
-        assert.equal(level.width,3800);
+        assert.equal(level.width,4940);
         const t=level.tunnel;
         assert(level.solids.some(s=>s.y===t.y&&s.x<t.x-12&&s.x+s.width>t.x+12));
         assert(t.x<level.goal.x-500);

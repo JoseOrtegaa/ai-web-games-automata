@@ -25,7 +25,7 @@ try{
  for(let i=0;i<3;i++){
   await page.click(`[data-level="${i}"]`);
   await page.waitForFunction(i=>window.__ferretQA.state().levelIndex===i&&window.__ferretQA.state().mode==='playing',i);
-  assert.equal((await state()).level.width,3800);
+  assert.equal((await state()).level.width,4940);
   await tele(1420,385);
   await page.evaluate(()=>{const s=window.__ferretQA.scene;s.status.health=2;const e=s.enemies.list[0];e.hp=0;e.sprite.disableBody(true,true);});
   const t=(await state()).level.tunnel;
