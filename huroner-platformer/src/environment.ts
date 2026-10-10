@@ -227,9 +227,96 @@ function keep(c: Ctx) {
     }
     grain(c,91);
 }
-export function createEnvironment(scene: Phaser.Scene, environment: 'ramparts' | 'courtyard' | 'keep', width = WIDTH): void {
+/** Distinct underground architecture; static original canvas panoramas. */
+function cistern(c: Ctx) {
+    gradient(c,['#172e3b','#355566','#47656a']);
+    masonry(c,0,0,WIDTH,HEIGHT,96,38,'#263e4b','#4b6570');
+    for(let x=0;x<WIDTH;x+=400) {
+        arch(c,'#60777b',x+24,45,335,460);
+        arch(c,'#223c4d',x+38,60,307,445);
+        arch(c,'#182f40',x+60,82,263,423);
+        rect(c,'#4c626a',x+173,20,24,92);
+        rect(c,'#7b9390',x+166,28,38,8);
+        line(c,'#7dacae',[x+185,113,x+185,145],3);
+        ellipse(c,'#79a3a5',x+185,153,3,5);
+        rect(c,'#536a70',x,0,20,540);
+        rect(c,'#82978e',x+3,0,3,540);
+        rect(c,'#526771',x+67,345,174,14);
+        for(let n=0;n<3;n++) arch(c,'#142d3b',x+76+n*57,361,38,105);
+        ellipse(c,'rgba(109,185,187,.09)',x+194,465,115,25);
+    }
+    rect(c,'#203e4d',0,472,WIDTH,68);
+    for(let x=15;x<WIDTH;x+=96) {
+        line(c,'#547f89',[x,484,x+55,484],2);
+        line(c,'#476874',[x+30,510,x+95,510],2);
+    }
+    grain(c,105);
+}
+function roots(c: Ctx) {
+    gradient(c,['#233c38','#426053','#5c705b']);
+    masonry(c,0,0,WIDTH,HEIGHT,118,46,'#29453e','#547160');
+    for(let x=0;x<WIDTH;x+=560) {
+        arch(c,'#637b60',x+40,45,450,460);
+        arch(c,'#27483f',x+55,62,420,443);
+        ellipse(c,'rgba(144,184,113,.08)',x+275,232,130,190);
+        for(let n=0;n<4;n++) {
+            const dx=x+75+n*107;
+            poly(c,'#3b4635',[dx,0,dx+22,0,dx+30,65,dx+11,138,dx+32,204,dx+14,267,dx+8,199,dx-4,144,dx+11,64]);
+            line(c,'#6b7450',[dx+17,12,dx+21,66,dx+2,137,dx+21,201],3);
+            line(c,'#4d633f',[dx+9,141,dx-23,167,dx-35,198],5);
+            for(let j=0;j<3;j++) ellipse(c,j%2?'#577447':'#6b8350',dx-17+j*9,151+j*17,10,5);
+        }
+        rect(c,'#5e6c4e',x+125,375,245,36);
+        ellipse(c,'#3b5943',x+180,372,48,17);
+        ellipse(c,'#52754b',x+300,362,67,24);
+        for(const dx of [60,418]) {
+            rect(c,'#b6b79a',x+dx,391,8,25);
+            ellipse(c,'#9f9471',x+dx+4,391,19,9);
+            rect(c,'#ccc5a1',x+dx-6,388,4,3);
+        }
+        for(let j=0;j<5;j++) {
+            const dx=x+65+j*91, y=205+(j%3)*43;
+            ellipse(c,'rgba(206,220,142,.09)',dx,y,13,13);
+            rect(c,'#bccf87',dx,y,2,2);
+        }
+    }
+    grain(c,122);
+}
+function treasury(c: Ctx) {
+    gradient(c,['#302637','#49404b','#66564e']);
+    masonry(c,0,0,WIDTH,HEIGHT,104,40,'#342f3c','#645763');
+    for(let x=0;x<WIDTH;x+=560) {
+        arch(c,'#7c6b65',x+28,35,474,505);
+        arch(c,'#302d3c',x+44,54,442,486);
+        rect(c,'#554334',x+78,124,174,296);
+        rect(c,'#9c8050',x+73,117,184,9);
+        for(let row=0;row<4;row++) {
+            const y=175+row*60;
+            rect(c,'#a18b64',x+81,y,166,7);
+            for(let n=0;n<7;n++) {
+                rect(c,['#74674e','#6e5965','#556f6c'][n%3],x+90+n*21,y-35-(n%2)*7,14,35+(n%2)*7);
+                rect(c,'#b4a37a',x+93+n*21,y-14,8,2);
+            }
+        }
+        arch(c,'#817156',x+300,202,131,220);
+        arch(c,'#1f2730',x+310,214,111,208);
+        for(let dx=318;dx<421;dx+=19) rect(c,'#665948',x+dx,263,4,159);
+        rect(c,'#7b6040',x+332,364,66,45);
+        rect(c,'#a4894e',x+333,364,64,6);
+        rect(c,'#c4a96c',x+359,382,10,12);
+        rect(c,'#645151',x,0,23,540);
+        rect(c,'#b5a47e',x+4,0,3,540);
+        line(c,'#867354',[x+455,0,x+455,115],3);
+        ellipse(c,'rgba(226,178,91,.10)',x+455,140,54,63);
+        rect(c,'#a58d5d',x+443,122,24,34);
+        rect(c,'#edc986',x+449,127,12,23);
+        rect(c,'#443c3e',x+440,156,30,6);
+    }
+    grain(c,139);
+}
+export function createEnvironment(scene: Phaser.Scene, environment: 'ramparts' | 'courtyard' | 'keep' | 'cistern' | 'roots' | 'treasury', width = WIDTH): void {
     const key = `castle-${environment}`;
-    texture(scene, key, WIDTH, HEIGHT, { ramparts:castle, courtyard, keep }[environment]);
+    texture(scene, key, WIDTH, HEIGHT, { ramparts:castle, courtyard, keep, cistern, roots, treasury }[environment]);
     scene.add.tileSprite(0,0,width,HEIGHT,key).setOrigin(0,0).setDepth(-30);
 }
 

@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { LEVELS, SECRET_LEVEL } from '../src/level-data.ts';
+import { LEVELS } from '../src/level-data.ts';
+import { SECRET_LEVELS } from '../src/secret-levels.ts';
 for(const [index,level] of LEVELS.entries()) {
     test(`1-${index+1}: continuous theme and traversable ground profile`,()=>{
         assert.equal(level.sections.length,1);
@@ -28,6 +29,22 @@ test('secret entrances have solid landing surfaces and the room has reachable re
         assert(level.solids.some(s=>s.y===t.y&&s.x<t.x-12&&s.x+s.width>t.x+12));
         assert(t.x<level.goal.x-500);
     }
-    for(const p of SECRET_LEVEL.collectibles)
-        assert(!SECRET_LEVEL.solids.some(s=>!s.oneWay&&p.x>s.x&&p.x<s.x+s.width&&p.y>s.y&&p.y<s.y+s.height));
+    for(const room of SECRET_LEVELS) for(const p of [...room.collectibles,...room.powerUps,room.spawn,room.goal])
+        assert(!room.solids.some(s=>!s.oneWay&&p.x>s.x&&p.x<s.x+s.width&&p.y>s.y&&p.y<s.y+s.height));
+});
+
+test('three extensive secret routes have distinct layouts and safe stairs',()=>{
+    assert.equal(new Set(SECRET_LEVELS.map(l=>JSON.stringify(l.solids))).size,3);
+    for(const level of SECRET_LEVELS){
+        assert(level.width>=2800);
+        assert(level.solids.filter(s=>s.oneWay).length>=9);
+        assert(level.collectibles.length>=30);
+        const floor=level.solids.filter(s=>!s.oneWay).sort((a,b)=>a.x-b.x);
+        assert.equal(floor[0].x,0);
+        assert.equal(floor.at(-1).x+floor.at(-1).width,level.width);
+        for(let i=1;i<floor.length;i++){
+            assert.equal(floor[i-1].x+floor[i-1].width,floor[i].x);
+            assert(floor[i-1].y-floor[i].y<=70);
+        }
+    }
 });

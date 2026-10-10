@@ -103,15 +103,3 @@ export const LEVELS: LevelDef[] = layouts.map((base, i) => {
     };
 });
 export const LEVEL = LEVELS[0];
-
-/** Shared prototype room. Each chapter run keeps its own room progress. */
-export const SECRET_LEVEL: LevelDef = {
-    width:1500, height:540, spawn:{x:130,y:385}, checkpoint:{x:130,y:402}, goal:{x:1410,y:366},
-    sections:[{x:0,name:'Cámara secreta · Bajo el castillo',palette:'castle'}],
-    solids:[floor(0,1500),ledge(330,375,140),ledge(530,310,180,true),
-        ledge(800,365,130),ledge(1000,300,180,true)],
-    collectibles:Array.from({length:15},(_,i)=>({id:`secret-k-${i}`,x:230+i*75,
-        y:i>=2&&i<=3?335:i>=4&&i<=6?270:i>=8&&i<=9?325:i>=11&&i<=12?260:390})),
-    enemies:[], powerUps:[{id:'secret-meat',kind:'meat',x:1230,y:390}],
-    secrets:[], scenery:[],
-};

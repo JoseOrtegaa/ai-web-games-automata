@@ -13,7 +13,13 @@ Plataformas 2D pixel art original. La campaña se organiza por castillos y nivel
 - Tres corazones, pisotón, enemigos protegidos de dos golpes, checkpoints por nivel y pasadizos opcionales. Carne cura, aceite aumenta velocidad y pompón absorbe un golpe.
 - Pausa permite volver al mapa o reiniciar **el nivel seleccionado**. Cambiar o reiniciar nivel restablece su checkpoint y objetos; los desbloqueos permanecen. Las croquetas se contabilizan al completar el nivel.
 
-Los tres recorridos miden ahora 4940 unidades: un 30 % más que los 3800 anteriores. Añaden otra cadena de almenas y puentes altos, terrazas con balcones escalonados y una escalinata amplia con galerías opcionales. Cada nivel tiene un túnel de piedra antes del tramo añadido: súbete y agáchate con cualquiera de los controles para entrar en la cámara secreta de prueba. Su puerta devuelve al mismo túnel. Conserva corazones, croquetas, checkpoint, objetos recogidos y enemigos derrotados; la cámara no completa ni desbloquea niveles. Reiniciar dentro de ella reinicia el nivel principal. La sala es compartida en diseño y sus recompensas solo se pueden recoger una vez por partida de cada nivel.
+Los tres recorridos miden ahora 4940 unidades: un 30 % más que los 3800 anteriores. Añaden otra cadena de almenas y puentes altos, terrazas con balcones escalonados y una escalinata amplia con galerías opcionales. Cada nivel tiene un túnel de piedra antes del tramo añadido: súbete y agáchate con cualquiera de los controles para entrar en la zona secreta propia de ese nivel. Su puerta devuelve al mismo túnel. Conserva corazones, croquetas, checkpoint, objetos recogidos y enemigos derrotados; la cámara no completa ni desbloquea niveles. Reiniciar dentro de ella reinicia el nivel principal. Cada zona tiene arquitectura, plataformas y recompensas propias; estas solo se pueden recoger una vez por partida de cada nivel.
+
+- **1-1 · La cisterna del adarve:** 2800 unidades, acueductos, arcos húmedos, escaleras de piedra y galerías altas.
+- **1-2 · El jardín de las raíces:** 3000 unidades, raíces, setas, terrazas de césped y plataformas de madera con rutas superiores.
+- **1-3 · La cámara del tesoro:** 3200 unidades, estanterías, cofres, faroles y dos escalinatas con balcones metálicos.
+
+Las zonas secretas duplican aproximadamente la longitud de la sala original de 1500 unidades e incluyen 9–10 plataformas superiores opcionales. Su ruta inferior es continua, sin enemigos, para explorar y reunir croquetas.
 
 Los niveles incluyen 6–7 enemigos en encuentros dispersos, con tres vigilantes adicionales en los tramos ampliados. Conejos y aves persiguen al hurón dentro de su territorio y ceden espacio a otros enemigos. Las aves ajustan también la altura. Los proyectiles recorren como máximo 420 unidades o duran 2,8 segundos; las paredes siguen bloqueándolos.
 
@@ -38,7 +44,7 @@ npm run dev
 
 ## Mantenimiento y publicación
 
-- `level-data.ts`: mundos, capítulos y geometría. `environment.ts`: murallas exteriores, patio con arcadas/fuentes e interior abovedado de la torre. Un único ambiente por nivel.
+- `level-data.ts`: mundos, capítulos y geometría principal. `secret-levels.ts`: las tres zonas secretas. `environment.ts`: murallas exteriores, patio con arcadas/fuentes e interior abovedado de la torre. Un único ambiente por nivel.
 - `scene.ts`: partida, transiciones y mapa. `progress.ts`: desbloqueo secuencial y persistencia. `input.ts`/`settings.ts`: controles. Física en `player.ts`/`collision.ts`.
 - Conservar salto variable, coyote time, buffer, multitouch, pausa al girar, safe areas y guardados existentes.
 - `?qa=1` habilita `window.__ferretQA`; no sustituir pruebas de recorrido por teletransportes.

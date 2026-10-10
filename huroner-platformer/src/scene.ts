@@ -1,7 +1,8 @@
 import Phaser from 'phaser';
 import { createArt } from './art';
 import { createEnvironment, createSurfaceArt } from './environment';
-import { LEVELS, SECRET_LEVEL, CHAPTERS, WORLDS } from './level-data';
+import { LEVELS, CHAPTERS, WORLDS } from './level-data';
+import { SECRET_LEVELS, SECRET_CHAPTERS } from './secret-levels';
 import { readProgress, isUnlocked, completeLevel } from './progress';
 import { B } from './balance';
 import { Player } from './player';
@@ -67,7 +68,7 @@ export class GameScene extends Phaser.Scene {
         this.inSecret = data.secret ?? false;
         this.journey = data.journey;
         this.tunnelReady = !data.journey;
-        this.level = this.inSecret ? SECRET_LEVEL : LEVELS[this.levelIndex];
+        this.level = this.inSecret ? SECRET_LEVELS[this.levelIndex] : LEVELS[this.levelIndex];
         this.launchPlaying = data.play ?? false;
         this.mode = 'menu';
         this.status = { health:3, shield:false, oilUntil:0 };
@@ -125,8 +126,7 @@ export class GameScene extends Phaser.Scene {
         }
     }
     private drawWorld() {
-        createEnvironment(this, this.inSecret ? 'keep' : CHAPTERS[this.levelIndex].environment, this.level.width);
-        if (this.inSecret) this.add.rectangle(0,0,this.level.width,430,0x10202b,.38).setOrigin(0).setDepth(-20);
+        createEnvironment(this, this.inSecret ? SECRET_CHAPTERS[this.levelIndex].environment : CHAPTERS[this.levelIndex].environment, this.level.width);
         this.level.scenery.forEach(d => this.add.image(d.x, d.y, d.kind).setOrigin(.5, 1).setScale(d.scale ?? 1).setFlipX(d.flip ?? false).setDepth(-10).setAlpha(.88));
         this.terrain = this.physics.add.staticGroup();
         this.level.solids.forEach(def => {
