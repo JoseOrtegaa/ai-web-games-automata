@@ -1,4 +1,5 @@
 import type { LevelDef, SolidDef, Surface } from './types';
+import { RELICS } from './rewards.ts';
 
 export const SECRET_CHAPTERS = [
     {name:'La cisterna del adarve', environment:'cistern'},
@@ -59,6 +60,8 @@ export const SECRET_LEVELS: LevelDef[] = routes.map((solids,i) => {
         width,height:540,spawn:{x:130,y:385},checkpoint:{x:130,y:402},goal:{x:width-90,y:366},
         sections:[{x:0,name:`${i+1} · ${SECRET_CHAPTERS[i].name}`,palette:'castle'}],
         solids,collectibles,enemies:inhabitants[i],
+        rewards:{chest:{id:`secret-${i}-chest`,x:width-160,y:405},
+            relic:{id:RELICS[i].id,x:[1050,2540,2390][i],y:[135,155,115][i]}},
         powerUps:[{id:`secret-${i}-meat`,kind:'meat',x:width-230,y:390}],
         secrets:[],scenery:[],
     };

@@ -23,6 +23,10 @@ Las zonas secretas duplican aproximadamente la longitud de la sala original de 1
 
 Los niveles incluyen 6–7 enemigos en encuentros dispersos, con tres vigilantes adicionales en los tramos ampliados. Conejos y aves persiguen al hurón dentro de su territorio y ceden espacio a otros enemigos. Las aves ajustan también la altura. Los proyectiles recorren como máximo 420 unidades o duran 2,8 segundos; las paredes siguen bloqueándolos.
 
+Cada oculto ofrece un cofre de **25 croquetas** al final, abierto automáticamente al tocarlo una vez por partida. Sus croquetas se añaden al total de la partida y se guardan al completar el nivel principal. Reentrar o morir no repite el premio; empezar de nuevo el nivel permite otro cofre.
+
+Las rutas superiores esconden **Llave antigua**, **Semilla brillante** y **Gema del castillo**, una por zona. Se guardan al recogerlas en `ferret-jump-relics-v1`, sin esperar a la victoria, y no reaparecen si ya están en tu colección. El mapa muestra las tres y señala la reliquia de cada nivel. Si el navegador impide guardar, se conservan durante la sesión. Los guardados de campaña y croquetas anteriores siguen funcionando.
+
 ## Controles
 
 - **Móvil horizontal:** desliza a los lados en la zona izquierda para caminar o hacia abajo para agacharte; suelta para levantarte. En modo Botones, usa ▼ para agacharte. Puedes avanzar lentamente agachado. Salta con el botón derecho; mantén para un arco más alto y suelta para un salto corto.

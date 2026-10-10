@@ -251,6 +251,30 @@ export function createArt(scene: Phaser.Scene): void {
             scene.anims.create({ key: `ferret-${name}`, frames: scene.anims.generateFrameNumbers('ferret', { start, end }), frameRate, repeat });
     for (const kind of Object.keys(ENEMY_PROFILES))
         texture(scene, kind, kind === 'armored' ? 26 : 24, kind === 'quail' ? 24 : 24, c => ['rabbit','armored','quail','spitter'].includes(kind) ? animal(c, kind) : undergroundAnimal(c, kind));
+    for(const open of [false,true])texture(scene,open?'reward-chest-open':'reward-chest',28,24,c=>{
+        rect(c,P.ink,2,10,24,13);rect(c,'#388c96',4,12,20,9);
+        rect(c,'#edc874',5,12,3,9);rect(c,'#edc874',20,12,3,9);
+        if(open){poly(c,P.ink,[2,8,6,1,26,1,26,10]);poly(c,'#64a8aa',[5,7,8,3,24,3,24,8]);rect(c,'#ffd77e',6,10,16,3);}
+        else {rect(c,P.ink,2,6,24,6);rect(c,'#76b9bd',4,7,20,3);rect(c,'#f5d88c',12,9,5,7);rect(c,P.ink,14,12,1,2);}
+        rect(c,'#fff1b3',2,2,2,2);rect(c,'#fff1b3',25,4,2,2);
+    });
+    texture(scene,'relic-key',18,22,c=>{
+        ellipse(c,P.ink,8,6,6,6);ellipse(c,'#edc76d',8,6,4,4);ellipse(c,P.ink,8,6,2,2);
+        poly(c,P.ink,[7,10,12,10,12,14,16,14,16,19,12,19,12,22,7,22]);
+        rect(c,'#edc76d',8,10,3,11);rect(c,'#edc76d',10,15,5,3);rect(c,'#fff0b5',8,11,1,8);
+    });
+    texture(scene,'relic-seed',18,22,c=>{
+        poly(c,P.ink,[9,7,4,10,2,15,5,21,12,22,16,16,15,11]);
+        poly(c,'#b9d873',[9,9,5,12,4,16,7,20,11,20,14,16,13,12]);
+        poly(c,'#4d9264',[9,8,5,6,3,1,9,2,11,5,14,1,17,2,15,7]);
+        rect(c,'#efffc8',7,12,2,5);rect(c,'#f6edb1',0,7,2,2);
+    });
+    texture(scene,'relic-gem',18,22,c=>{
+        poly(c,P.ink,[5,2,13,2,18,8,10,22,0,8]);
+        poly(c,'#8ed7e2',[6,4,12,4,15,8,9,19,3,8]);
+        poly(c,'#5285bc',[3,8,9,19,8,8]);poly(c,'#bdf7ee',[8,8,9,19,15,8]);
+        rect(c,'#fff7ce',7,4,2,3);rect(c,'#edc982',2,0,2,2);
+    });
     texture(scene, 'kibble', 16, 16, c => {
         poly(c, '#77483a', [3, 5, 7, 2, 12, 4, 14, 9, 10, 14, 5, 13, 2, 9]);
         poly(c, '#d58b42', [4, 6, 8, 3, 11, 5, 12, 9, 9, 12, 5, 11, 4, 8]);

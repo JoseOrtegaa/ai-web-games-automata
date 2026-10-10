@@ -464,3 +464,15 @@ p {
 #win, #pause-menu { overflow:auto; }
 #win .compact, #pause-menu .compact { margin:auto; max-height:calc(100dvh - 40px); overflow:auto; touch-action:pan-y; }
 @media(max-height:450px) { #win .compact {width:540px;padding:14px 22px} #win .compact h2 {font-size:23px;margin:8px 0} #win .compact p {margin:6px 0} #win #results {padding:5px 0 10px;font-size:17px} #win .secondary {display:inline-block;width:48%;padding-top:10px} #win .hint {display:none} }
+.relic-status {font-size:11px;color:#d9e7bc;}
+.relic-collection {margin:18px 0;padding:14px;background:#1b3035;border:1px solid #5e7775;border-radius:12px;}
+.relic-collection h3 {font-size:16px;margin:0 0 12px;color:#ffe1a0;}
+#relic-list {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;}
+.relic-card {display:flex;align-items:center;gap:10px;padding:10px;border-radius:8px;background:#253b40;min-width:0;}
+.relic-card.found {background:#354b40;}
+.relic-card img,.relic-mark {width:36px;height:36px;flex-shrink:0;image-rendering:pixelated;}
+.relic-mark {display:grid;place-items:center;border:1px dashed #83978c;border-radius:8px;color:#becbc4;}
+.relic-card strong {display:block;font-size:12px;line-height:1.4;}
+.relic-card small {display:block;font-size:10px;line-height:1.4;color:#becbc4;margin-top:4px;}
+.relic-collection p {font-size:11px;color:#becbc4;margin:12px 0 0;}
+@media(max-width:600px) {#relic-list {grid-template-columns:1fr;}}

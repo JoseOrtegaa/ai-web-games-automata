@@ -14,6 +14,7 @@ import { ENEMY_PROFILES } from './enemy-catalog';
 import { canStomp, canLandOneWay, hasHeadroom } from './collision';
 import { applyPower, type Status } from './powerups';
 import { saveRun } from './collectibles';
+import { RELICS, readRelics, discoverRelic, CHEST_CROQUETTES } from './rewards';
 import { updateCamera } from './camera';
 import type { PowerUpDef, SolidDef } from './types';
 type Mode = 'menu' | 'playing' | 'paused' | 'dead' | 'won';
@@ -169,7 +170,10 @@ export class GameScene extends Phaser.Scene {
             this.checkpoint = area.checkpoint;
             for (const obj of [...this.pickups.getChildren(), ...this.food.getChildren()]) {
                 const item = obj as Phaser.Physics.Arcade.Image;
-                if (this.collected.has(item.getData('id') ?? item.getData('def').id)) item.disableBody(true,true);
+                if (this.collected.has(item.getData('id') ?? item.getData('def').id)) {
+                    if (item.getData('reward') === 'chest') item.setTexture('reward-chest-open').disableBody(true,false);
+                    else item.disableBody(true,true);
+                }
             }
             this.panels.forEach(p => { if (this.secrets.has(p.id)) p.rect.setAlpha(.13); });
             this.enemies.list.forEach((e,i) => {
@@ -214,11 +218,41 @@ export class GameScene extends Phaser.Scene {
             p.setDepth(14).setData('def', d).setData('baseY', d.y);
             this.bob.push(p);
         });
+        const rewards=this.level.rewards;
+        if(rewards){
+            const chest=this.pickups.create(rewards.chest.x,rewards.chest.y,'reward-chest') as Phaser.Physics.Arcade.Image;
+            chest.setDepth(14).setData('id',rewards.chest.id).setData('reward','chest');
+            this.add.text(chest.x,chest.y-46,`COFRE · +${CHEST_CROQUETTES}`,{fontFamily:'Trebuchet MS',fontSize:'11px',color:'#ffe3a0'}).setOrigin(.5).setDepth(14);
+            if(!readRelics().includes(rewards.relic.id)){
+                const relic=RELICS.find(r=>r.id===rewards.relic.id)!;
+                const item=this.pickups.create(rewards.relic.x,rewards.relic.y,relic.texture) as Phaser.Physics.Arcade.Image;
+                item.setDepth(14).setData('id',relic.id).setData('reward','relic').setData('baseY',rewards.relic.y);
+                this.bob.push(item);
+            }
+        }
         this.physics.add.overlap(this.player.sprite, this.pickups, (_a, b) => {
             if (this.mode !== 'playing')
                 return;
             const p = b as Phaser.Physics.Arcade.Image;
-            this.collected.add(p.getData('id'));
+            const id=p.getData('id') as string;
+            if(this.collected.has(id))return;
+            this.collected.add(id);
+            const reward=p.getData('reward');
+            if(reward==='chest'){
+                this.count+=CHEST_CROQUETTES;
+                p.setTexture('reward-chest-open').disableBody(true,false);
+                this.sounds.play('secret');this.burst(p.x,p.y,0xffd177,14);
+                this.ui.toast(`¡Cofre abierto! · +${CHEST_CROQUETTES} croquetas`);
+                this.ui.hud(this.status,this.count,this.now);
+                return;
+            }
+            if(reward==='relic'){
+                discoverRelic(id);
+                p.disableBody(true,true);
+                this.sounds.play('secret');this.burst(p.x,p.y,0xd7efb2,14);
+                this.ui.toast(`¡${RELICS.find(r=>r.id===id)!.name}! · Guardada en tu colección`);
+                return;
+            }
             this.count++;
             this.sounds.play('kibble');
             this.burst(p.x, p.y, 0xffd177, 5);
@@ -260,6 +294,7 @@ export class GameScene extends Phaser.Scene {
         this.controls.clear(); this.physics.pause(); this.tweens.pauseAll();
         for (const id of ['menu','pause-menu','win','controls','hud']) this.ui.show(id, false);
         const progress = readProgress();
+        const relics = readRelics();
         const levels = document.getElementById('level-list')!;
         levels.replaceChildren();
         CHAPTERS.forEach((chapter, i) => {
@@ -270,8 +305,19 @@ export class GameScene extends Phaser.Scene {
             button.innerHTML = unlocked
                 ? `<span class="level-number">${chapter.id}</span><strong>${chapter.name}</strong><small>${chapter.summary}</small><em>${progress.completed.includes(chapter.id) ? 'Completado · Volver a jugar' : 'Disponible · Explorar →'}</em>`
                 : `<span class="level-number">?</span><strong>${chapter.id} · Sin descubrir</strong><small>Completa el nivel ${CHAPTERS[i-1].id} para desbloquearlo.</small>`;
+            if(unlocked){const tag=document.createElement('span');tag.className='relic-status';tag.textContent=relics.includes(RELICS[i].id)?'Reliquia encontrada':'Reliquia pendiente';button.append(tag);}
             button.onclick = () => this.selectLevel(i);
             levels.append(button);
+        });
+        document.getElementById('relic-title')!.textContent=`Tu colección · ${relics.length}/${RELICS.length} reliquias`;
+        const collection=document.getElementById('relic-list')!;collection.replaceChildren();
+        RELICS.forEach((relic,i)=>{
+            const found=relics.includes(relic.id),card=document.createElement('div');
+            card.className=`relic-card ${found?'found':''}`;
+            if(found){const img=document.createElement('img');img.src=(this.textures.get(relic.texture).getSourceImage() as HTMLCanvasElement).toDataURL();img.alt='';card.append(img);}
+            else {const mark=document.createElement('span');mark.className='relic-mark';mark.textContent='?';card.append(mark);}
+            const text=document.createElement('div');const title=document.createElement('strong');title.textContent=found?relic.name:'Reliquia por descubrir';
+            const detail=document.createElement('small');detail.textContent=`1-${i+1} · ${found?'Encontrada':relic.hint}`;text.append(title,detail);card.append(text);collection.append(card);
         });
         document.getElementById('world-summary')!.textContent = WORLDS[0].summary;
         document.getElementById('future-worlds')!.innerHTML = WORLDS.slice(1).map((_,i) => `<div class="future-world"><b>?</b><span>Mundo ${i+2}</span><small>Próximamente</small></div>`).join('');

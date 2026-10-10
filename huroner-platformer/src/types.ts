@@ -50,6 +50,7 @@ export interface SectionDef {
     palette: 'house' | 'garage' | 'park' | 'mountain' | 'castle';
 }
 export interface LevelDef {
+    rewards?: { chest: {id: string; x: number; y: number}; relic: {id: string; x: number; y: number} };
     /** Center and top of a solid tunnel entrance. Crouch while standing on it. */
     tunnel?: { x: number; y: number };
     width: number;
