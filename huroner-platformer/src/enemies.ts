@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import type { EnemyDef } from './types';
+import { ENEMY_RULES, pursuitDirection, projectileExpired } from './enemy-rules';
 export interface Enemy {
     sprite: Phaser.Physics.Arcade.Sprite;
     def: EnemyDef;
@@ -21,11 +22,11 @@ export class Enemies {
             const e = { sprite: s, def, hp: def.kind === 'armored' ? 2 : 1, direction: 1, nextShot: 1700 + this.list.length * 280, immuneUntil: 0 };
             s.setData('enemy', e);
             if (def.kind === 'quail')
-                s.setGravityY(-1200);
+                (s.body as Phaser.Physics.Arcade.Body).setAllowGravity(false);
             this.list.push(e);
         });
     }
-    update(now: number, playerX: number) {
+    update(now: number, playerX: number, playerY: number) {
         for (const e of this.list) {
             const s = e.sprite;
             if (!s.active)
@@ -36,9 +37,14 @@ export class Enemies {
             body.enable = near;
             if (!near)
                 continue;
-            if (e.def.kind === 'quail') {
-                s.setVelocityX(e.direction * 45);
-                s.setVelocityY(Math.cos(now / 620 + e.def.x) * 26);
+            const flying = e.def.kind === 'quail';
+            const chase = pursuitDirection(s.x, s.y, playerX, playerY, e.def.minX, e.def.maxX,
+                flying ? ENEMY_RULES.flyingNotice : ENEMY_RULES.groundNotice);
+            if (chase) e.direction = chase;
+            if (flying) {
+                s.setVelocityX(e.direction * (chase ? 66 : 45));
+                const targetY = chase ? Phaser.Math.Clamp(playerY - 12, e.def.y - 60, e.def.y + 60) : e.def.y;
+                s.setVelocityY(Phaser.Math.Clamp((targetY - s.y) * 1.5, -42, 42) + Math.cos(now / 620 + e.def.x) * 10);
             }
             else if (e.def.kind === 'spitter') {
                 s.setVelocityX(0);
@@ -50,15 +56,17 @@ export class Enemies {
                     else
                         s.clearTint();
                     if (now >= e.nextShot) {
-                        this.shoot(e, playerX);
+                        this.shoot(e, playerX, now);
                         e.nextShot = now + 2600;
                     }
                 }
-                else
+                else {
                     e.nextShot = now + 1300;
+                    s.clearTint();
+                }
             }
             else
-                s.setVelocityX(e.direction * (e.def.kind === 'armored' ? 32 : 48));
+                s.setVelocityX(e.direction * (e.def.kind === 'armored' ? (chase ? 42 : 32) : (chase ? 64 : 48)));
             if (s.x >= e.def.maxX || body.blocked.right) {
                 e.direction = -1;
                 s.x = Math.min(s.x, e.def.maxX);
@@ -67,6 +75,11 @@ export class Enemies {
                 e.direction = 1;
                 s.x = Math.max(s.x, e.def.minX);
             }
+            // Yield to the enemy ahead instead of stacking on the same position.
+            if (this.list.some(other => other !== e && other.sprite.active && other.hp > 0 &&
+                Math.abs(other.sprite.y - s.y) < 36 &&
+                (other.sprite.x - s.x) * e.direction > 0 && Math.abs(other.sprite.x - s.x) < ENEMY_RULES.spacing))
+                s.setVelocityX(0);
             if (e.def.kind !== 'spitter')
                 s.setFlipX(e.direction < 0);
             if (e.hp === 1 && e.def.kind === 'armored')
@@ -74,15 +87,16 @@ export class Enemies {
         }
         this.projectiles.getChildren().forEach(obj => {
             const p = obj as Phaser.Physics.Arcade.Sprite;
-            if (p.active && (Math.abs(p.x - playerX) > 850 || p.y > 550))
+            if (p.active && (projectileExpired(p.x, p.getData('startX'), now - p.getData('bornAt')) || Math.abs(p.x - playerX) > 850 || p.y > 550))
                 p.destroy();
         });
     }
-    private shoot(e: Enemy, playerX: number) {
+    private shoot(e: Enemy, playerX: number, now: number) {
         if (this.projectiles.countActive() >= 16)
             return;
         const dir = playerX < e.sprite.x ? -1 : 1;
         const p = this.projectiles.create(e.sprite.x + dir * 26, e.sprite.y + 5, 'projectile') as Phaser.Physics.Arcade.Sprite;
+        p.setData('startX', p.x).setData('bornAt', now);
         p.setSize(12, 12).setVelocityX(dir * 155).setDepth(15);
     }
     stomp(e: Enemy, now: number): boolean {

@@ -67,7 +67,7 @@ export const LEVELS: LevelDef[] = layouts.map((base, i) => {
         { id:'guard', kind:'rabbit', x:950, y:320, minX:890, maxX:975 },
         { id:'watch', kind:'armored', x:2010, y:270, minX:1880, maxX:2100 },
         { id:'archer', kind:'spitter', x:2460, y:350, minX:2420, maxX:2500 },
-        { id:'bird', kind:'quail', x:2330, y:290, minX:2290, maxX:2450 },
+        { id:'bird', kind:'quail', x:2330, y:290, minX:2220, maxX:2380 },
     ] : i === 1 ? [
         { id:'guard', kind:'rabbit', x:720, y:285, minX:625, maxX:785 },
         { id:'watch', kind:'spitter', x:1250, y:280, minX:1200, maxX:1315 },
@@ -78,6 +78,19 @@ export const LEVELS: LevelDef[] = layouts.map((base, i) => {
         { id:'watch', kind:'spitter', x:1460, y:255, minX:1370, maxX:1530 },
         { id:'gate', kind:'rabbit', x:2030, y:235, minX:1960, maxX:2100 },
     ];
+    // Three encounters in the extended route, separated by quiet traversal sections.
+    const extra: LevelDef['enemies'][] = [
+        [{id:'bridge-guard',kind:'rabbit',x:3290,y:335,minX:3238,maxX:3312},
+         {id:'sky-watch',kind:'quail',x:3960,y:265,minX:3820,maxX:4070},
+         {id:'last-archer',kind:'spitter',x:4480,y:285,minX:4430,maxX:4510}],
+        [{id:'balcony-guard',kind:'rabbit',x:3100,y:280,minX:3030,maxX:3160},
+         {id:'garden-watch',kind:'quail',x:3910,y:260,minX:3780,maxX:4050},
+         {id:'last-guard',kind:'armored',x:4610,y:285,minX:4540,maxX:4680}],
+        [{id:'stair-guard',kind:'rabbit',x:3200,y:235,minX:3130,maxX:3280},
+         {id:'gallery-watch',kind:'quail',x:4010,y:245,minX:3850,maxX:4160},
+         {id:'last-archer',kind:'spitter',x:4520,y:210,minX:4500,maxX:4580}],
+    ];
+    enemies.push(...extra[i]);
     return {
         width:4940, height:540, spawn:{x:180,y:385}, checkpoint:{x:1420,y:402}, goal:{x:4880,y:366}, tunnel,
         sections:[{x:0, name:`${CHAPTERS[i].id} · ${CHAPTERS[i].name}`, palette:'castle'}],

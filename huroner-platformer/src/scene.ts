@@ -393,7 +393,7 @@ export class GameScene extends Phaser.Scene {
         this.player.update(this.controls, this.now, this.status.oilUntil > this.now, () => this.sounds.play('jump'));
         this.controls.consume();
         this.player.sprite.x = Phaser.Math.Clamp(this.player.sprite.x, 18, this.level.width - 18);
-        this.enemies.update(this.now, this.player.sprite.x);
+        this.enemies.update(this.now, this.player.sprite.x, this.player.sprite.y);
         updateCamera(this.cameras.main, this.player.sprite.x, this.player.facing, this.level.width, dt);
         this.shield.setPosition(this.player.sprite.x, this.player.sprite.y).setVisible(this.status.shield).setScale(1 + Math.sin(this.now / 180) * .06);
         if (this.status.shield)

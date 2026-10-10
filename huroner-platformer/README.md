@@ -15,6 +15,8 @@ Plataformas 2D pixel art original. La campaña se organiza por castillos y nivel
 
 Los tres recorridos miden ahora 4940 unidades: un 30 % más que los 3800 anteriores. Añaden otra cadena de almenas y puentes altos, terrazas con balcones escalonados y una escalinata amplia con galerías opcionales. Cada nivel tiene un túnel de piedra antes del tramo añadido: súbete y agáchate con cualquiera de los controles para entrar en la cámara secreta de prueba. Su puerta devuelve al mismo túnel. Conserva corazones, croquetas, checkpoint, objetos recogidos y enemigos derrotados; la cámara no completa ni desbloquea niveles. Reiniciar dentro de ella reinicia el nivel principal. La sala es compartida en diseño y sus recompensas solo se pueden recoger una vez por partida de cada nivel.
 
+Los niveles incluyen 6–7 enemigos en encuentros dispersos, con tres vigilantes adicionales en los tramos ampliados. Conejos y aves persiguen al hurón dentro de su territorio y ceden espacio a otros enemigos. Las aves ajustan también la altura. Los proyectiles recorren como máximo 420 unidades o duran 2,8 segundos; las paredes siguen bloqueándolos.
+
 ## Controles
 
 - **Móvil horizontal:** desliza a los lados en la zona izquierda para caminar o hacia abajo para agacharte; suelta para levantarte. En modo Botones, usa ▼ para agacharte. Puedes avanzar lentamente agachado. Salta con el botón derecho; mantén para un arco más alto y suelta para un salto corto.
