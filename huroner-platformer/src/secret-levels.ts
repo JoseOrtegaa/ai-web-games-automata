@@ -37,6 +37,18 @@ const routes: SolidDef[][] = [
      balcony(1960,185,180,'metal'),balcony(2310,155,160,'metal'),
      balcony(2730,265,140,'metal'),balcony(2920,325,130,'metal')],
 ];
+// Three isolated encounters per room. Patrols remain on their own safe surfaces.
+const inhabitants: LevelDef['enemies'][] = [
+    [{id:'cistern-rat',kind:'rat',x:1070,y:235,minX:990,maxX:1210},
+     {id:'cistern-bat',kind:'bat',x:1750,y:275,minX:1670,maxX:1830},
+     {id:'cistern-rat-2',kind:'rat',x:2260,y:290,minX:2210,maxX:2325}],
+    [{id:'roots-beetle',kind:'beetle',x:700,y:290,minX:660,maxX:780},
+     {id:'roots-moth',kind:'moth',x:1670,y:150,minX:1580,maxX:1760},
+     {id:'roots-beetle-2',kind:'beetle',x:2350,y:400,minX:2290,maxX:2410}],
+    [{id:'treasury-mimic',kind:'mimic',x:985,y:220,minX:920,maxX:1080},
+     {id:'treasury-ghost',kind:'ghost',x:1800,y:170,minX:1700,maxX:1900},
+     {id:'treasury-mimic-2',kind:'mimic',x:2360,y:220,minX:2290,maxX:2470}],
+];
 export const SECRET_LEVELS: LevelDef[] = routes.map((solids,i) => {
     const width = [2800,3000,3200][i];
     const collectibles = solids.flatMap((s,n) => Array.from({length:Math.max(1,Math.floor((s.width-60)/65))},(_,j) =>
@@ -46,7 +58,7 @@ export const SECRET_LEVELS: LevelDef[] = routes.map((solids,i) => {
     return {
         width,height:540,spawn:{x:130,y:385},checkpoint:{x:130,y:402},goal:{x:width-90,y:366},
         sections:[{x:0,name:`${i+1} · ${SECRET_CHAPTERS[i].name}`,palette:'castle'}],
-        solids,collectibles,enemies:[],
+        solids,collectibles,enemies:inhabitants[i],
         powerUps:[{id:`secret-${i}-meat`,kind:'meat',x:width-230,y:390}],
         secrets:[],scenery:[],
     };

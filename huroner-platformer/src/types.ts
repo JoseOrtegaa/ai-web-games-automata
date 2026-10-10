@@ -10,7 +10,7 @@ export interface SolidDef extends Rect {
     surface: Surface;
     oneWay?: boolean;
 }
-export type EnemyKind = 'rabbit' | 'armored' | 'quail' | 'spitter';
+export type EnemyKind = 'rabbit' | 'armored' | 'quail' | 'spitter' | 'rat' | 'bat' | 'beetle' | 'moth' | 'mimic' | 'ghost';
 export interface EnemyDef {
     id: string;
     kind: EnemyKind;

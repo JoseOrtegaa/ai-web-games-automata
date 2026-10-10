@@ -25,3 +25,19 @@ test('extended levels retain sparse, supported enemy placements', () => {
         }
     }
 });
+
+test('hidden habitats have three separated enemies on supported patrols', async () => {
+    const { SECRET_LEVELS } = await import('../src/secret-levels.ts');
+    const { ENEMY_PROFILES } = await import('../src/enemy-catalog.ts');
+    const expected=[['rat','bat'],['beetle','moth'],['mimic','ghost']];
+    for(const [i,room] of SECRET_LEVELS.entries()){
+        assert.equal(room.enemies.length,3);
+        assert.deepEqual([...new Set(room.enemies.map(e=>e.kind))].sort(),expected[i].sort());
+        for(const [n,e] of room.enemies.entries()){
+            assert(e.minX>room.spawn.x+400&&e.maxX<room.goal.x-200);
+            if(n) assert(e.minX-room.enemies[n-1].maxX>350);
+            if(!ENEMY_PROFILES[e.kind].flying)
+                assert(room.solids.some(s=>!s.oneWay&&s.x<=e.minX-15&&s.x+s.width>=e.maxX+15&&s.y>e.y));
+        }
+    }
+});

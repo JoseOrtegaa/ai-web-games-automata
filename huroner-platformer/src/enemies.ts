@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import type { EnemyDef } from './types';
+import { ENEMY_PROFILES } from './enemy-catalog';
 import { ENEMY_RULES, pursuitDirection, projectileExpired } from './enemy-rules';
 export interface Enemy {
     sprite: Phaser.Physics.Arcade.Sprite;
@@ -19,9 +20,9 @@ export class Enemies {
         defs.forEach(def => {
             const s = this.group.create(def.x, def.y, def.kind) as Phaser.Physics.Arcade.Sprite;
             s.setDepth(12).setSize(30, 30).setOffset((s.width - 30) / 2, s.height - 32);
-            const e = { sprite: s, def, hp: def.kind === 'armored' ? 2 : 1, direction: 1, nextShot: 1700 + this.list.length * 280, immuneUntil: 0 };
+            const e = { sprite: s, def, hp: ENEMY_PROFILES[def.kind].hp, direction: 1, nextShot: 1700 + this.list.length * 280, immuneUntil: 0 };
             s.setData('enemy', e);
-            if (def.kind === 'quail')
+            if (ENEMY_PROFILES[def.kind].flying)
                 (s.body as Phaser.Physics.Arcade.Body).setAllowGravity(false);
             this.list.push(e);
         });
@@ -37,12 +38,13 @@ export class Enemies {
             body.enable = near;
             if (!near)
                 continue;
-            const flying = e.def.kind === 'quail';
+            const profile = ENEMY_PROFILES[e.def.kind];
+            const flying = profile.flying;
             const chase = pursuitDirection(s.x, s.y, playerX, playerY, e.def.minX, e.def.maxX,
                 flying ? ENEMY_RULES.flyingNotice : ENEMY_RULES.groundNotice);
             if (chase) e.direction = chase;
             if (flying) {
-                s.setVelocityX(e.direction * (chase ? 66 : 45));
+                s.setVelocityX(e.direction * (chase ? profile.chase : profile.patrol));
                 const targetY = chase ? Phaser.Math.Clamp(playerY - 12, e.def.y - 60, e.def.y + 60) : e.def.y;
                 s.setVelocityY(Phaser.Math.Clamp((targetY - s.y) * 1.5, -42, 42) + Math.cos(now / 620 + e.def.x) * 10);
             }
@@ -66,7 +68,7 @@ export class Enemies {
                 }
             }
             else
-                s.setVelocityX(e.direction * (e.def.kind === 'armored' ? (chase ? 42 : 32) : (chase ? 64 : 48)));
+                s.setVelocityX(e.direction * (chase ? profile.chase : profile.patrol));
             if (s.x >= e.def.maxX || body.blocked.right) {
                 e.direction = -1;
                 s.x = Math.min(s.x, e.def.maxX);
@@ -82,7 +84,7 @@ export class Enemies {
                 s.setVelocityX(0);
             if (e.def.kind !== 'spitter')
                 s.setFlipX(e.direction < 0);
-            if (e.hp === 1 && e.def.kind === 'armored')
+            if (e.hp === 1 && profile.hp === 2)
                 s.setTint(0xe8b978);
         }
         this.projectiles.getChildren().forEach(obj => {

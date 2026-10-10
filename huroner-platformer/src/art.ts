@@ -1,3 +1,4 @@
+import { ENEMY_PROFILES } from './enemy-catalog';
 import Phaser from 'phaser';
 type Ctx = CanvasRenderingContext2D;
 const P = { ink: '#352d42', dark: '#5a3d4e', fur: '#d39b73', cream: '#fff0cf', light: '#fff9e7', teal: '#47b7ac', gold: '#fac76a', pink: '#ed8790' };
@@ -13,6 +14,14 @@ function poly(c: Ctx, color: string, points: number[]) {
         c.lineTo(points[i], points[i + 1]);
     c.closePath();
     c.fill();
+}
+function line(c: Ctx, color: string, points: number[], width = 2) {
+    c.strokeStyle=color;c.lineWidth=width;c.beginPath();c.moveTo(points[0],points[1]);
+    for(let i=2;i<points.length;i+=2)c.lineTo(points[i],points[i+1]);
+    c.stroke();
+}
+function ellipse(c: Ctx, color: string, x: number, y: number, rx: number, ry: number) {
+    c.fillStyle=color;c.beginPath();c.ellipse(x,y,rx,ry,0,0,Math.PI*2);c.fill();
 }
 function canvas(w: number, h: number) {
     const a = document.createElement('canvas');
@@ -153,6 +162,50 @@ function animal(c: Ctx, kind: string) {
         rect(c, '#aac285', 8, 16, 4, 1);
     }
 }
+/** Six original silhouettes for the underground habitats, at the same pixel scale. */
+function undergroundAnimal(c: Ctx, kind: string) {
+    if (kind === 'rat') {
+        poly(c,P.ink,[2,18,5,11,12,9,19,12,23,16,21,21,5,22]);
+        poly(c,'#8facae',[4,17,7,12,13,11,19,14,21,17,18,20,6,20]);
+        ellipse(c,P.ink,8,10,4,4);ellipse(c,'#c3959c',8,10,2,2);
+        line(c,'#b8a098',[4,18,1,18,0,14],2);
+        rect(c,'#d4cbc0',17,16,5,3);rect(c,'#ffebbc',17,13,2,2);
+        rect(c,P.ink,7,21,4,2);rect(c,P.ink,16,21,4,2);
+    } else if (kind === 'bat') {
+        poly(c,P.ink,[11,13,6,7,0,6,1,17,5,14,8,19,12,17,16,19,19,14,23,17,24,6,18,7,13,13]);
+        poly(c,'#7d789c',[2,9,7,10,11,16,8,16,5,12,2,14]);
+        poly(c,'#7d789c',[22,9,17,10,13,16,16,16,19,12,22,14]);
+        poly(c,'#aaa4bd',[8,15,8,4,11,8,14,8,17,4,17,16,14,22,10,22]);
+        rect(c,'#f3d696',10,11,2,2);rect(c,'#f3d696',14,11,2,2);
+        rect(c,P.ink,11,15,4,3);rect(c,'#eee2d3',11,16,1,2);
+    } else if (kind === 'beetle') {
+        poly(c,P.ink,[3,17,5,11,10,8,18,8,22,14,23,20,18,22,6,22]);
+        poly(c,'#8b9c4e',[5,17,7,12,12,10,17,10,20,15,20,20,7,20]);
+        line(c,'#465d3f',[13,11,13,20],2);
+        rect(c,'#bdd087',8,12,3,3);rect(c,'#bdd087',15,12,3,3);
+        rect(c,P.ink,2,20,5,3);rect(c,P.ink,17,21,5,2);
+        line(c,'#82916a',[17,10,18,5,21,4],2);rect(c,'#fff0ac',19,15,2,2);
+    } else if (kind === 'moth') {
+        poly(c,P.ink,[12,10,5,3,0,7,1,15,7,21,12,16,17,21,23,15,24,7,19,3]);
+        poly(c,'#c3b782',[10,11,5,5,2,8,3,14,8,18,10,15]);
+        poly(c,'#c3b782',[14,11,19,5,22,8,21,14,16,18,14,15]);
+        ellipse(c,'#678b71',6,11,2,3);ellipse(c,'#678b71',18,11,2,3);
+        rect(c,'#566e54',10,8,4,13);rect(c,'#e9daa5',10,8,4,4);
+        line(c,'#a6be8c',[11,8,8,4,9,2],1);line(c,'#a6be8c',[13,8,16,4,15,2],1);
+    } else if (kind === 'mimic') {
+        rect(c,P.ink,2,6,21,16);rect(c,'#957049',4,8,17,12);
+        rect(c,'#cda85f',3,7,19,3);rect(c,'#cda85f',5,10,3,11);rect(c,'#cda85f',17,10,3,11);
+        rect(c,P.ink,8,12,10,5);rect(c,'#f1e6ba',9,12,2,2);rect(c,'#f1e6ba',14,15,2,2);
+        rect(c,'#e2bd7e',10,8,5,3);rect(c,'#e9cd94',7,5,2,2);rect(c,'#e9cd94',16,5,2,2);
+        rect(c,P.ink,4,21,5,3);rect(c,P.ink,17,21,5,3);
+    } else if (kind === 'ghost') {
+        poly(c,P.ink,[4,12,6,6,11,3,17,4,21,10,21,23,16,20,12,23,9,20,4,23]);
+        poly(c,'#b9c9d5',[6,12,8,7,12,5,16,6,19,11,19,20,16,17,12,20,9,17,6,20]);
+        poly(c,'#8296af',[6,13,10,17,14,17,12,20,9,17,6,20]);
+        rect(c,'#324955',10,10,2,4);rect(c,'#324955',16,10,2,4);
+        rect(c,'#ecdaaa',11,8,7,1);rect(c,'#52697e',13,16,3,2);
+    }
+}
 function wood(c: Ctx, w: number, h: number, light = false) {
     rect(c, light ? '#987665' : '#735c60', 0, 0, w, h);
     for (let y = 8; y < h; y += 17) {
@@ -196,8 +249,8 @@ export function createArt(scene: Phaser.Scene): void {
     for (const [name, start, end, frameRate, repeat] of anims)
         if (!scene.anims.exists(`ferret-${name}`))
             scene.anims.create({ key: `ferret-${name}`, frames: scene.anims.generateFrameNumbers('ferret', { start, end }), frameRate, repeat });
-    for (const kind of ['rabbit', 'armored', 'quail', 'spitter'])
-        texture(scene, kind, kind === 'armored' ? 26 : 24, kind === 'quail' ? 24 : 24, c => animal(c, kind));
+    for (const kind of Object.keys(ENEMY_PROFILES))
+        texture(scene, kind, kind === 'armored' ? 26 : 24, kind === 'quail' ? 24 : 24, c => ['rabbit','armored','quail','spitter'].includes(kind) ? animal(c, kind) : undergroundAnimal(c, kind));
     texture(scene, 'kibble', 16, 16, c => {
         poly(c, '#77483a', [3, 5, 7, 2, 12, 4, 14, 9, 10, 14, 5, 13, 2, 9]);
         poly(c, '#d58b42', [4, 6, 8, 3, 11, 5, 12, 9, 9, 12, 5, 11, 4, 8]);

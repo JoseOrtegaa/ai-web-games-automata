@@ -10,6 +10,7 @@ import { Input } from './input';
 import { Audio } from './audio';
 import { UI } from './ui';
 import { Enemies, type Enemy } from './enemies';
+import { ENEMY_PROFILES } from './enemy-catalog';
 import { canStomp, canLandOneWay, hasHeadroom } from './collision';
 import { applyPower, type Status } from './powerups';
 import { saveRun } from './collectibles';
@@ -356,7 +357,7 @@ export class GameScene extends Phaser.Scene {
         this.enemies.projectiles.clear(true, true);
         this.enemies.list.forEach(e => {
             this.tweens.killTweensOf(e.sprite);
-            e.hp = e.def.kind === 'armored' ? 2 : 1;
+            e.hp = ENEMY_PROFILES[e.def.kind].hp;
             e.immuneUntil = 0;
             e.nextShot = 1700;
             e.direction = 1;

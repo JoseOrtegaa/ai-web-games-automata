@@ -19,7 +19,7 @@ Los tres recorridos miden ahora 4940 unidades: un 30 % más que los 3800 anterio
 - **1-2 · El jardín de las raíces:** 3000 unidades, raíces, setas, terrazas de césped y plataformas de madera con rutas superiores.
 - **1-3 · La cámara del tesoro:** 3200 unidades, estanterías, cofres, faroles y dos escalinatas con balcones metálicos.
 
-Las zonas secretas duplican aproximadamente la longitud de la sala original de 1500 unidades e incluyen 9–10 plataformas superiores opcionales. Su ruta inferior es continua, sin enemigos, para explorar y reunir croquetas.
+Las zonas secretas duplican aproximadamente la longitud de la sala original de 1500 unidades e incluyen 9–10 plataformas superiores opcionales. Su ruta inferior es continua para explorar y reunir croquetas. Cada zona tiene tres enemigos separados: ratas y murciélagos en la cisterna, escarabajos y polillas en las raíces, y cofres vivientes y fantasmas en el tesoro. Las especies tienen arte propio y pueden reutilizarse en futuros niveles; patrullan y persiguen localmente. Los cofres resisten dos pisotones; los demás, uno.
 
 Los niveles incluyen 6–7 enemigos en encuentros dispersos, con tres vigilantes adicionales en los tramos ampliados. Conejos y aves persiguen al hurón dentro de su territorio y ceden espacio a otros enemigos. Las aves ajustan también la altura. Los proyectiles recorren como máximo 420 unidades o duran 2,8 segundos; las paredes siguen bloqueándolos.
 
