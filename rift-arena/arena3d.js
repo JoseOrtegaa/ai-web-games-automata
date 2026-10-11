@@ -101,7 +101,7 @@ function compile(gl,kind,src){
 }
 export function createArena3D(canvas){
  let gl;
- try{gl=canvas.getContext('webgl',{alpha:false,antialias:true,depth:true,powerPreference:'high-performance'})||canvas.getContext('experimental-webgl',{alpha:false,antialias:true,depth:true});}
+ try{gl=canvas.getContext('webgl',{alpha:false,antialias:true,depth:true,powerPreference:'high-performance',preserveDrawingBuffer:true})||canvas.getContext('experimental-webgl',{alpha:false,antialias:true,depth:true});}
  catch{return null;}
  if(!gl)return null;
  try{return new ArenaRenderer(gl,canvas);}catch(e){console.warn('WebGL initialization failure',e);return null;}
