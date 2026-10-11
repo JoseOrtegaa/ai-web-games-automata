@@ -5,7 +5,7 @@ import {fighterPose,attackIntensity} from '../poses.js';
 import {isRepeatedTap,installZoomGuard} from '../touch-safety.js';
 
 test('idle breathes gently, walking moves legs and changes gait',()=>{
-  const f=createFighter('kira',200),enemy=createFighter('onyx',500);
+  const f=createFighter('ryuzo',200),enemy=createFighter('brute',500);
   const idleA=fighterPose(f,0),idleB=fighterPose(f,1);
   assert.notEqual(idleA.bob,idleB.bob);
   for(let i=0;i<15;i++)stepFighter(f,{right:true},enemy,.04);
@@ -14,7 +14,7 @@ test('idle breathes gently, walking moves legs and changes gait',()=>{
   assert.notDeepEqual(moving.frontKnee,idleA.frontKnee);
 });
 test('the guarded pose has raised hands, crouching lowers the body',()=>{
-  const f=createFighter('vex',350);
+  const f=createFighter('razor',350);
   const idle=fighterPose(f,0);
   f.block=true;
   assert.ok(fighterPose(f,0).frontHand[1]<idle.frontHand[1]);
@@ -23,7 +23,7 @@ test('the guarded pose has raised hands, crouching lowers the body',()=>{
 });
 test('punch, high kick, sweep and uppercut all have different articulated silhouettes',()=>{
   for(const type of ['punch','kick','sweep','uppercut','special']){
-    const f=createFighter('sable',300);
+    const f=createFighter('selene',300);
     assert.equal(tryAttack(f,type),true);
     const windup=fighterPose(f,.2);
     f.action.elapsed=type==='punch'?.13:type==='kick'?.25:type==='special'?.31:.30;
@@ -34,7 +34,7 @@ test('punch, high kick, sweep and uppercut all have different articulated silhou
   }
 });
 test('hit recoil and knockout are visible physical states',()=>{
- const f=createFighter('rook',400);
+ const f=createFighter('ursus',400);
  f.recoil=.28;
  const stagger=fighterPose(f,.3);
  assert.ok(stagger.hurt>.8);

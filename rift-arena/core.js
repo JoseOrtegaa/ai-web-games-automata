@@ -2,14 +2,14 @@ export const WIDTH = 1152;
 export const GROUND = 508;
 export const LIMITS = [65, WIDTH - 65];
 export const ROSTER = [
-  { id:'kira',name:'KIRA',alias:'SOMBRA CARMESÍ',color:'#bb8cff',shade:'#513078',speed:315,power:.98,defense:1,trait:'Corte espectral',bio:'Ninja acrobática de ataques veloces.',style:'shinobi' },
-  { id:'volt',name:'VOLT',alias:'GUARDIÁN DEL PULSO',color:'#61e9fb',shade:'#156178',speed:260,power:1.02,defense:1,trait:'Tormenta eléctrica',bio:'Combatiente versátil con descarga a distancia.',style:'tech' },
-  { id:'onyx',name:'ONYX',alias:'PUÑO DE GRANITO',color:'#ffbd71',shade:'#654224',speed:212,power:1.2,defense:.84,trait:'Golpe sísmico',bio:'Gorila colosal de agarres, fuerza y puñetazos brutales.',style:'armor' },
-  { id:'ember',name:'EMBER',alias:'FURIA ÍGNEA',color:'#ff6c80',shade:'#7c2644',speed:278,power:1.1,defense:.96,trait:'Danza de fuego',bio:'Patadas feroces y presión ofensiva.',style:'flame' },
-  { id:'vex',name:'VEX',alias:'COLMILLO NOCTURNO',color:'#86ea94',shade:'#205d4b',speed:308,power:.94,defense:1.04,trait:'Colmillo verde',bio:'Pantera antropomórfica de reflejos y contraataques.',style:'serpent' },
-  { id:'rook',name:'ROOK',alias:'REY DE ACERO',color:'#92b8ff',shade:'#354b84',speed:230,power:1.16,defense:.87,trait:'Martillo de acero',bio:'Oso boxeador: enorme pegada y defensa implacable.',style:'boxer' },
-  { id:'sable',name:'SABLE',alias:'ECO DE LA NOCHE',color:'#fc96d8',shade:'#652c66',speed:290,power:1.04,defense:.99,trait:'Luna cortante',bio:'Artista marcial de patadas giratorias.',style:'dancer' },
-  { id:'atlas',name:'ATLAS',alias:'EL ERRANTE',color:'#ded3a5',shade:'#625a44',speed:252,power:1.12,defense:.93,trait:'Impacto astral',bio:'Lobo veterano de artes marciales y golpes precisos.',style:'monk' }
+  { id:'ryuzo',name:'RYUZO',alias:'DISCIPLINA DE ACERO',color:'#bb8cff',shade:'#513078',speed:315,power:.98,defense:1,trait:'Corte espectral',bio:'Artista marcial disciplinado de golpes precisos.',style:'shinobi' },
+  { id:'drake',name:'DRAKE',alias:'FURIA CALLEJERA',color:'#61e9fb',shade:'#156178',speed:260,power:1.02,defense:1,trait:'Tormenta eléctrica',bio:'Kickboxer de presión agresiva y guardia compacta.',style:'tech' },
+  { id:'brute',name:'BRUTE',alias:'PUÑO DE GRANITO',color:'#ffbd71',shade:'#654224',speed:212,power:1.2,defense:.84,trait:'Golpe sísmico',bio:'Gorila colosal de agarres, fuerza y puñetazos brutales.',style:'armor' },
+  { id:'titan',name:'TITAN',alias:'PESO ABSOLUTO',color:'#ff6c80',shade:'#7c2644',speed:278,power:1.1,defense:.96,trait:'Impacto pesado',bio:'Grappler robusto de presión y golpes pesados.',style:'flame' },
+  { id:'razor',name:'RAZOR',alias:'COLMILLO NOCTURNO',color:'#86ea94',shade:'#205d4b',speed:308,power:.94,defense:1.04,trait:'Colmillo verde',bio:'Pantera antropomórfica de reflejos y contraataques.',style:'serpent' },
+  { id:'ursus',name:'URSUS',alias:'REY DE ACERO',color:'#92b8ff',shade:'#354b84',speed:230,power:1.16,defense:.87,trait:'Martillo de acero',bio:'Oso boxeador: enorme pegada y defensa implacable.',style:'boxer' },
+  { id:'selene',name:'SELENE',alias:'PRECISIÓN LETAL',color:'#fc96d8',shade:'#652c66',speed:290,power:1.04,defense:.99,trait:'Luna cortante',bio:'Luchadora técnica, rápida y precisa.',style:'dancer' },
+  { id:'fang',name:'FANG',alias:'EL ERRANTE',color:'#ded3a5',shade:'#625a44',speed:252,power:1.12,defense:.93,trait:'Impacto astral',bio:'Lobo veterano de artes marciales y golpes precisos.',style:'monk' }
 ];
 export const MOVES = {
   punch:{start:.07,active:.11,end:.17,range:99,damage:7,push:15,height:'high'},
@@ -28,9 +28,9 @@ export function moveInfo(f){
   const base=MOVES[f.action?.type||'punch'];
   if(f.action?.type!=='special')return base;
   const overrides={
-    kira:{range:215,damage:18},volt:{range:310,damage:17},onyx:{range:180,damage:26},
-    ember:{range:189,damage:22},vex:{range:233,damage:18},rook:{range:143,damage:27},
-    sable:{range:230,damage:20},atlas:{range:210,damage:23}
+    ryuzo:{range:215,damage:18},drake:{range:310,damage:17},brute:{range:180,damage:26},
+    titan:{range:189,damage:22},razor:{range:233,damage:18},ursus:{range:143,damage:27},
+    selene:{range:230,damage:20},fang:{range:210,damage:23}
   };
   return {...base,...overrides[f.id]};
 }

@@ -59,7 +59,27 @@ export function geometryCylinder(sides=11,top=.78){
  }
  return new Float32Array(out);
 }
-const GEOMS={box:geometryBox(),sphere:geometrySphere(),cylinder:geometryCylinder(),cone:geometryCylinder(10,0)};
+// Sculpted ring meshes: flat triangle normals preserve hard retro anatomical planes.
+export function geometryProfile(profile,sides=8){
+ const out=[];
+ const ring=(row,j)=>{const a=(j+.5)*2*Math.PI/sides;return [Math.cos(a)*row[1],row[0],Math.sin(a)*row[2]];};
+ const face=(a,b,c)=>{const n=norm(cross(diff(b,a),diff(c,a)));tri(out,a,b,c,n,n,n);};
+ for(let i=0;i<profile.length-1;i++)for(let j=0;j<sides;j++){
+  const a=ring(profile[i],j),b=ring(profile[i],j+1),c=ring(profile[i+1],j+1),d=ring(profile[i+1],j);
+  face(a,c,b);face(a,d,c);
+ }
+ for(const row of [profile[0],profile.at(-1)])for(let j=0;j<sides;j++)face([0,row[0],0],ring(row,j),ring(row,j+1));
+ return new Float32Array(out);
+}
+const GEOMS={box:geometryBox(),sphere:geometrySphere(),cylinder:geometryCylinder(),cone:geometryCylinder(10,0),
+ torso:geometryProfile([[-1,.65,.78],[-.55,.72,.8],[.1,1,.95],[.65,1,.85],[1,.48,.62]]),
+ pelvis:geometryProfile([[-1,.72,.68],[0,1,.88],[1,.85,.72]]),
+ skull:geometryProfile([[-1,.48,.58],[-.65,.78,.88],[-.15,1,1],[.5,.91,.93],[1,.60,.65]]),
+ muscle:geometryProfile([[-.5,.57,.62],[-.25,.92,.85],[.08,1,1],[.33,.88,.85],[.5,.62,.65]]),
+ calf:geometryProfile([[-.5,.48,.5],[-.16,.67,.72],[.2,1,1],[.5,.68,.68]]),
+ fist:geometryProfile([[-1,.7,.7],[-.4,.95,.95],[.5,1,1],[1,.7,.85]],6),
+ fur:geometryProfile([[-1,.3,.4],[-.3,1,1],[.5,.7,.8],[1,.12,.15]],5)};
+
 export class MeshBuilder{
  constructor(){this.vertices=[];this.count=0;}
  add(mesh,x,y,z,sx,sy,sz,col,rot=0,tilt=0){
@@ -81,7 +101,7 @@ const vs=[
 'uniform mat4 uModel;uniform mat4 uVP;uniform vec3 uTint;',
 'varying vec3 vNormal;varying vec3 vPos;varying vec3 vColor;',
 'void main(){vec4 w=uModel*vec4(aPos,1.);vPos=w.xyz;',
-'vNormal=mat3(uModel)*aNormal;vColor=aColor*uTint;gl_Position=uVP*w;}'
+'vec3 nx=uModel[0].xyz,ny=uModel[1].xyz,nz=uModel[2].xyz;vNormal=nx*aNormal.x/dot(nx,nx)+ny*aNormal.y/dot(ny,ny)+nz*aNormal.z/dot(nz,nz);vColor=aColor*uTint;gl_Position=uVP*w;}'
 ].join('\n');
 const fs=[
 'precision mediump float;varying vec3 vNormal;varying vec3 vPos;varying vec3 vColor;',
@@ -89,7 +109,7 @@ const fs=[
 'void main(){vec3 n=normalize(vNormal);vec3 sun=normalize(vec3(-.38,.92,.58));',
 'float diffuse=max(dot(n,sun),0.);float fill=max(dot(n,normalize(vec3(.62,.24,-.6))),0.)*.24;',
 'float facing=max(dot(n,normalize(uCamera-vPos)),0.);float rim=pow(1.-facing,3.)*.19;',
-'float spec=pow(max(dot(reflect(-sun,n),normalize(uCamera-vPos)),0.),24.)*.16;',
+'float spec=pow(max(dot(reflect(-sun,n),normalize(uCamera-vPos)),0.),12.)*.025;',
 'float texture=sin(vPos.x*17.+vPos.z*9.)*sin(vPos.y*19.+vPos.z*6.)*.015;',
 'vec3 lit=vColor*(.38+.66*diffuse+fill+rim+texture)*uLamp+spec*vec3(1.,.9,.79);',
 'float dist=length(uCamera-vPos),fog=1.-exp(-max(0.,dist-11.)*uFogDensity);',
@@ -137,12 +157,12 @@ export class ArenaRenderer{
  primitive(kind,x,y,z,sx,sy,sz,shade,rot=0,tilt=0,root=null){
   const model=trs(x,y,z,sx,sy,sz,rot,tilt);this.draw(this.dynamic[kind],root?multiply(root,model):model,shade);
  }
- segment(a,b,r,col,root=null){
+ segment(a,b,r,col,root=null,kind='cylinder'){
   const delta=diff(b,a),len=Math.hypot(...delta);if(len<.005)return;
   const y=norm(delta),x=norm(cross([0,0,1],y)),z=norm(cross(x,y));
   const m=new Float32Array([x[0]*r,x[1]*r,x[2]*r,0,y[0]*len,y[1]*len,y[2]*len,0,
    z[0]*r,z[1]*r,z[2]*r,0,(a[0]+b[0])*.5,(a[1]+b[1])*.5,(a[2]+b[2])*.5,1]);
-  this.draw(this.dynamic.cylinder,root?multiply(root,m):m,col);
+  this.draw(this.dynamic[kind],root?multiply(root,m):m,col);
  }
  prepareStage(stage){
   if(this.stageMeshes.has(stage))return this.stageMeshes.get(stage);
@@ -150,12 +170,12 @@ export class ArenaRenderer{
   gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferData(gl.ARRAY_BUFFER,data,gl.STATIC_DRAW);
   const mesh={buffer,count:data.length/9,palette:scene.palette};this.stageMeshes.set(stage,mesh);return mesh;
  }
- render(fighters,stage='zenith',time=0,shake=0){
+ render(fighters,stage='zenith',time=0,shake=0,preview=false){
   const gl=this.gl,l=this.loc,scene=this.prepareStage(stage),pal=scene.palette;
   const targetX=(fighters[0].x+fighters[1].x-1152)*.014*.24;
   const gap=Math.abs(fighters[0].x-fighters[1].x)*.014;
-  const distance=15.0+Math.min(.9,gap*.15)+(this.width<this.height*1.2?5:0);
-  const dest=[targetX,5.15,distance],focus=[targetX,1.45,0];
+  const distance=(preview?9.1:15.0)+Math.min(.9,gap*.15)+(this.width<this.height*1.2?5:0);
+  const dest=[targetX,preview?3.7:5.15,distance],focus=[targetX,preview?1.9:1.45,0];
   for(let i=0;i<3;i++){this.camera[i]+=(dest[i]-this.camera[i])*.075;this.target[i]+=(focus[i]-this.target[i])*.075;}
   const camera=this.camera.map((v,i)=>v+(shake?Math.sin(time*95+i*4)*shake*.009:0));
   const vp=multiply(perspective(Math.PI/4.1,this.width/Math.max(1,this.height),.2,160),viewMatrix(camera,this.target));

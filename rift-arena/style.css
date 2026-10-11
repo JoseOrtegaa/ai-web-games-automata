@@ -166,3 +166,22 @@ body.in-battle .swipe-label{color:#eef6ff9c}
 .stage-tile[data-stage="alpine"] .stage-tile-art::after{height:18%;background:#89938b}
 @media(max-width:520px){.stage-chooser{grid-template-columns:repeat(2,minmax(0,1fr))}.stage-tile{min-height:100px}.stage-tile .stage-tile-art{height:59px}.stage-tile b{font-size:12px}.stage-tile small{font-size:9px}}
 @media(orientation:landscape) and (max-height:500px){.stage-chooser{grid-template-columns:repeat(4,minmax(0,1fr))}}
+/* Rebuilt arcade roster: restrained materials, hard frames and readable names. */
+.fighter-card .card-art{background:linear-gradient(120deg,#263333,#0b1117 75%);height:145px}
+.card-art:before{background:repeating-linear-gradient(0deg,transparent 0 3px,#0002 4px)}
+.fighter-card .card-art svg{height:168px;width:158px;filter:drop-shadow(3px 5px 3px #0008)}
+.card-meta b{font-size:28px;letter-spacing:1.8px}
+.fighter-card.selected{border-color:#dfc299;box-shadow:0 0 0 1px #dfc299}
+.versus-display{min-height:330px;background:#101918}
+@media(orientation:landscape) and (max-height:550px){
+ .select-layout{grid-template-columns:1.15fr 1fr;gap:12px}
+ .roster-panel,.versus-panel{padding:12px}
+ .roster{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+ .fighter-card .card-art{height:82px}
+ .fighter-card .card-art svg{height:103px;width:100px}
+ .card-meta{padding:6px;gap:3px}.card-meta b{font-size:18px;letter-spacing:.5px}
+ .card-meta small{font-size:7px;letter-spacing:0}
+ .intro{padding:16px 0 8px}.intro h1{font-size:40px;margin:6px 0}
+ .intro p:last-child{display:none}.section-top h2{font-size:24px;margin:6px 0 12px}
+ .versus-display{min-height:235px!important;margin:8px 0}
+}

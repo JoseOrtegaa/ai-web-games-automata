@@ -6,7 +6,7 @@ import {DESIGNS,portraitSvg,renderCharacter} from '../characters.js';
 test('cuatro humanos y cuatro animales, siluetas y perfiles diferentes',()=>{
  assert.equal(ROSTER.length,8);
  assert.deepEqual(ROSTER.map(f=>DESIGNS[f.id]?.species),[
-   'Humana','Humano','Gorila','Humana','Pantera','Oso','Humana','Lobo'
+   'Humano','Humano','Gorila','Humano','Pantera','Oso','Humana','Lobo'
  ]);
  assert.equal(ROSTER.filter(f=>DESIGNS[f.id].type==='human').length,4);
  assert.equal(new Set(ROSTER.map(f=>DESIGNS[f.id].outfit)).size,8);
@@ -44,7 +44,7 @@ test('el dibujo de combate utiliza cabeza y extremidades para todos los luchador
   renderCharacter(ctx,f,1.3,508);
   assert.ok(counts.fill>20,d.id+' must have detailed visible shapes');
   assert.ok(counts.stroke>15,d.id+' must have outlined anatomical elements');
-  assert.ok(counts.ellipse>=4,d.id+' must have a head and details');
+  assert.ok(counts.fill>=25,d.id+' must have angular head and anatomy');
   f.action={type:'kick',elapsed:.24,hit:false};
   renderCharacter(ctx,f,2.5,508);
  }

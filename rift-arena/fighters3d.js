@@ -1,259 +1,121 @@
-// Original PS2-era-inspired 3D fighting character models, fully procedural and skinned
-// through articulated joints. Meshes are rendered every frame in actual WebGL 3D.
+// Eight original faceted arcade fighters. No licensed models or remote assets.
 import {DESIGNS} from './characters.js';
 import {fighterPose} from './poses.js';
 import {trs,multiply} from './arena3d.js';
-const scale2=.018;
-const at=(p,z=0)=>[p[0]*scale2,-p[1]*scale2,z];
-const dcolor=(d,key)=>d[key]||'#cccccc';
-const skin=(d)=>d.type==='human'?d.skin:d.fur;
-const bodyColors={
- kira:{dark:'#1a1e2a',metal:'#c5a3c3',bright:'#8c426e',belt:'#d5aaa8',eye:'#91d6d8'},
- volt:{dark:'#182d3a',metal:'#7ad9ea',bright:'#356c85',belt:'#c0cfd2',eye:'#b7edf4'},
- onyx:{dark:'#2b2d35',metal:'#d7a861',bright:'#655247',belt:'#d8ab68',eye:'#caa37e'},
- ember:{dark:'#251e2a',metal:'#e5b183',bright:'#b64a35',belt:'#f7ca83',eye:'#dbbeab'},
- vex:{dark:'#141c20',metal:'#a4d5a6',bright:'#2f7163',belt:'#b0bb99',eye:'#a5f7a1'},
- rook:{dark:'#1b2b45',metal:'#e4b46e',bright:'#3b638c',belt:'#e7b87a',eye:'#ffe5aa'},
- sable:{dark:'#221b33',metal:'#e7b2d7',bright:'#814d9a',belt:'#e8c4e1',eye:'#c9e3e5'},
- atlas:{dark:'#333438',metal:'#c9bda5',bright:'#918675',belt:'#e2d2b0',eye:'#ecddae'}
-};
-function getDraw(r,root) {
- return {
-  ball:(x,y,z,rx,ry,rz,c,ryaw=0)=>r.primitive('sphere',x,y,z,rx,ry,rz,c,ryaw,0,root),
-  box:(x,y,z,sx,sy,sz,c,ryaw=0)=>r.primitive('box',x,y,z,sx,sy,sz,c,ryaw,0,root),
-  cone:(x,y,z,sx,sy,sz,c,ryaw=0,tilt=0)=>r.primitive('cone',x,y,z,sx,sy,sz,c,ryaw,tilt,root),
-  cylinder:(x,y,z,sx,sy,sz,c)=>r.primitive('cylinder',x,y,z,sx,sy,sz,c,0,0,root),
-  bone:(a,b,radius,c)=>r.segment(a,b,radius,c,root)
- };
-}
-function link(d,a,b,r,c){
- d.bone(a,b,r,c);d.ball(...a,r*1.05,r*1.05,r*.98,c);d.ball(...b,r*.92,r*.9,r*.93,c);
-}
-function face3D(r,root,def,t){
- const d=DESIGNS[def]||DESIGNS.kira,colors=bodyColors[def],draw=getDraw(r,root);
- const animal=d.type!=='human',c=skin(d);
- const width=def==='onyx'||def==='rook'?.51:.385;
- draw.ball(0,0,0,width,animal?.45:.43,animal?.39:.34,c);
- // Cheekbones and ears occupy real depth, never 2D billboards.
- if(animal){
-  if(['gorilla','bear'].includes(d.type)){
-   for(const sign of [-1,1]){
-    draw.ball(sign*width*.89,.24,-.015,.15,.18,.12,d.fur);
-    draw.ball(sign*width*.92,.25,.088,.075,.086,.045,d.skin);
-   }
-  }else{
-   for(const sign of [-1,1]){
-    draw.cone(sign*.29,.56,-.04,.19,.43,.19,d.fur);
-    draw.cone(sign*.29,.56,.14,.094,.21,.055,def==='vex'?'#7d6567':'#d0b9b4');
-   }
-  }
-  // Separate muzzle and bridge: gorilla, bear, feline and lupine each have a recognizable head.
-  if(def==='onyx'){
-   draw.ball(0,-.10,.34,.39,.29,.35,'#82706a');
-   draw.ball(0,-.21,.61,.26,.14,.20,'#a38b7b');
-   draw.ball(0,-.10,.79,.13,.08,.07,'#322d2d');
-  }else if(def==='rook'){
-   draw.ball(0,-.13,.38,.38,.30,.33,'#b38c74');
-   draw.ball(0,-.23,.64,.28,.20,.26,'#d5ad8f');
-   draw.ball(0,-.12,.90,.16,.10,.085,'#473433');
-  }else if(def==='vex'){
-   draw.ball(0,-.14,.40,.28,.19,.26,'#515861');
-   draw.ball(0,-.20,.57,.20,.15,.23,'#778084');
-   draw.ball(0,-.095,.79,.105,.08,.08,'#293036');
-  }else{
-   draw.ball(0,-.14,.42,.30,.20,.30,'#aab2b3');
-   draw.ball(0,-.18,.63,.20,.13,.30,'#d6dbd3');
-   draw.ball(0,-.105,.88,.12,.075,.10,'#343a3d');
-  }
-  for(const sign of [-1,1]){
-   draw.ball(sign*.18,.09,.33,.12,.072,.06,'#22252c');
-   draw.ball(sign*.18,.09,.385,.064,.045,.03,colors.eye);
-   draw.ball(sign*.18+.015,.086,.411,.020,.033,.014,'#12202b');
-   draw.box(sign*.19,.185,.357,.135,.034,.042,d.fur);
-   // Wolf and panther whisker roots / gorilla brows.
-   if(def==='vex'||def==='atlas')for(let i=0;i<2;i++)draw.box(sign*(.23+i*.065),-.21+i*.07,.55+i*.045,.065,.009,.012,'#d8e2d8');
-  }
-  draw.box(0,-.35,.43,.27,.026,.047,'#403334');
-  if(['atlas','vex'].includes(def))for(const sign of [-1,1]){
-    draw.cone(sign*.20,-.35,.56,.045,.16,.05,'#f2e8d3',0,Math.PI);
-  }
-  if(def==='onyx'||def==='rook'){
-   for(let i=-2;i<=2;i++)draw.cone(i*.13,.44,-.12,.075,.17,.09,def==='rook'?'#8d604c':'#38404a');
-  }
- }else{
-  // Jaw, temples, ears, nostrils, eyelids and eyebrows.
-  draw.ball(0,-.27,.105,.288,.20,.31,d.skin);
-  for(const sign of [-1,1]){
-   draw.ball(sign*.375,-.025,0,.086,.145,.075,d.skin);
-   draw.ball(sign*.145,.067,.302,.108,.066,.051,'#f0dbc4');
-   draw.ball(sign*.145,.067,.355,.046,.046,.022,colors.eye);
-   draw.ball(sign*.145,.065,.376,.021,.034,.012,'#1e2730');
-   draw.box(sign*.143,.17,.325,.132,.029,.055,d.hair);
-   draw.ball(sign*.048,-.155,.37,.038,.025,.034,'#6f473d');
-  }
-  draw.ball(0,-.12,.355,.087,.15,.12,d.skin);
-  draw.box(0,-.275,.339,.16,.016,.035,'#653f3e');
-  draw.ball(0,-.35,.31,.14,.045,.055,'#9f665e');
-  if(def==='kira'){
-   draw.ball(0,.34,-.055,.38,.22,.33,'#211d30');
-   for(let i=0;i<7;i++){
-    const x=(i-3)*.115;
-    draw.cone(x,.53+Math.sin(i*2)*.1,-.05,.16,.29,.18,'#211c2a',0,i*.14);
-   }
-   draw.bone([-.31,.2,-.1],[-.67,-.20,-.30],.13,'#2a2235');
-  }else if(def==='volt'){
-   draw.ball(0,.38,-.04,.38,.21,.34,'#b9d8de');
-   for(let i=0;i<6;i++)draw.cone((i-2.5)*.13,.57,-.09,.115,.19,.13,i%2?'#dfefee':'#92bcc6');
-   draw.box(0,.28,.25,.37,.066,.13,'#d9e6e4');
-  }else if(def==='ember'){
-   draw.ball(0,.38,-.015,.4,.23,.31,'#a83534');
-   for(let i=0;i<6;i++)draw.cone((i-2.5)*.14,.52,-.03,.13,.27,.14,i%2?'#b63036':'#d96b43');
-   draw.bone([-.25,.31,-.24],[-.69,-.35,-.40],.145,'#9b2d31');
-  }else{
-   draw.ball(0,.35,0,.37,.24,.30,'#332642');
-   for(let i=0;i<5;i++)draw.cone((i-2)*.18,.53,-.02,.12,.25,.13,'#573960');
-   draw.bone([-.3,.19,-.2],[-.45,-.59,-.31],.13,'#392743');
-  }
- }
- // Neck and jaw highlights define the head volume at PS2-like resolution.
- draw.ball(0,-.39,-.11,.20,.115,.25,d.type==='human'?d.skin:d.fur);
+const at=(p,z)=>[p[0]*.018,-p[1]*.018,z];
+// Two-bone inverse kinematics: rigid lengths, never elastic attack limbs.
+export function solveLimb(start,target,l1,l2,bend=1){
+ const dx=target[0]-start[0],dy=target[1]-start[1],raw=Math.hypot(dx,dy)||.001;
+ const dist=Math.max(Math.abs(l1-l2)+.001,Math.min(raw,l1+l2-.001));
+ const ux=dx===0&&dy===0?1:dx/raw,uy=dy/raw,a=(l1*l1-l2*l2+dist*dist)/(2*dist),h=Math.sqrt(Math.max(0,l1*l1-a*a));
+ return [[start[0]+ux*a-uy*h*bend,start[1]+uy*a+ux*h*bend,start[2]],
+ [start[0]+ux*dist,start[1]+uy*dist,start[2]]];
 }
 export function drawFighter3D(r,f,t){
- const d=DESIGNS[f.id]||DESIGNS.kira,C=bodyColors[f.id]||bodyColors.kira,p=fighterPose(f,t);
- const feetX=(f.x-576)*.014;
- const root=trs(feetX,f.y*.014,0,1,1,1,f.face===1?.92:-.92);
- const dr=getDraw(r,root);
- const k=p.intensity,impact=Math.max(0,f.impact||0);
- const build=d.build;
- const ball=(x,y,z,rx,ry,rz,c)=>dr.ball(x,y,z,rx,ry,rz,c);
- const box=(x,y,z,sx,sy,sz,c)=>dr.box(x,y,z,sx,sy,sz,c);
- const bone=(a,b,w,c)=>link(dr,a,b,w,c);
- const rearHip=at(p.rearHip,-.10),frontHip=at(p.frontHip,.13);
- const rearKnee=at(p.rearKnee,-.10),frontKnee=at(p.frontKnee,.13);
- const rearAnkle=at(p.rearAnkle,-.1),frontAnkle=at(p.frontAnkle,.13);
- const rearElbow=at(p.rearElbow,-.21),frontElbow=at(p.frontElbow,.20);
- const rearHand=at(p.rearHand,-.1),frontHand=at(p.frontHand,.26);
- // Contact shadow, depth-sorted behind feet. Soft fake shadow layered over the 3D floor.
- for(let i=4;i>=0;i--)ball(0,.013+i*.001,-.03,.94+i*.13,.006,.42+i*.09,i%2?'#1b1e27':'#24242b');
- // Animated tail: four segments with soft joins and different thickness.
- if(f.id==='vex'||f.id==='atlas'){
-   const tailColor=d.fur;
-   const rootTail=[-.17,1.52,-.40],swing=Math.sin(t*3.3+f.x*.015)*.25;
-   const a=[-.55,1.46,-.78],b=[-.9,1.24+swing,-1.07],c=[-1.04,1.36+swing*1.4,-1.34];
-   bone(rootTail,a,f.id==='atlas'?.15:.105,tailColor);
-   bone(a,b,.105,tailColor);bone(b,c,.083,f.id==='atlas'?'#d0d1c8':d.fur);
- }
- // Walking legs, hips, boots and textile folds follow the same hitbox simulation.
- const leg=build>1.2?1.08:1;
- for(const [hip,knee,ankle,zOff] of [[rearHip,rearKnee,rearAnkle,-.1],[frontHip,frontKnee,frontAnkle,.13]]){
-   bone(hip,knee,.205*leg,d.pants);bone(knee,ankle,.166*leg,d.pants);
-   ball(...knee,.192*leg,.19*leg,.18*leg,C.dark);
-   ball(...ankle,.167*leg,.155*leg,.17*leg,d.boots);
-   ball(ankle[0]+.19,Math.max(.18,ankle[1]-.02),zOff+.11,.29*leg,.11,.24,d.boots);
-   // shin guard and upper boot panel
-   const sy=(knee[1]+ankle[1])*.5,sx=(knee[0]+ankle[0])*.5;
-   ball(sx,sy,zOff+.18,.175*leg,.29*leg,.09,C.dark);
-   box(sx,sy+.04,zOff+.272,.145,.075,.025,C.metal);
- }
- // Pelvis and heavy overlapping belt/cloth, not a line-art stick torso.
- ball(0,1.52,0,.51*build,.30,.34,d.pants);
- ball(0,1.79,-.02,.50*build,.48,.32,d.outfit);
- box(0,1.70,.23,.45*build,.105,.20,C.belt);
- box(.10,1.70,.35,.14,.13,.045,C.metal);
- // Armoured torso / sculpted chest and back; shoulders differ for large animals.
- ball(0,2.28,-.015,.59*build,.64,.35,d.outfit);
- ball(0,2.16,.22,.50*build,.45,.21,C.dark);
- const exposed=['onyx','rook'].includes(f.id);
- const torsoSkin=exposed?d.fur:d.outfit;
+ const d=DESIGNS[f.id]||DESIGNS.ryuzo,p=fighterPose(f,t),animal=d.type!=='human';
+ const heavy=d.build,w=d.shoulder,body=animal?d.fur:d.skin;
+ const gait=Math.sin((f.walk||0)*1.35)*(f.motion||0);
+ const yaw=(f.face===1?.76:-.76)+gait*.035;
+ const root=trs((f.x-576)*.014,f.y*.014,0,1,1,1,yaw);
+ // KO rotates the entire skeleton onto the floor; crouch bends stance without squash.
+ const height=p.fallen?.55:p.crouch?-.48:0;
+ const pivot=trs(-p.hurt*.23,height+p.bob*.008,0,1,1,1,0,p.fallen?-1.48:p.lean*.45);
+ const rig=multiply(root,pivot);
+ const mesh=(kind,x,y,z,sx,sy,sz,c,rot=0,tilt=0)=>r.primitive(kind,x,y,z,sx,sy,sz,c,rot,tilt,rig);
+ const part=(kind,xyz,size,c)=>mesh(kind,...xyz,...size,c);
+ const box=(xyz,size,c)=>part('box',xyz,size,c);
+ const bone=(a,b,width,c,kind='muscle')=>r.segment(a,b,width,c,rig,kind);
+ r.primitive('sphere',0,.016,0,.8*heavy,.009,.42,'#171a20',0,0,root);
+ const hipY=p.crouch?1.35:1.57;
+ mesh('pelvis',0,hipY,0,.44*heavy,.26,.30,d.pants);
+ mesh('torso',0,2.19,0,w,.60,d.depth,d.outfit);
+ // Pectoral and abdominal planes, with a broad back rather than intersecting balls.
  for(const s of [-1,1]){
-   ball(s*.29*build,2.43,.19,.31*build,.34,.22,torsoSkin);
-   ball(s*.52*build,2.55,-.03,.24*build,.29,.29,exposed?d.fur:C.bright);
+  mesh('muscle',s*w*.42,2.43,.23,.30*heavy,.31,.13,d.exposed?body:d.outfit,0,s*.18);
+  mesh('muscle',s*w*.85,2.54,0,.24*heavy,.23,.24,body,0,s*.22);
+  for(let i=0;i<2;i++)box([s*.15*heavy,2.05+i*.17,.30],[.14*heavy,.075,.035],d.exposed?body:d.trim);
  }
- // Character-specific high-poly-ish costume layers and identifying gear.
- if(f.id==='kira'){
-   for(const s of [-1,1]){
-     box(s*.29,2.31,.35,.18,.40,.035,'#ad6d96');
-     box(s*.17,2.18,.405,.09,.36,.02,C.metal);
-   }
-   box(0,1.43,.22,.36,.36,.10,'#38223d');
- }else if(f.id==='volt'){
-   for(const s of [-1,1]){
-     ball(s*.35,2.35,.38,.21,.37,.08,'#2d667b');
-     box(s*.33,2.34,.47,.16,.085,.03,C.metal);
-     box(s*.53,2.58,.17,.22,.14,.25,'#4e91a1');
-   }
-   ball(0,2.28,.44,.16,.16,.10,'#b5fff2');
- }else if(f.id==='onyx'){
-   for(const s of [-1,1]){
-     box(s*.39,2.18,.37,.20,.07,.09,C.metal);
-     ball(s*.60,2.60,.10,.23,.18,.32,'#5b6268');
-   }
-   box(0,1.75,.4,.32,.12,.10,'#d4a467');
- }else if(f.id==='ember'){
-   box(0,2.26,.385,.26,.59,.065,'#c46b49');
-   for(const s of [-1,1])box(s*.30,2.40,.35,.13,.26,.045,'#d08a65');
-   box(0,1.71,.35,.48,.095,.13,'#e8b76a');
- }else if(f.id==='vex'){
-   box(0,2.21,.37,.16,.55,.085,'#60b38b');
-   for(const s of [-1,1])box(s*.37,2.33,.29,.11,.40,.06,'#7bcba3');
- }else if(f.id==='rook'){
-   box(0,2.35,.34,.22,.47,.075,'#dcb27c');
-   for(const s of [-1,1]){
-     box(s*.59,2.49,.11,.24,.12,.30,'#d7b589');
-   }
-   box(0,1.69,.38,.54,.13,.10,'#b9b0a2');
- }else if(f.id==='sable'){
-   for(const s of [-1,1])box(s*.31,2.39,.36,.17,.35,.04,'#b77bc3');
-   box(0,1.42,.22,.33,.42,.09,'#58336d');
+ box([0,1.72,.03],[.46*heavy,.062,.32],d.leather);
+ box([.08,1.72,.36],[.09,.073,.035],d.metal);
+ // Identifying costume and restrained cloth folds.
+ if(f.id==='ryuzo'){
+  for(const s of [-1,1])bone([s*.22,2.68,.26],[s*.12,2.12,.34],.065,'#a5a29a','calf');
+  box([0,1.49,.32],[.13,.19,.028],d.leather);
+ }else if(f.id==='titan'||f.id==='brute'||f.id==='fang'){
+  bone([-.42*heavy,2.70,.22],[.28*heavy,1.84,.33],.10,d.leather,'calf');
+  for(const s of [-1,1])box([s*w*.75,2.57,.13],[.22,.13,.22],d.metal);
+ }else if(f.id==='selene'){
+  box([0,2.24,.34],[.06,.36,.024],d.trim);
+  for(const s of [-1,1])box([s*.32,2.36,.30],[.08,.17,.03],d.leather);
+ }else if(f.id==='razor'){
+  for(const s of [-1,1])bone([s*.45,2.65,.20],[s*.24,1.9,.30],.07,d.leather,'calf');
+ }else if(f.id==='ursus'){
+  mesh('torso',0,2.00,.13,.68,.46,.39,d.fur);
+ }
+ for(const [side,z] of [[-1,-.14],[1,.19]]){
+  const hip=[side*.24*heavy,hipY,z];
+  const target=at(side<0?p.rearAnkle:p.frontAnkle,z);
+  if(!p.kicking&&!p.airborne)target[1]+=Math.max(0,gait*side)*.12;
+  const [knee,foot]=solveLimb(hip,target,.78,.79,side<0?-1:1);
+  bone(hip,knee,.24*heavy,d.pants);
+  bone(knee,foot,.19*heavy,d.pants,'calf');
+  mesh('skull',...knee,.14*heavy,.14,.145,d.leather);
+  // Boots and soles retain angular toes and a readable planted heel.
+  box([foot[0]+.10,foot[1]-.015,z+.045],[.23*heavy,.105,.19*heavy],d.boots);
+  box([foot[0]+.10,foot[1]-.10,z+.045],[.24*heavy,.03,.20*heavy],'#151719');
+  if(['drake','titan','selene'].includes(f.id))bone(knee,[foot[0],foot[1]+.17,z+.08],.14,d.leather,'calf');
+  for(let i=0;i<2;i++)box([hip[0],hipY-.22-i*.14,z+.19],[.12,.018,.025],d.trim);
+ }
+ for(const [side,z] of [[-1,-.21],[1,.24]]){
+  const shoulder=[side*w*.84,2.52,z];
+  let target=at(side<0?p.rearHand:p.frontHand,z);
+  if(f.id==='brute'){target=[target[0]*1.06,target[1]-.18,z];}
+  const len=f.id==='brute'?1.04:.76;
+  const [elbow,hand]=solveLimb(shoulder,target,len,len*.93,side<0?1:-1);
+  bone(shoulder,elbow,.23*heavy,d.exposed?body:d.outfit);
+  bone(elbow,hand,(f.id==='brute'?.28:.19)*heavy,body,'calf');
+  mesh('skull',...elbow,.13*heavy,.13,.13,body);
+  mesh('fist',...hand,d.fist,.19*heavy,.19*heavy,d.glove);
+  box([hand[0]-.09,hand[1]-.055,z+.12],[.08,.085,.07],d.glove);
+  for(let i=0;i<3;i++)box([hand[0]-.09+i*.09,hand[1]+.10,z+.16],[.035,.04,.02],d.trim);
+  bone([hand[0]-.10,hand[1],z],[hand[0]-.22,hand[1]-.03,z],.14,d.leather,'calf');
+  if(f.id==='razor')for(let i=0;i<3;i++)mesh('cone',hand[0]+.21,hand[1]+.08-i*.07,z+.15,.035,.21,.03,d.metal,0,-1.57);
+ }
+ bone([0,2.68,0],[0,2.96,0],.18*heavy,body);
+ const hy=f.id==='brute'?3.13:3.20;
+ const hw=animal?.31*heavy:f.id==='selene'?.235:f.id==='titan'?.30:.265;
+ mesh('skull',0,hy,.015,hw,animal?.36:.35,animal?.30:.255,body);
+ // Brow ridges, cheek planes and a squared jaw; eye apertures remain small.
+ mesh('skull',0,hy-.22,.11,hw*.83,.13,.22,animal?d.skin:d.skin);
+ for(const s of [-1,1]){
+  box([s*hw*.48,hy+.045,.24],[.065,.017,.018],'#17181a');
+  box([s*hw*.48,hy+.11,.245],[.082,.033,.038],animal?d.fur:d.hair);
+  mesh('skull',s*hw*.70,hy-.07,.15,.09,.09,.10,body);
+  if(animal){
+   if(d.type==='wolf')mesh('cone',s*.24,hy+.37,-.04,.14,.30,.12,d.fur);
+   else mesh('skull',s*hw*.88,hy+.22,0,.11,.12,.08,d.fur);
+  }else mesh('skull',s*hw,hy-.03,0,.045,.085,.048,d.skin);
+ }
+ if(animal){
+  const snout=d.type==='wolf'?.39:d.type==='gorilla'?.17:.25;
+  mesh('skull',0,hy-.13,.28,hw*.76,.14,snout,d.skin);
+  box([0,hy-.08,.28+snout],[.09,.05,.045],'#17191b');
+  box([0,hy-.24,.30+snout*.5],[.13,.016,.025],'#292323');
+  if(f.id==='razor')for(const s of [-1,1])box([s*.22,hy+.02,.27],[.025,.16,.02],d.trim);
+  if(f.id==='fang'||f.id==='ursus'||f.id==='brute')for(const s of [-1,1])for(let i=0;i<3;i++)mesh('fur',s*(hw+.035),hy-.04-i*.12,-.025,.08,.17,.13,i%2?d.fur:d.outfit,0,s*.3);
  }else{
-   box(0,2.20,.40,.32,.57,.07,'#a89d86');
-   for(const s of [-1,1])box(s*.34,2.40,.35,.13,.34,.045,'#d0bc9d');
-   box(0,1.72,.35,.49,.105,.12,'#ded0b5');
+  mesh('skull',0,hy-.035,.265,.055,.10,.065,d.skin);
+  box([0,hy-.19,.24],[.08,.012,.025],'#513a32');
+  mesh('skull',0,hy+.24,-.025,hw*1.015,f.id==='drake'?.065:.13,.255,d.hair);
+  if(f.id==='selene'){
+   bone([0,hy+.21,-.25],[-.14,hy-.40,-.30],.085,d.hair,'calf');
+   box([0,hy+.20,-.24],[.10,.035,.055],d.trim);
+  }
  }
- // Ribs and seams create a consistent surface under direct stage light.
- for(let i=0;i<3;i++)box(0,2.0+i*.13,.35,.34*build,.023,.028,i%2?C.bright:C.dark);
- // Back arm first; weight follows elbow and fist, guard raises both gloves.
- const rShoulder=[-.53*build,2.54,-.2];
- bone(rShoulder,rearElbow,.225*build,exposed?d.fur:d.outfit);
- bone(rearElbow,rearHand,.165*build,exposed?d.fur:d.outfit);
- ball(...rearHand,.22*build,.19*build,.23*build,d.glove);
- // Front arm, with strong punch, hook and uppercut silhouettes.
- const fShoulder=[.53*build,2.55,.17];
- bone(fShoulder,frontElbow,.242*build,exposed?d.fur:d.outfit);
- bone(frontElbow,frontHand,.18*build,exposed?d.fur:d.outfit);
- ball(...frontHand,.21*build,.18*build,.235*build,d.glove);
- for(let i=0;i<3;i++){
-   ball(frontHand[0]+(i-1)*.105,frontHand[1]+.035,frontHand[2]+.20,.068,.09,.06,C.metal);
+ if(animal)for(const s of [-1,1])for(let i=0;i<4;i++)mesh('fur',s*w*.8,2.5-i*.10,-.18,.10,.18,.13,i%2?d.fur:d.outfit,0,s*.5);
+ if(f.id==='razor'||f.id==='fang'){
+  bone([-.12,1.6,-.24],[-.45,1.16,-.64],.095,d.fur,'calf');
+  bone([-.45,1.16,-.64],[-.73,1.04+Math.sin(t*2)*.08,-.90],.065,d.fur,'calf');
  }
- if(f.id==='rook'){
-   ball(...frontHand,.29,.245,.29,'#a1424d');
-   ball(...rearHand,.27,.23,.27,'#a1424d');
- }
- // Face and head are independent 3D models with subtle yaw/roll motion.
- const neck=[0,2.83,0];
- bone(neck,[0,3.06,0],.24,d.type==='human'?d.skin:d.fur);
- const headRoot=multiply(root,trs(0,3.37+(p.breathing*.011),.045,1,1,1,
-     p.hurt*.05,p.headAngle+p.lean*.14));
- face3D(r,headRoot,f.id,t);
- // Front ponytails, hood scarf and earrings can sway in stance.
- if(f.id==='kira'||f.id==='ember'||f.id==='sable'){
-   const tail= f.id==='sable'?'#51355a':f.id==='ember'?'#ab342e':'#272033';
-   bone([-.26,3.67,-.21],[-.65,3.02+Math.sin(t*3)*.11,-.31],.11,tail);
- }
- // Blocking and impact: flashing material and energy arc occupy the 3D scene.
- if(impact>.01)ball(0,2.30,.0,.58*build,.80,.52,'#bb8979');
- if(p.isSpecial&&k>.16){
-   const hand=frontHand;
-   ball(hand[0],hand[1],hand[2],.27+.24*k,.27+.24*k,.27+.24*k,C.metal);
-   for(let i=0;i<4;i++)ball(hand[0]+(i-2)*.24,hand[1]+Math.sin(i*3+t*12)*.14,
-     hand[2]+.14,.095,.11,.09,C.bright);
- }
- // Thin strike streaks briefly underline the real pose animation.
- if(k>.60&&p.kicking){
-   const x=frontAnkle[0],y=frontAnkle[1];
-   bone([x-.44,y+.20,.16],[x+.30,y+.04,.18],.06,C.metal);
- }
- if(p.fallen){
-   ball(0,.55,0,.80,.12,.53,'#44383b');
- }
+ if(p.isSpecial&&p.intensity>.7)mesh('cone',1.12,2.28,.1,.11,.55,.10,d.trim,0,-1.57);
 }

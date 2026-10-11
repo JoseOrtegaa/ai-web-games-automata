@@ -85,7 +85,7 @@ try {
   assert.ok(portraits.some(label=>label.includes('Lobo')),'Debe haber un lobo visible en el selector');
 
   const choice=await evaluate("(()=>{document.querySelector('[data-side=\"1\"]').click();document.querySelectorAll('.fighter-card')[3].click();return document.getElementById('name2').textContent})()");
-  assert.equal(choice,'EMBER');
+  assert.equal(choice,'TITAN');
   const local=await evaluate("(()=>{document.querySelector('[data-mode=\"local\"]').click();return document.getElementById('enemyLabel').textContent})()");
   assert.equal(local,'JUGADOR 2');
   const stage=await evaluate(`(()=>{document.querySelector('[data-stage="temple"]').click();return document.querySelector('.stage-tile.chosen')?.dataset.stage})()`);

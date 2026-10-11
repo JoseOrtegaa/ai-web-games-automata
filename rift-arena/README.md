@@ -4,7 +4,7 @@ Arcade original de lucha 1 contra 1, inspirado en la intensidad de los juegos de
 
 ## Versión actual
 
-- **8 luchadores originales**, ahora ilustrados como personajes reconocibles: cuatro personas (**Kira** ninja, **Volt** combatiente tecnológico, **Ember** artista marcial y **Sable** luchadora acrobática) y cuatro animales antropomórficos (**Onyx** gorila, **Vex** pantera, **Rook** oso boxeador y **Atlas** lobo). Cada uno tiene complexión, rostro, pelaje o cabello, equipamiento y silueta únicos, además de velocidad, potencia y especiales diferenciados.
+- **Roster rehecho desde cero**: Ryuzo, Drake, Selene y Titan (humanos); Razor (pantera), Fang (lobo), Brute (gorila) y Ursus (oso). Mallas facetadas de anatomía definida, materiales mate, ropa/correas y mechones low-poly. Retratos angulosos nuevos y preview 3D con los mismos modelos del combate.
 - **8 campos de pelea originales**, con geometría 3D, fondos de varias capas y suelos diferenciados: Neon Zenith, Templo Solar, Forja Abisal y Bastión Ártico.
 - **1v1** contra CPU en cualquier dispositivo o dos jugadores en el mismo teclado en ordenador.
 - Rondas de 60 s; primer jugador en ganar 2 rondas vence. Salud, energía, bloqueo, esquiva agachada, salto, gancho elevador, barrido bajo, especiales, combos encadenados, sonido opcional.
@@ -53,3 +53,9 @@ Se publica en GitHub Pages directamente desde `main/rift-arena/`. El navegador S
 - **Vista previa WebGL 3D interactiva en el selector**, actualizada al elegir personaje y escenario; si no hay WebGL conserva los retratos SVG. Cámara lateral cinematográfica y HUD arcade; golpes con indicadores superpuestos. En móvil horizontal ocupa toda la pantalla y conserva controles por dos pulgares.
 - Sin recursos remotos, anuncios, servicios de pago ni datos personales. Los navegadores sin WebGL siguen usando el renderizador Canvas 2D anterior.
 - **Nota:** estética low-poly retro de consola PS2 inspirada en juegos clásicos; no es un port de Tekken, ni usa sus personajes o recursos. Los modelos son procedurales: no prometen realismo fotorrealista ni captura de movimiento.
+
+## Roster retro 3D
+
+Extremidades con cinemática inversa de dos huesos y longitudes fijas, guardia alta, anticipación/impacto/recuperación, movimiento de hombros y caída de todo el esqueleto en KO. Se conservan hitboxes, tiempos y controles; los perfiles de combate existentes se asignan al roster nuevo. El fallback Canvas usa arte angular coherente, con animación más sencilla. WebGL sigue sin librerías ni descargas externas.
+
+Los modelos son procedurales estilizados de baja resolución, no modelos de producción PS2 con texturas pintadas ni mocap. La revisión móvil se realiza con emulación de Chromium; falta comprobar Safari en un iPhone físico.

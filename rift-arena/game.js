@@ -13,7 +13,7 @@ const arena3d = createArena3D(ui.arena);
 const ctx = arena3d ? null : ui.arena.getContext('2d', { alpha: false });
 ui.arena.dataset.renderer = arena3d ? 'webgl3d' : 'canvas2d';
 const HEIGHT = 648;
-const chosen = ['kira', 'volt'];
+const chosen = ['ryuzo', 'drake'];
 let activeSide = 0;
 let selectedStage = 'zenith';
 let mode = 'cpu';
@@ -99,6 +99,7 @@ const preview3d=createArena3D(previewCanvas);
 let lastPreview=0;
 if(preview3d){
   previewCanvas.dataset.renderer='webgl3d';
+  preview3d.camera=[0,3.7,9.8];preview3d.target=[0,1.9,0];
   previewCanvas.parentElement.classList.add('has-webgl');
 }else{
   previewCanvas.hidden=true;
@@ -112,10 +113,10 @@ function drawSelectionPreview(timestamp){
   const h=Math.max(2,Math.min(540,Math.round(rect.height*ratio)));
   if(previewCanvas.width!==w||previewCanvas.height!==h){previewCanvas.width=w;previewCanvas.height=h;}
   preview3d.resize(w,h);
-  const f1=createFighter(chosen[0],328,1),f2=createFighter(chosen[1],826,-1);
+  const f1=createFighter(chosen[0],425,1),f2=createFighter(chosen[1],727,-1);
   f1.walk=timestamp*.001*1.7;f2.walk=timestamp*.001*1.6;
   f1.motion=.09;f2.motion=.08;
-  preview3d.render([f1,f2],selectedStage,timestamp*.001,0);
+  preview3d.render([f1,f2],selectedStage,timestamp*.001,0,true);
 }
 
 function setupCanvas() {
@@ -293,7 +294,7 @@ function cpuIntent(ai, player, dt) {
     else act.uppercut=true;
     battle.aiClock=.31+Math.random()*.34;
   }
-  if((ai.id==='volt'||ai.id==='vex')&&ai.meter>=40&&gap<288&&gap>155&&battle.aiClock===0){
+  if((ai.id==='drake'||ai.id==='razor')&&ai.meter>=40&&gap<288&&gap>155&&battle.aiClock===0){
     act.special=true;battle.aiClock=.65;
   }
   if(gap>176&&gap<280&&Math.random()<.003)act.jump=true;

@@ -9,15 +9,16 @@ export function attackIntensity(f){
  if(!a||!MOVES[a.type]) return 0;
  const move=MOVES[a.type],start=move.start,active=move.active,total=start+active+move.end;
  const elapsed=clamp(a.elapsed,0,total);
- if(elapsed<start)return .28*smooth(elapsed/start);
- if(elapsed<start+active)return blend(.28,1,smooth((elapsed-start)/active));
+ if(elapsed<start)return 0;
+ if(elapsed<start+active)return Math.max(0,blend(-.18,1,Math.min(1,(elapsed-start)/(active*.35))));
  return 1-smooth((elapsed-start-active)/move.end);
 }
 export function fighterPose(f,t=0){
  const moving=clamp(f.motion??0,0,1);
  const stride=Math.sin((f.walk||0)*1.35)*moving;
  const breathing=Math.sin(t*2.8+f.x*.012);
- const intensity=attackIntensity(f);
+ const intensity=Math.max(0,attackIntensity(f));
+ const anticipation=f.action&&f.action.elapsed<MOVES[f.action.type].start?Math.sin(f.action.elapsed/MOVES[f.action.type].start*Math.PI)*.10:0;
  const kind=f.action?.type;
  const airborne=(f.y||0)>4;
  const crouch=!!f.crouch || (!!f.action&&kind==='sweep'&&intensity>.55);
@@ -29,18 +30,18 @@ export function fighterPose(f,t=0){
  const kick=kind==='kick';
  const sweep=kind==='sweep';
  const special=kind==='special';
- const ranged=special&&['volt','vex'].includes(f.id);
- const kicking=kick||sweep||(special&&['ember','sable','vex'].includes(f.id));
+ const ranged=special&&['drake','razor'].includes(f.id);
+ const kicking=kick||sweep||(special&&['titan','selene','razor'].includes(f.id));
  const striking=punch||upper||special;
- const heavy=['onyx','rook'].includes(f.id);
- let bob=breathing*1.25+Math.abs(stride)*3.5;
- let lean=(moving*.025+breathing*.007)+hurt*.23;
+ const heavy=['brute','ursus'].includes(f.id);
+ let bob=breathing*.4+Math.abs(stride)*1.8;
+ let lean=(moving*.05+breathing*.003)-anticipation;
  let pivot=0;
  let rearHip=point(-15,-84),frontHip=point(14,-83);
  let rearKnee=point(-26-stride*14,-43+Math.abs(stride)*5),rearAnkle=point(-17+stride*24,-11);
  let frontKnee=point(25+stride*13,-43+Math.abs(stride)*5),frontAnkle=point(36-stride*21,-11);
- let rearElbow=point(-46,-112+breathing*2),rearHand=point(-28,-94+breathing*2);
- let frontElbow=point(47,-127+breathing*2),frontHand=point(30,-104+breathing*3);
+ let rearElbow=point(-46,-112+breathing*.5),rearHand=point(-12,-151+breathing*.5);
+ let frontElbow=point(47,-127+breathing*.5),frontHand=point(39,-168+breathing*.6);
 
  if(airborne){
    bob=-2;lean+=.04;

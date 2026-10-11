@@ -50,7 +50,7 @@ test('eight fighters emit articulated 3D anatomy in idle, punch and kick',()=>{
  const counts={};
  const fake={
   primitive(...args){
-   assert.ok(['box','sphere','cone','cylinder'].includes(args[0]));
+   assert.ok(['box','sphere','cone','cylinder','torso','pelvis','skull','muscle','calf','fist','fur'].includes(args[0]));
    for(const n of args.slice(1,7))assert.ok(Number.isFinite(n));
    counts.primitive++;
   },
@@ -108,4 +108,16 @@ test('stage atmosphere is animated, scene-specific and keeps a bounded mobile dr
  const moving=[];
  stageAtmosphere({primitive:(...args)=>moving.push(args)},'volcano',4);
  assert.notDeepEqual(moving[0],results.volcano[0],'Embers should move as time passes');
+});
+
+test('rigid anatomy keeps both bone lengths for near and unreachable targets',async()=>{
+ const {solveLimb}=await import('../fighters3d.js');
+ const start=[.3,2.5,.2];
+ for(const target of [[.3,2.5,.2],[8,2,.2],[-2,5,.2],[.8,1.7,.2]]){
+  const [elbow,hand]=solveLimb(start,target,.76,.71,-1);
+  const distance=(a,b)=>Math.hypot(...a.map((v,i)=>v-b[i]));
+  assert.ok(Math.abs(distance(start,elbow)-.76)<1e-6);
+  assert.ok(Math.abs(distance(elbow,hand)-.71)<1e-6);
+  assert.ok(distance(start,hand)<=1.47);
+ }
 });
