@@ -12,9 +12,12 @@ try {
  assert(await page.locator('#panel-worlds').isVisible());assert(!(await page.locator('#panel-shop').isVisible()));
  const cdp=await page.context().newCDPSession(page);
  const swipe=async(selector)=>{
+  const overflow=await page.locator('#map-content').evaluate(e=>e.scrollHeight-e.clientHeight);
+  if(overflow<=30)return; // A fully visible collection needs no scrolling.
   await page.locator(selector).scrollIntoViewIfNeeded();
   const box=await page.locator(selector).boundingBox();
-  const x=box.x+box.width/2,y=Math.min(box.y+box.height/2,330);
+  const viewport=page.viewportSize();
+  const x=box.x+box.width/2,y=Math.min(box.y+box.height/2,viewport.height-20);
   const before=await page.locator('#map-content').evaluate(e=>e.scrollTop);
   await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y}]});
   for(let i=1;i<=6;i++){
@@ -50,6 +53,28 @@ try {
  await page.reload();await page.waitForFunction(()=>window.__ferretQA);await page.click('#start');await page.click('#tab-shop');
  assert(await page.locator('[data-cosmetic="crown"]').isDisabled());
  assert.equal(await page.locator('#shop-balance').textContent(),'◆ 220 croquetas disponibles');
+ // Reduced heights reproduce the space left by Safari's address/tab bars.
+ for(const viewport of [{width:932,height:280},{width:932,height:320},{width:844,height:300}]){
+  await page.setViewportSize(viewport);await page.click('#tab-worlds');
+  const layout=await page.evaluate(()=>{
+   const content=document.getElementById('map-content'),nav=document.querySelector('.map-tabs');
+   const c=content.getBoundingClientRect(),n=nav.getBoundingClientRect();
+   return {height:c.height,width:c.width,left:c.left,navRight:n.right,overflow:content.scrollWidth>content.clientWidth};
+  });
+  assert(layout.height>=viewport.height-30,'content uses almost all available height');
+  assert(layout.left>=layout.navRight,'navigation sits beside the content');
+  assert(layout.width>viewport.width*.68&&!layout.overflow,'wide readable content with no horizontal overflow');
+  for(const tab of ['worlds','shop','relics']){
+   await page.click(`#tab-${tab}`);
+   await swipe(tab==='worlds'?'[data-level="0"]':tab==='shop'?'[data-cosmetic="none"]':'.relic-card:first-child');
+   await page.locator('#map-content').evaluate(e=>e.scrollTop=0);
+   const bounds=await page.locator(`#tab-${tab}`).boundingBox();assert(bounds.height>=44);
+   await page.screenshot({path:`test-results/menu-short-${viewport.width}-${viewport.height}-${tab}.png`});
+  }
+ }
+ await page.setViewportSize({width:1280,height:800});await page.click('#tab-worlds');
+ const desktop=await page.evaluate(()=>({nav:document.querySelector('.map-tabs').getBoundingClientRect().bottom,content:document.getElementById('map-content').getBoundingClientRect().top}));
+ assert(desktop.content>=desktop.nav,'tall screens retain horizontal navigation');
  assert.deepEqual(errors,[]);
  console.log('PASS menu: real touch swipes over cards and equipped buttons, tabs, wallet, equip, reload and playable controls.');
 } finally {await browser.close();}
