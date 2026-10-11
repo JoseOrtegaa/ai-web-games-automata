@@ -13,11 +13,14 @@ Juegos web originales desarrollados con una sesión de IA + GitHub, sin workflow
 
 La versión anterior de Huroner Survivor se conserva en la rama [feature/huroner-survivor-legacy](https://github.com/JoseOrtegaa/ai-web-games-automata/tree/feature/huroner-survivor-legacy/huroner-survivor).
 
+| [Rift Arena](https://joseortegaa.github.io/ai-web-games-automata/rift-arena/) | `rift-arena/` | Lucha arcade 1v1 con selección de personajes, CPU o dos jugadores locales. |
+
 ## Desarrollo y publicación
 
 GitHub Pages sirve la **raíz de `main`**. El catálogo está en `index.html`.
 
 - **Huroner Survivor**: HTML/CSS/JavaScript con módulos ES, sin build. Ejecuta `npm test` desde `huroner-survivor/`. Se publica directamente desde esa carpeta.
+- **Rift Arena**: Canvas 2D y JavaScript nativo. Ejecuta `node --test rift-arena/tests/*.test.mjs` desde la raíz; se publica directamente.
 - **Ferret Jump**: Phaser + TypeScript + Vite. Ejecuta `npm ci`, `npm test`, `npm run build` desde `huroner-platformer/`; incluye `dist/` actualizado en el commit para publicar. GitHub Actions verifica el gameplay y navegador en los cambios correspondientes.
 - Para probar el sitio en local: `python3 -m http.server 8000` desde la raíz y abre `http://localhost:8000/`. Consulta el README de cada juego para sus controles, pruebas y detalles concretos.
 - Para crear otro juego: carpeta independiente, README corto, pruebas proporcionales y ruta de publicación verificada sin romper el catálogo. Evita introducir agentes, estados de fase o plantillas de documentos.
