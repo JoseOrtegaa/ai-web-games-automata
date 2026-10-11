@@ -340,6 +340,9 @@ export class GameScene extends Phaser.Scene {
     }
     private bindUI() {
         this.ui.bind('start', () => this.openMap());
+        document.querySelectorAll<HTMLButtonElement>('[data-map-tab]').forEach(button => {
+            button.onclick = () => this.showMapPanel(button.dataset.mapTab!);
+        });
         this.ui.bind('map-back', () => { this.ui.show('world-map', false); this.ui.show('menu', true); });
         this.ui.bind('pause-map', () => this.openMap());
         this.ui.bind('win-map', () => this.openMap());
@@ -354,6 +357,23 @@ export class GameScene extends Phaser.Scene {
             document.getElementById('sound')!.textContent = this.sounds.muted ? '♫̸' : '♪';
             document.getElementById('sound')!.setAttribute('aria-label', this.sounds.muted ? 'Activar audio' : 'Silenciar audio');
         });
+    }
+    private showMapPanel(panel: string) {
+        document.querySelectorAll<HTMLButtonElement>('[data-map-tab]').forEach(button => {
+            const active = button.dataset.mapTab === panel;
+            button.setAttribute('aria-pressed', String(active));
+            document.getElementById(button.getAttribute('aria-controls')!)!.hidden = !active;
+        });
+        document.getElementById('map-content')!.scrollTop = 0;
+    }
+    private cosmeticPreview(id: string, type: string): HTMLImageElement {
+        const key = type === 'coat' ? (id === 'classic' ? 'ferret' : `ferret-${id}`) : (id === 'none' ? 'ferret' : `hat-${id}`);
+        const frame = this.textures.getFrame(key, key.startsWith('ferret') ? 0 : '__BASE');
+        const canvas = document.createElement('canvas');
+        canvas.width = frame.cutWidth; canvas.height = frame.cutHeight;
+        canvas.getContext('2d')!.drawImage(frame.source.image as HTMLCanvasElement, frame.cutX, frame.cutY, frame.cutWidth, frame.cutHeight, 0, 0, frame.cutWidth, frame.cutHeight);
+        const img = document.createElement('img'); img.src = canvas.toDataURL(); img.alt = '';
+        return img;
     }
     private openMap() {
         this.mode = 'menu';
@@ -391,27 +411,49 @@ export class GameScene extends Phaser.Scene {
             const text=document.createElement('div');const title=document.createElement('strong');title.textContent=found?relic.name:'Reliquia por descubrir';
             const detail=document.createElement('small');detail.textContent=`${CHAPTERS[i].id} · ${found?'Encontrada':relic.hint}`;text.append(title,detail);card.append(text);collection.append(card);
         });
-        document.getElementById('map-title')!.textContent='Dos castillos por explorar';
-        document.getElementById('world-summary')!.textContent = `${WORLDS[0].summary} ${WORLDS[1].summary}`;
+        document.getElementById('map-title')!.textContent='Tu próxima aventura';
+        document.getElementById('relic-count')!.textContent = `${relics.length}/${RELICS.length}`;
+        document.getElementById('world-summary')!.textContent = `${progress.completed.length}/${CHAPTERS.length} niveles completados · Dos mundos por explorar`;
         document.getElementById('future-worlds')!.innerHTML = WORLDS.slice(2).map((_,i) => `<div class="future-world"><b>?</b><span>Mundo ${i+3}</span><small>Próximamente</small></div>`).join('');
         this.renderShop();
         this.ui.show('world-map', true);
-        (levels.querySelector('button:not(:disabled)') as HTMLButtonElement)?.focus();
+        this.showMapPanel('worlds');
+        document.getElementById('shop-feedback')!.textContent = '';
+        document.getElementById('tab-worlds')!.focus({preventScroll:true});
     }
     private renderShop() {
         document.getElementById('shop-balance')!.textContent=`◆ ${balance()} croquetas disponibles`;
         const list=document.getElementById('shop-list')!;list.replaceChildren();
         const wardrobe=readWardrobe();
-        COSMETICS.forEach(item=>{
+        COSMETICS.forEach((item, index)=>{
+            if(index === 0 || index === 3) {
+                const heading = document.createElement('h4'); heading.className = 'shop-category';
+                heading.textContent = index === 0 ? 'Sombreros' : 'Pelajes'; list.append(heading);
+            }
             const owned=wardrobe.owned.includes(item.id),selected=wardrobe[item.type]===item.id;
+            const card=document.createElement('article');card.className=`shop-card ${selected?'equipped':''}`;
+            const preview=document.createElement('div');preview.className='cosmetic-preview';preview.append(this.cosmeticPreview(item.id,item.type));
+            const name=document.createElement('strong');name.textContent=item.name;
+            const detail=document.createElement('small');detail.textContent=selected?'Tu aspecto actual':owned?'Ya es tuyo':`Precio: ${item.price} croquetas`;
             const button=document.createElement('button');button.className='shop-item';button.dataset.cosmetic=item.id;
             button.disabled=selected||(!owned&&balance()<item.price);
-            const name=document.createElement('strong');name.textContent=item.name;
-            const action=document.createElement('span');action.textContent=selected?'Equipado':owned?'Equipar':`◆ ${item.price}`;
-            button.append(name,action);
-            button.onclick=()=>{if(selectCosmetic(item.id))this.renderShop();};list.append(button);
+            const action=document.createElement('span');action.textContent=selected?'Equipado':owned?'Equipar':`Comprar · ◆ ${item.price}`;
+            button.append(action);
+            if(!owned&&balance()<item.price)detail.textContent+=` · Te faltan ${item.price-balance()}`;
+            button.setAttribute('aria-label',`${action.textContent}: ${item.name}`);
+            button.onclick=()=>{
+                const scroll=document.getElementById('map-content')!;const position=scroll.scrollTop;
+                if(selectCosmetic(item.id)){
+                    this.renderShop();
+                    document.getElementById('shop-feedback')!.textContent=`${item.name}: ${owned?'equipado':'comprado y equipado'}.`;
+                    // Focus a stable, non-purchasing element after replacing the cards.
+                    document.getElementById('tab-shop')!.focus({preventScroll:true});scroll.scrollTop=position;
+                }
+            };
+            card.append(preview,name,detail,button);list.append(card);
         });
     }
+
     private selectLevel(index: number) {
         if (!isUnlocked(index)) return;
         this.controls.clear();

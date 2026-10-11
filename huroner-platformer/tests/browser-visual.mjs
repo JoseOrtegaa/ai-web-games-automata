@@ -15,8 +15,10 @@ try {
  await page.waitForFunction(()=>window.__ferretQA);
  await page.evaluate(()=>localStorage.setItem('ferret-jump-v1',JSON.stringify({version:1,total:1000,best:100})));
  await page.click('#start');
+ await page.click('#tab-shop');
  for(const id of ['crown','snow'])await page.click(`[data-cosmetic="${id}"]`);
  assert.equal(await page.locator('#shop-balance').textContent(),'◆ 720 croquetas disponibles');
+ await page.click('#tab-worlds');
  await page.click('[data-level="0"]');
  await page.waitForFunction(()=>window.__ferretQA.state().mode==='playing');
  await page.waitForTimeout(120);
@@ -38,7 +40,8 @@ try {
  await page.waitForTimeout(100);assert((await state()).hatVisible);
  await page.evaluate(()=>{const s=window.__ferretQA.scene;s.status.shield=true;});
  await page.waitForTimeout(50);assert.equal((await state()).texture,'ferret-snow','shield keeps chosen coat');
- await page.click('#pause');await page.click('#pause-map');await page.click('[data-cosmetic="violet"]');
+ await page.click('#pause');await page.click('#pause-map');await page.click('#tab-shop');await page.click('[data-cosmetic="violet"]');
+ await page.click('#tab-worlds');
  await page.click('[data-level="0"]');await page.waitForFunction(()=>window.__ferretQA.state().mode==='playing');
  assert.equal((await state()).texture,'ferret-violet');
  await page.evaluate(()=>{const s=window.__ferretQA.scene;s.player.reset(300,330);s.physics.pause();s.cameras.main.setZoom(2);s.cameras.main.centerOn(300,330);});
@@ -51,6 +54,7 @@ try {
  assert.equal(await page.locator('#shop-balance').textContent(),'◆ 520 croquetas disponibles');
  await page.evaluate(()=>localStorage.setItem('ferret-jump-campaign-v1',JSON.stringify({version:1,completed:['1-1','1-2','1-3','2-1','2-2']})));
  await page.click('#map-back');await page.click('#start');
+ await page.click('#tab-worlds');
  await page.click('[data-level="0"]');await page.waitForFunction(()=>window.__ferretQA.state().mode==='playing');
  await page.evaluate(()=>{const q=window.__ferretQA,t=q.state().level.tunnel;q.teleport(t.x,t.y-30);});
  await page.waitForTimeout(180);await page.keyboard.down('ArrowDown');

@@ -12,10 +12,12 @@ try {
  await page.click('#start');
  assert.equal(await page.locator('[data-level]').count(),6);
  assert(await page.locator('[data-level="3"]').isDisabled());
+ await page.click('#tab-shop');
  await page.click('[data-cosmetic="beret"]');
  assert.equal(await page.locator('#shop-balance').textContent(),'◆ 420 croquetas disponibles');
  await page.click('[data-cosmetic="snow"]');
  assert.equal(await page.locator('#shop-balance').textContent(),'◆ 300 croquetas disponibles');
+ await page.click('#tab-worlds');
  for(let i=0;i<6;i++){
   await page.click(`[data-level="${i}"]`);
   await page.waitForFunction(i=>window.__ferretQA.state().mode==='playing'&&window.__ferretQA.state().levelIndex===i,i);

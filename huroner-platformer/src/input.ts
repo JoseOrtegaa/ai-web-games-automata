@@ -17,7 +17,7 @@ export class Input {
             this.movementMode = mode;
         });
         window.addEventListener('keydown', e => {
-            if (document.querySelector('dialog[open]')) return;
+            if (document.querySelector('dialog[open]') || !document.getElementById('world-map')!.hidden) return;
             if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', ' ', 'a', 'd', 'w', 's', 'A', 'D', 'W', 'S'].includes(e.key)) {
                 e.preventDefault();
                 this.keys.add(e.key.toLowerCase());

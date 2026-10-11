@@ -7,7 +7,7 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 fs.mkdirSync('test-results',{recursive:true});
 const repo=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
-const files=['browser-route.mjs','browser-enemies.mjs','browser-cases.mjs','browser-controls.mjs','browser-crouch.mjs','browser-worlds.mjs','browser-tunnels.mjs','browser-secret-routes.mjs','browser-hidden-enemies.mjs','browser-rewards.mjs','browser-expansion.mjs','browser-frozen-secrets.mjs','browser-visual.mjs'];
+const files=['browser-menu.mjs','browser-route.mjs','browser-enemies.mjs','browser-cases.mjs','browser-controls.mjs','browser-crouch.mjs','browser-worlds.mjs','browser-tunnels.mjs','browser-secret-routes.mjs','browser-hidden-enemies.mjs','browser-rewards.mjs','browser-expansion.mjs','browser-frozen-secrets.mjs','browser-visual.mjs'];
 const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.png':'image/png','.json':'application/json','.txt':'text/plain; charset=utf-8'};
 let server;
 if(!process.env.BASE_URL){
