@@ -4,7 +4,7 @@ Arcade original de lucha 1 contra 1, inspirado en la intensidad de los juegos de
 
 ## Versión actual
 
-- **8 personajes originales:** Kira, Volt, Onyx, Ember, Vex, Rook, Sable y Atlas, con velocidades, potencia y especiales diferenciados.
+- **8 luchadores originales**, ahora ilustrados como personajes reconocibles: cuatro personas (**Kira** ninja, **Volt** combatiente tecnológico, **Ember** artista marcial y **Sable** luchadora acrobática) y cuatro animales antropomórficos (**Onyx** gorila, **Vex** pantera, **Rook** oso boxeador y **Atlas** lobo). Cada uno tiene complexión, rostro, pelaje o cabello, equipamiento y silueta únicos, además de velocidad, potencia y especiales diferenciados.
 - **4 escenarios originales** con fondo animado y suelo de perspectiva: Neon Zenith, Templo Solar, Forja Abisal y Bastión Ártico.
 - **1v1** contra CPU en cualquier dispositivo o dos jugadores en el mismo teclado en ordenador.
 - Rondas de 60 s; primer jugador en ganar 2 rondas vence. Salud, energía, bloqueo, esquiva agachada, salto, gancho elevador, barrido bajo, especiales, combos encadenados, sonido opcional.
@@ -42,4 +42,4 @@ Desde la raíz del repositorio:
 - `node rift-arena/tests/browser-smoke.mjs` — prueba real de navegador con Chrome/Chromium.
 - `python3 -m http.server 8000` — servidor local para abrir `/rift-arena/`.
 
-Se publica en GitHub Pages directamente desde `main/rift-arena/`. El navegador Safari de iOS puede impedir el bloqueo automático de orientación: en ese caso gira el teléfono manualmente. Arte y animaciones dibujados por Canvas: **estética arcade 2.5D**, no modelos 3D reales, controles gamepad ni multijugador online.
+Se publica en GitHub Pages directamente desde `main/rift-arena/`. El navegador Safari de iOS puede impedir el bloqueo automático de orientación: en ese caso gira el teléfono manualmente. Retratos SVG originales con sombreado y combatientes Canvas articulados con anatomía, extremidades y detalles propios (sin assets externos): **ilustración 2.5D más detallada, no fotorrealista**, no modelos 3D reales, controles gamepad ni multijugador online.

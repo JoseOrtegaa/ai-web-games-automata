@@ -77,6 +77,13 @@ try {
     await new Promise(r=>setTimeout(r,120));
   }
   assert.equal(count,8,'Los ocho personajes deben renderizarse');
+  const portraits=await evaluate("Array.from(document.querySelectorAll('.fighter-card svg')).map(svg=>svg.getAttribute('aria-label'))");
+  assert.equal(portraits.length,8);
+  assert.ok(portraits.some(label=>label.includes('Gorila')),'Debe haber un gorila visible en el selector');
+  assert.ok(portraits.some(label=>label.includes('Pantera')),'Debe haber una pantera visible en el selector');
+  assert.ok(portraits.some(label=>label.includes('Oso')),'Debe haber un oso visible en el selector');
+  assert.ok(portraits.some(label=>label.includes('Lobo')),'Debe haber un lobo visible en el selector');
+
   const choice=await evaluate("(()=>{document.querySelector('[data-side=\"1\"]').click();document.querySelectorAll('.fighter-card')[3].click();return document.getElementById('name2').textContent})()");
   assert.equal(choice,'EMBER');
   const local=await evaluate("(()=>{document.querySelector('[data-mode=\"local\"]').click();return document.getElementById('enemyLabel').textContent})()");

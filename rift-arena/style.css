@@ -72,3 +72,14 @@ body.in-battle .result-panel h2,body.in-battle .pause-panel h2{font-family:Impac
 @media(max-width:520px){.roster{grid-template-columns:repeat(2,minmax(0,1fr))}.card-art{height:140px}.stage-tile b{font-size:7px}}
 @media(orientation:landscape) and (max-height:500px){body.in-battle .hud{padding:6px 145px 4px 10px;grid-template-columns:minmax(0,1fr) 65px minmax(0,1fr);gap:5px}body.in-battle .hud-center strong{font-size:29px}body.in-battle .hud-label{font-size:18px}body.in-battle .swipe-label b{width:47px;height:47px}body.in-battle .swipe-label{bottom:4%}}
 @media(orientation:portrait) and (pointer:coarse){body.in-battle .rotate-warning{display:flex;position:fixed;inset:0;z-index:40;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:15px;background:radial-gradient(ellipse at center,#342140,#070a16 75%);padding:25px;color:#fff3dd}.rotate-icon{font-size:76px;transform:rotate(-90deg);color:#ffcb76}.rotate-warning strong{font:italic 900 46px/1 Impact,sans-serif}.rotate-warning small{font-size:14px;color:#c4cbd7}.rotate-warning button{background:#f6bd7f;color:#161420;border:0;padding:12px 20px;font-weight:900;border-radius:4px}}
+
+/* Distinct human / beast fighter portrait treatment, mobile-friendly. */
+.card-art{isolation:isolate}
+.card-art:before{background:radial-gradient(ellipse at 50% 20%,#ffffff2f 0,transparent 54%),repeating-linear-gradient(118deg,#ffffff03 0 10px,transparent 11px 32px)}
+.card-art svg{filter:drop-shadow(0 10px 10px #040815bd) drop-shadow(0 0 11px var(--fighter-color))}
+.fighter-card.selected .card-art svg{filter:drop-shadow(0 12px 12px #040815cb) drop-shadow(0 0 19px var(--fighter-color))}
+.fighter-card .card-meta small{color:#b4c4d7;text-transform:uppercase}
+.portrait svg{filter:drop-shadow(0 15px 15px #050714) drop-shadow(0 0 22px var(--fighter-color));transform:scale(1.18)}
+.fighter-info{font-size:12px;color:#f7cfa8;min-height:42px;line-height:1.5}
+.roster-panel .hint{color:#d4b0a3;font-weight:800}
+@media (max-width:520px){.card-art svg{min-width:130px}.card-meta small{white-space:normal;min-height:18px}}

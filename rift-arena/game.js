@@ -1,5 +1,6 @@
 import { WIDTH, GROUND, ROSTER, fighterDefinition, createFighter, stepFighter, resolveHit, keepApart, winnerByTimeout, moveInfo, clamp } from './core.js';
 import { STAGES, renderStage } from './stages.js';
+import { DESIGNS, portraitSvg, renderCharacter } from './characters.js';
 import { movementFromDrag, strikeFromSwipe } from './gestures.js';
 
 const $ = id => document.getElementById(id);
@@ -20,19 +21,6 @@ const touchHeld = new Set();
 const touchTapped = new Set();
 const particles = [];
 let shake = 0;
-const glyphs = {
-  kira: "<path d='M62 63 34 10 84 43 108 0 126 48 158 16 143 82' fill='#33264a' stroke='#b98bff' stroke-width='6'/>",
-  volt: "<path d='M60 49 80 18 132 18 151 50 140 82 65 82Z' fill='#125a72' stroke='#6ee8ff' stroke-width='6'/><path d='m136 8-18 28h17l-18 24' fill='none' stroke='#fff29d' stroke-width='6'/>",
-  onyx: "<path d='M60 53 38 12 77 36 122 36 158 12 141 63' fill='#70431b' stroke='#ffbd6c' stroke-width='6'/>",
-  ember: "<path d='M57 72q-25-48 14-73-4 32 19 15 17-23 13-38 43 44 34 73 20-20 21-35 24 43-9 76Z' fill='#ff6f8b' stroke='#ffc478' stroke-width='5'/>",
-  vex: "<path d='M60 86Q38 39 78 21L110 37 143 13 133 71 151 81' fill='#164b46' stroke='#86ea94' stroke-width='5'/><path d='M68 80 54 110 87 88' fill='#86ea94'/>",
-  rook: "<path d='M54 89 53 44 72 18 137 18 157 44 150 89' fill='#29416d' stroke='#92b8ff' stroke-width='7'/><path d='M64 63h84' stroke='#d7e6ff' stroke-width='7'/>",
-  sable: "<path d='M55 87q-34-46 13-81L83 37 104 5 140 34 160 1Q166 67 144 91' fill='#512a64' stroke='#fc96d8' stroke-width='5'/><path d='M51 99Q28 126 34 148' fill='none' stroke='#fc96d8' stroke-width='8'/>",
-  atlas: "<path d='M51 91Q35 30 102 6Q168 30 153 91L143 72Q103 45 65 72Z' fill='#625a44' stroke='#ded3a5' stroke-width='7'/><path d='M57 104 26 173 71 141' fill='#eee0bc'/>"
-};
-function avatarMarkup(f) {
-  return "<svg viewBox='0 0 200 230' aria-hidden='true' focusable='false'><ellipse cx='103' cy='224' rx='77' ry='12' fill='#040912' opacity='.55'/><path d='M60 146Q40 130 22 168L0 230H200L177 169Q160 132 137 146Z' fill='"+f.shade+"' stroke='"+f.color+"' stroke-width='7'/><path d='M74 142Q101 165 128 142L146 230H57Z' fill='#101a30' stroke='"+f.color+"' stroke-width='4'/><path d='M78 138h49v34H78Z' fill='#cd997b'/><ellipse cx='102' cy='89' rx='43' ry='55' fill='#bb866d'/><path d='M61 79Q53 25 91 24h38q31 14 18 58' fill='"+f.shade+"'/>"+glyphs[f.id]+"<path d='M75 94h20m17 0h20' stroke='#eef6fa' stroke-width='6' stroke-linecap='round'/><path d='M85 94h5m32 0h5' stroke='"+f.color+"' stroke-width='5'/><path d='M91 119q11 7 23 0' fill='none' stroke='#482d3c' stroke-width='3' stroke-linecap='round'/><path d='M72 169h61' stroke='"+f.color+"' stroke-width='7' opacity='.65'/></svg>";
-}
 function drawRoster() {
   ui.roster.innerHTML = '';
   for (const f of ROSTER) {
@@ -40,8 +28,8 @@ function drawRoster() {
     button.type = 'button';
     button.className = 'fighter-card' + (chosen[activeSide] === f.id ? ' selected' : '');
     button.setAttribute('aria-pressed', chosen[activeSide] === f.id ? 'true' : 'false');
-    button.setAttribute('aria-label', f.name + ', ' + f.alias + ', ' + f.bio);
-    button.innerHTML = "<span class='card-art' style='--fighter-color:"+f.color+"'>"+avatarMarkup(f)+"</span><span class='card-meta'><b>"+f.name+"</b><small>"+f.alias+"</small></span>";
+    button.setAttribute('aria-label', f.name + ', ' + DESIGNS[f.id].species + ', ' + f.alias + ', ' + f.bio);
+    button.innerHTML = "<span class='card-art' style='--fighter-color:"+f.color+"'>"+portraitSvg(f)+"</span><span class='card-meta'><b>"+f.name+"</b><small>"+f.alias+"</small></span>";
     button.addEventListener('click', () => {
       chosen[activeSide] = f.id;
       if (activeSide === 0 && chosen[0] === chosen[1]) chosen[1] = ROSTER.find(c => c.id !== chosen[0]).id;
@@ -50,10 +38,10 @@ function drawRoster() {
     ui.roster.append(button);
   }
   const f = fighterDefinition(chosen[activeSide]);
-  ui.fighterInfo.textContent = f.trait + ' · ' + f.bio;
+  ui.fighterInfo.textContent = DESIGNS[f.id].species + ' · ' + f.trait + ' · ' + f.bio;
   for (let side = 0; side < 2; side++) {
     const selected = fighterDefinition(chosen[side]);
-    $('portrait' + (side + 1)).innerHTML = avatarMarkup(selected);
+    $('portrait' + (side + 1)).innerHTML = portraitSvg(selected);
     $('portrait' + (side + 1)).style.setProperty('--fighter-color', selected.color);
     $('name' + (side + 1)).textContent = selected.name;
   }
@@ -482,126 +470,7 @@ function renderBackground(t) {
     ctx.fillStyle='#935dba40';ctx.fillRect(x,GROUND-9,19,3);
   }
 }
-function segment(x1,y1,x2,y2,width,color) {
-  ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.strokeStyle='#080d1d';ctx.lineWidth=width+7;ctx.lineCap='round';ctx.stroke();
-  ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke();
-}
-function fighterPaint(f,t) {
-  const def=fighterDefinition(f.id);
-  ctx.save();ctx.translate(f.x,GROUND+4);
-  ctx.fillStyle='#070a16a0';ctx.beginPath();ctx.ellipse(0,0,49+f.y*.1,11,0,0,Math.PI*2);ctx.fill();
-  ctx.restore();
-  ctx.save();ctx.translate(f.x,GROUND-f.y+(f.crouch?22:0));
-  ctx.scale(f.face*1.28,(f.crouch||f.action?.type==='sweep') ? 1.02 : 1.28);
-  const idle=Math.sin(t*3+f.walk)*2;
-  const stride=f.y>0 ? 11 : Math.sin(f.walk)*14;
-  const attack=f.action;
-  const phase=attack ? attack.elapsed : 0;
-  const isActive=attack && phase > .07;
-  const punching=isActive && attack.type==='punch';
-  const kicking=isActive && (['kick','sweep'].includes(attack.type)||(attack.type==='special'&&['ember','sable'].includes(f.id)));
-  const uppercut=isActive&&attack.type==='uppercut';
-  const sweeping=isActive&&attack.type==='sweep';
-  const aura=attack?.type==='special' ? .4+.2*Math.sin(t*18):.08;
-  ctx.globalAlpha=aura;ctx.fillStyle=def.color;ctx.beginPath();ctx.ellipse(0,-94,65,117,0,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
-  if(attack?.type==='special'){
-    ctx.strokeStyle=def.color;ctx.lineWidth=4;
-    for(let i=0;i<3;i++){ctx.globalAlpha=.32;ctx.beginPath();ctx.arc(0,-92,48+16*i+Math.sin(t*14+i)*3,0,Math.PI*2);ctx.stroke();}
-    ctx.globalAlpha=1;
-  }
-  const flash=f.flash>0 && Math.floor(t*28)%2===0;
-  const armor=flash?'#fff9f1':def.shade;
-  const bright=flash?'#ffffff':def.color;
-  // rear leg and boot
-  segment(-12,-75,-22-stride*.4,-38,23,'#293149');
-  segment(-22-stride*.4,-38,-15+stride,-12,19,armor);
-  segment(-15+stride,-12,2+stride,-7,17,'#0b1121');
-  // rear arm
-  segment(-26,-126,-36,-88+idle,20,armor);
-  segment(-36,-88+idle,-28,-71,18,'#b98d7d');
-  // front leg, with kick extension
-  if(kicking){
-    segment(12,-78,34,-56,24,armor);
-    segment(34,-56,109,sweeping?-32:-76,22,armor);
-    segment(109,sweeping?-32:-76,131,sweeping?-28:-74,20,bright);
-    ctx.fillStyle=bright;ctx.globalAlpha=.45;ctx.fillRect(116,-81,65,8);ctx.globalAlpha=1;
-  } else {
-    segment(14,-75,23+stride*.45,-37,24,armor);
-    segment(23+stride*.45,-37,19-stride,-11,21,armor);
-    segment(19-stride,-10,39-stride,-7,17,'#0b1121');
-  }
-  // torso
-  ctx.fillStyle='#090d1d';ctx.beginPath();ctx.moveTo(-33,-136);ctx.lineTo(27,-139);ctx.lineTo(37,-79);ctx.lineTo(-30,-78);ctx.closePath();ctx.fill();
-  ctx.fillStyle=armor;ctx.beginPath();ctx.moveTo(-27,-135);ctx.lineTo(25,-137);ctx.lineTo(31,-88);ctx.lineTo(-27,-85);ctx.closePath();ctx.fill();
-  ctx.strokeStyle=bright;ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(-20,-126);ctx.lineTo(0,-112);ctx.lineTo(24,-130);ctx.stroke();
-  ctx.fillStyle='#0c172e';ctx.fillRect(-28,-91,57,14);
-  ctx.fillStyle=bright;ctx.fillRect(2,-91,13,12);
-  // shoulder and leading arm
-  ctx.fillStyle=bright;ctx.beginPath();ctx.arc(27,-122,18,0,Math.PI*2);ctx.fill();
-  if(f.block){
-    segment(28,-121,40,-155,19,armor);segment(40,-155,16,-165,18,'#bc8b74');
-    segment(-27,-125,-7,-155,18,armor);
-  } else if(punching || uppercut || (attack?.type==='special' && f.id!=='ember')){
-    segment(27,-121,61,-111,21,armor);
-    segment(61,-111,uppercut?85:111+(attack.type==='special'?28:0),uppercut?-197:-122,18,'#bf9183');
-    ctx.fillStyle=bright;ctx.beginPath();ctx.arc(uppercut?85:117+(attack.type==='special'?28:0),uppercut?-199:-120,13,0,Math.PI*2);ctx.fill();
-    if(attack.type==='special'){ctx.globalAlpha=.5;ctx.fillRect(121,-132,80,20);ctx.globalAlpha=1;}
-  } else {
-    segment(29,-123,40,-92,20,armor);
-    segment(40,-92,32,-83,17,'#bc8b74');
-  }
-  // neck
-  ctx.fillStyle='#bd8c79';ctx.fillRect(-12,-150,27,23);
-  // head
-  ctx.fillStyle='#050917';ctx.beginPath();ctx.ellipse(0,-177,28,33,0,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle=flash?'#fff3df':'#c08e78';ctx.beginPath();ctx.ellipse(0,-179,24,30,0,0,Math.PI*2);ctx.fill();
-  // hairstyle / mask by fighter
-  if(f.id==='kira'){
-    ctx.fillStyle='#3e2d65';ctx.beginPath();ctx.moveTo(-26,-180);ctx.lineTo(-43,-219);ctx.lineTo(-12,-208);ctx.lineTo(0,-236);ctx.lineTo(14,-207);ctx.lineTo(35,-224);ctx.lineTo(23,-183);ctx.closePath();ctx.fill();
-    ctx.fillStyle=bright;ctx.beginPath();ctx.moveTo(-26,-147);ctx.lineTo(-82+Math.sin(t*5)*7,-165);ctx.lineTo(-45,-152);ctx.fill();
-  } else if(f.id==='volt'){
-    ctx.fillStyle='#15516b';ctx.beginPath();ctx.arc(0,-187,27,Math.PI,Math.PI*2);ctx.lineTo(26,-179);ctx.lineTo(-27,-179);ctx.fill();
-    ctx.fillStyle=bright;ctx.fillRect(-23,-190,49,11);
-    ctx.fillStyle='#071d37';ctx.fillRect(-21,-187,46,7);
-  } else if(f.id==='onyx'){
-    ctx.fillStyle='#6b4129';ctx.beginPath();ctx.moveTo(-30,-177);ctx.lineTo(-33,-225);ctx.lineTo(-13,-208);ctx.lineTo(14,-208);ctx.lineTo(35,-226);ctx.lineTo(29,-172);ctx.closePath();ctx.fill();
-    ctx.fillStyle=bright;ctx.fillRect(-35,-159,68,12);
-    ctx.fillStyle='#452c29';ctx.fillRect(-17,-166,34,9);
-  } else {
-    ctx.fillStyle='#f06e82';ctx.beginPath();ctx.moveTo(-27,-179);ctx.lineTo(-35,-212);ctx.lineTo(-17,-203);ctx.lineTo(-10,-239);ctx.lineTo(5,-215);ctx.lineTo(21,-231);ctx.lineTo(29,-177);ctx.closePath();ctx.fill();
-    ctx.fillStyle=bright;ctx.beginPath();ctx.moveTo(-28,-156);ctx.lineTo(-65,-166);ctx.lineTo(-32,-142);ctx.fill();
-  }
-  ctx.strokeStyle='#101527';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(3,-181);ctx.lineTo(20,-183);ctx.stroke();
-  ctx.fillStyle=bright;ctx.fillRect(12,-183,7,3);
-  ctx.strokeStyle='#583746';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(10,-167);ctx.lineTo(18,-168);ctx.stroke();
-  // Accesorios únicos de cada estilo: siluetas diferenciadas sin recursos ajenos.
-  if(f.id==='rook'){
-    ctx.fillStyle='#243d70';ctx.fillRect(-41,-147,16,30);ctx.fillRect(26,-148,16,30);
-    ctx.strokeStyle=bright;ctx.lineWidth=5;ctx.strokeRect(-39,-143,12,27);ctx.strokeRect(28,-144,12,27);
-    ctx.fillStyle='#e8efff';ctx.fillRect(-26,-169,50,8);
-  }else if(f.id==='vex'){
-    ctx.strokeStyle=bright;ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(-26,-186);ctx.lineTo(-35,-216);ctx.lineTo(-12,-205);ctx.stroke();
-    ctx.fillStyle='#2b7451';ctx.fillRect(-24,-106,51,6);
-  }else if(f.id==='sable'){
-    ctx.strokeStyle=bright;ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(-20,-195);ctx.quadraticCurveTo(-65,-218,-84,-179);ctx.stroke();
-    ctx.fillStyle='#221737';ctx.fillRect(-27,-104,58,21);
-  }else if(f.id==='atlas'){
-    ctx.fillStyle='#e0d9bb';ctx.beginPath();ctx.moveTo(-26,-194);ctx.lineTo(-33,-221);ctx.lineTo(0,-241);ctx.lineTo(31,-217);ctx.lineTo(27,-191);ctx.closePath();ctx.fill();
-    ctx.strokeStyle='#625a44';ctx.lineWidth=5;ctx.stroke();
-    ctx.fillStyle='#988a59';ctx.fillRect(-28,-91,58,12);
-  }
-  if(f.impact>0){ctx.globalAlpha=.24;ctx.fillStyle='#ffefdd';ctx.fillRect(-39,-207,80,205);ctx.globalAlpha=1;}
-  // special move's colored arc
-  if(attack?.type==='special'&&phase>.11&&phase<.55){
-    ctx.strokeStyle=bright;ctx.lineWidth=8;ctx.globalAlpha=.6;
-    ctx.beginPath();ctx.arc(28,-108,99,-1.3,.85);ctx.stroke();ctx.globalAlpha=1;
-    if(f.id==='volt') for(let i=0;i<4;i++){
-      const x=115+i*48;ctx.strokeStyle=i%2?'#ffffff':bright;ctx.lineWidth=7;
-      ctx.beginPath();ctx.moveTo(x,-132);ctx.lineTo(x+13,-102);ctx.lineTo(x+26,-140);ctx.stroke();
-    }
-  }
-  ctx.restore();
-}
+function fighterPaint(f,t){renderCharacter(ctx,f,t,GROUND);}
 function paintParticles(dt) {
   for(let i=particles.length-1;i>=0;i--){
     const p=particles[i];p.life-=dt;
