@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { createArt } from './art';
+import { drawTunnel } from './tunnel-art';
 import { createEnvironment, createSurfaceArt } from './environment';
 import { LEVELS, CHAPTERS, WORLDS } from './level-data';
 import { SECRET_LEVELS, SECRET_CHAPTERS } from './secret-levels';
@@ -175,18 +176,7 @@ export class GameScene extends Phaser.Scene {
             this.panels.push({ id: s.id, rect: panel });
         });
         const tunnel = this.level.tunnel;
-        if (tunnel) {
-            if(this.levelIndex>=3){
-                this.add.rectangle(tunnel.x,tunnel.y+5,92,10,0x9bcbd3).setStrokeStyle(1,0x6b99aa).setDepth(8);
-                this.add.ellipse(tunnel.x,tunnel.y+2,58,5,0x426e80,.6).setDepth(9);
-                this.add.text(tunnel.x,tunnel.y-18,'⌄',{fontFamily:'Trebuchet MS',fontSize:'16px',color:'#c8e4df'}).setOrigin(.5).setDepth(11);
-            }else{
-            this.add.rectangle(tunnel.x,tunnel.y+25,78,50,0x3c5758).setStrokeStyle(3,0x92a18c).setDepth(7);
-            this.add.rectangle(tunnel.x,tunnel.y+5,104,14,0xa99a69).setStrokeStyle(2,0xd8c38a).setDepth(8);
-            this.add.ellipse(tunnel.x,tunnel.y+2,70,9,0x14242c).setDepth(9);
-            this.add.text(tunnel.x,tunnel.y-52,'↓ AGÁCHATE', {fontFamily:'Trebuchet MS',fontSize:'12px',color:'#fff3c0'}).setOrigin(.5).setDepth(11);
-            }
-        }
+        if (tunnel) drawTunnel(this, tunnel.x, tunnel.y, this.levelIndex);
         this.checkpointSprite = this.add.image(this.level.checkpoint.x, 430, 'checkpoint').setOrigin(.5, 1).setDepth(10).setVisible(!this.inSecret);
         this.add.image(this.level.goal.x, 430, 'goal').setOrigin(.5, 1).setDepth(10);
         const label = this.add.text(this.level.goal.x, 238, this.inSecret ? 'VOLVER AL CASTILLO →' : this.level.boss ? 'DERROTA AL JEFE →' : this.levelIndex===5 ? 'FIN DEL MUNDO 2' : 'AL SIGUIENTE NIVEL →', { fontFamily: 'Trebuchet MS', fontSize: '13px', color: '#fff3c0', letterSpacing: 3 }).setOrigin(.5).setDepth(11);
