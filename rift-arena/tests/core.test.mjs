@@ -74,7 +74,7 @@ test('salud y barra tienen límites', () => {
   const a = createFighter('onyx', 200);
   const b = createFighter('kira', 260, -1);
   for (let i = 0; i < 35; i++) {
-    a.action = null; b.stun = 0; a.meter = 100;
+    a.action = null; b.stun = 0; b.x = 260; a.meter = 100;
     tryAttack(a, 'special');
     a.action.elapsed = .23;
     resolveHit(a, b);

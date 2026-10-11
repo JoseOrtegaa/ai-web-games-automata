@@ -23,6 +23,8 @@ jobs:
           node --check rift-arena/game.js
       - name: Test combat engine
         run: node --test rift-arena/tests/*.test.mjs
+      - name: Browser gameplay smoke
+        run: node rift-arena/tests/browser-smoke.mjs
       - name: Verify deployment assets
         run: |
           test -f rift-arena/index.html
