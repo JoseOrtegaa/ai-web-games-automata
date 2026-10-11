@@ -92,6 +92,19 @@ try {
   assert.equal(stage,'temple','Seleccionar escenario debe funcionar');
   await evaluate(`document.querySelector('[data-mode="cpu"]').click()`);
   const start=await evaluate("(()=>{document.getElementById('startBtn').click();return !document.getElementById('gameScreen').hidden&&document.getElementById('arena').width>0})()");
+  const zoomGuard=await evaluate(`(async()=>{
+    const ev=(type,detail)=>{const e=new Event(type,{cancelable:true,bubbles:true});if(detail){Object.defineProperty(e,'touches',{value:[]});Object.defineProperty(e,'changedTouches',{value:[{clientX:150,clientY:190}]});}document.dispatchEvent(e);return e.defaultPrevented;};
+    const single=ev('touchend',true);
+    await new Promise(done=>setTimeout(done,25));
+    const double=ev('touchend',true);
+    const dbl=ev('dblclick',false);
+    return {single,double,dbl,touchAction:getComputedStyle(document.querySelector('#arena')).touchAction};
+  })()`);
+  assert.equal(zoomGuard.single,false,'Single taps remain interactive');
+  assert.equal(zoomGuard.double,true,'iOS double tap should be cancelled');
+  assert.equal(zoomGuard.dbl,true,'Native doubleclick should be cancelled');
+  assert.equal(zoomGuard.touchAction,'none','Active arena must not native zoom');
+
   assert.equal(start,true,'La partida debe arrancar con canvas');
   const touchSurfaces=await evaluate("Boolean(document.getElementById('swipeMove') && document.getElementById('swipeStrike'))");
   assert.equal(touchSurfaces,true,'Controles gestuales montados en escena');

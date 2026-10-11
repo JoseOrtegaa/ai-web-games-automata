@@ -2,7 +2,10 @@ import { WIDTH, GROUND, ROSTER, fighterDefinition, createFighter, stepFighter, r
 import { STAGES, renderStage } from './stages.js';
 import { DESIGNS, portraitSvg, renderCharacter } from './characters.js';
 import { movementFromDrag, strikeFromSwipe } from './gestures.js';
+import { installZoomGuard } from './touch-safety.js';
 
+// Catch Safari double-tap zoom before it disrupts the two-thumb control layout.
+installZoomGuard(document);
 const $ = id => document.getElementById(id);
 const ui = Object.fromEntries(['app','selectScreen','gameScreen','roster','fighterInfo','portrait1','portrait2','name1','name2','enemyLabel','modeNote','startBtn','audioBtn','pauseBtn','exitBtn','resumeBtn','rematchBtn','changeBtn','pausePanel','resultPanel','winnerTitle','winnerDetails','hudName1','hudName2','hp1','hp2','mp1','mp2','score1','score2','roundNum','timer','announcement','announcementSmall','announcementText','battleTip','arena'].map(id => [id, $(id)]));
 const ctx = ui.arena.getContext('2d', { alpha: false });

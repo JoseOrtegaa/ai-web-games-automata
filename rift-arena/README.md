@@ -16,7 +16,7 @@ Arcade original de lucha 1 contra 1, inspirado en la intensidad de los juegos de
 
 **Pulgar derecho (lado derecho):** toque corto = puño, deslizamiento horizontal = patada, hacia arriba = gancho, hacia abajo = barrido, diagonal = especial (consume 40 puntos de energía), mantener = bloquear. Para encadenar combos, realiza golpes consecutivos mientras termina la animación anterior.
 
-Los controles gestuales funcionan con dos dedos simultáneamente. Los controles táctiles originales permanecen en el DOM para compatibilidad; la arena inmersiva se controla por zonas de deslizamiento.
+El doble toque no provoca zoom en navegadores compatibles (CSS touch-action y protección complementaria para Safari). Los controles gestuales funcionan con dos dedos simultáneamente. Los controles táctiles originales permanecen en el DOM para compatibilidad; la arena inmersiva se controla por zonas de deslizamiento.
 
 ## Controles de teclado
 
@@ -42,4 +42,4 @@ Desde la raíz del repositorio:
 - `node rift-arena/tests/browser-smoke.mjs` — prueba real de navegador con Chrome/Chromium.
 - `python3 -m http.server 8000` — servidor local para abrir `/rift-arena/`.
 
-Se publica en GitHub Pages directamente desde `main/rift-arena/`. El navegador Safari de iOS puede impedir el bloqueo automático de orientación: en ese caso gira el teléfono manualmente. Retratos SVG originales con sombreado y combatientes Canvas articulados con anatomía, extremidades y detalles propios (sin assets externos): **ilustración 2.5D más detallada, no fotorrealista**, no modelos 3D reales, controles gamepad ni multijugador online.
+Se publica en GitHub Pages directamente desde `main/rift-arena/`. El navegador Safari de iOS puede impedir el bloqueo automático de orientación: en ese caso gira el teléfono manualmente. Retratos SVG originales y combatientes Canvas articulados con gradientes de volumen, texturas de ropa y pelaje, cuerpos y detalles individuales; animaciones por poses de esqueleto para caminar, respirar, saltar, bloquear, esquivar, puño, patada, barrido, gancho, especial, reacción a impactos y caída tras KO (sin assets externos): **ilustración 2.5D más detallada, no fotorrealista**, no modelos 3D reales, controles gamepad ni multijugador online.

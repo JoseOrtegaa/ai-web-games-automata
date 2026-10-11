@@ -22,7 +22,7 @@ export const clamp = (v,lo,hi) => Math.max(lo,Math.min(hi,v));
 export function fighterDefinition(id){return ROSTER.find(f=>f.id===id)||ROSTER[0];}
 export function createFighter(id,x,face=1){
   return {id,x,y:0,vy:0,face,health:100,meter:45,action:null,queued:null,
-    block:false,crouch:false,stun:0,flash:0,walk:0,combo:0,comboClock:0,hits:0,impact:0};
+    block:false,crouch:false,stun:0,flash:0,recoil:0,walk:0,motion:0,combo:0,comboClock:0,hits:0,impact:0};
 }
 export function moveInfo(f){
   const base=MOVES[f.action?.type||'punch'];
@@ -55,6 +55,7 @@ export function stepFighter(f,intent,enemy,dt){
   const d=clamp(dt,0,.05);
   f.face=enemy.x>=f.x?1:-1;
   f.flash=Math.max(0,f.flash-d);
+  f.recoil=Math.max(0,f.recoil-d);
   f.stun=Math.max(0,f.stun-d);
   f.impact=Math.max(0,f.impact-d);
   f.comboClock=Math.max(0,f.comboClock-d);
@@ -71,9 +72,11 @@ export function stepFighter(f,intent,enemy,dt){
     const axis=Number(!!intent.right)-Number(!!intent.left);
     const slow=f.action?.28:f.block||f.crouch?.15:1;
     f.x=clamp(f.x+axis*fighterDefinition(f.id).speed*slow*d,...LIMITS);
+    f.motion += ((f.action||f.block||f.crouch?0:Math.abs(axis))-f.motion)*Math.min(1,d*13);
     f.walk+=Math.abs(axis)*d*11;
     if(intent.jump&&f.y===0&&!f.action&&!f.crouch&&!f.block)f.vy=620;
   }
+  if(stunned||f.block)f.motion+=(0-f.motion)*Math.min(1,d*14);
   if(f.y>0||f.vy>0){
     f.y+=f.vy*d;
     f.vy-=1550*d;
@@ -104,6 +107,7 @@ export function resolveHit(attacker,defender){
   defender.health=clamp(defender.health-damage,0,100);
   defender.stun=guarding?.12:action.type==='uppercut'?.42:.28;
   defender.impact=.21;
+  defender.recoil=guarding?.1:.32;
   defender.flash=.17;
   if(!guarding){
     defender.action=null;defender.queued=null;

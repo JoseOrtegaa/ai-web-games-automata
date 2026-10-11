@@ -83,3 +83,19 @@ body.in-battle .result-panel h2,body.in-battle .pause-panel h2{font-family:Impac
 .fighter-info{font-size:12px;color:#f7cfa8;min-height:42px;line-height:1.5}
 .roster-panel .hint{color:#d4b0a3;font-weight:800}
 @media (max-width:520px){.card-art svg{min-width:130px}.card-meta small{white-space:normal;min-height:18px}}
+
+/* Safari iOS: manipulation prevents double-tap zoom without disabling menu scrolling. */
+html,body,#app,.shell,button,a,.fighter-card,.stage-tile{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body.in-battle,body.in-battle main,body.in-battle #gameScreen,
+body.in-battle #arena,body.in-battle .stage-wrap,body.in-battle .swipe-surface{
+ touch-action:none!important;overscroll-behavior:none;
+ -webkit-touch-callout:none;-webkit-user-select:none;user-select:none;
+}
+body.in-battle .arena-bar button,body.in-battle .pause-panel button,
+body.in-battle .result-panel button{touch-action:manipulation!important}
+.card-art svg,.portrait svg{shape-rendering:geometricPrecision}
+.card-art svg{height:178px!important;max-width:195px;filter:drop-shadow(0 7px 5px #000e) drop-shadow(0 4px 16px #000a)}
+.fighter-card .card-art{background:radial-gradient(ellipse at 41% 13%,#ffffff70 0,transparent 19%),radial-gradient(ellipse at 60% 37%,var(--fighter-color),transparent 81%),linear-gradient(145deg,#25344b,#070912)}
+.portrait svg{filter:drop-shadow(0 11px 8px #030409) drop-shadow(0 3px 22px #000)}
+@media(max-width:760px){.card-art svg{height:168px!important}}
