@@ -99,3 +99,23 @@ body.in-battle .result-panel button{touch-action:manipulation!important}
 .fighter-card .card-art{background:radial-gradient(ellipse at 41% 13%,#ffffff70 0,transparent 19%),radial-gradient(ellipse at 60% 37%,var(--fighter-color),transparent 81%),linear-gradient(145deg,#25344b,#070912)}
 .portrait svg{filter:drop-shadow(0 11px 8px #030409) drop-shadow(0 3px 22px #000)}
 @media(max-width:760px){.card-art svg{height:168px!important}}
+
+/* Real WebGL arena fills the entire screen without crop: the perspective camera
+   adapts to each aspect ratio. 3D fighting HUD is rendered on top as HTML. */
+body.in-battle #arena{object-fit:fill!important;image-rendering:auto}
+body.in-battle .stage-wrap{background:linear-gradient(180deg,#526f93,#1a273e)}
+body.in-battle .hud{pointer-events:none}
+body.in-battle .hud-side{filter:drop-shadow(0 4px 4px #0009)}
+body.in-battle .health-track{background:#251719;border:2px solid #f4d2a1;box-shadow:0 4px 0 #0009,0 0 13px #07081677}
+body.in-battle .hud-center{background:linear-gradient(#202c3add,#162033ec);border-color:#ffe2ae;box-shadow:0 5px 12px #05060ca8}
+body.in-battle .hud-center strong{font-size:clamp(32px,5vw,58px)}
+body.in-battle .swipe-label{color:#eef6ff9c}
+.hit-pop{position:absolute;z-index:7;pointer-events:none;display:block;white-space:nowrap;
+ font:italic 900 clamp(17px,3vw,32px)/1 Impact,'Arial Narrow',sans-serif;color:#fff0ca;
+ text-shadow:2px 3px #372139,0 0 14px #000;animation:impact-pop .75s cubic-bezier(.15,.65,.25,1) forwards;transform:translateX(-50%)}
+.hit-pop.guarding{color:#b2f4fa}
+@keyframes impact-pop{0%{opacity:0;transform:translate(-50%,14px) scale(.6)}16%{opacity:1;transform:translate(-50%,-9px) scale(1.2)}70%{opacity:1}100%{opacity:0;transform:translate(-50%,-47px) scale(.92)}}
+@media(orientation:landscape) and (pointer:coarse){
+ body.in-battle .hud{padding-top:max(4px,env(safe-area-inset-top));height:72px}
+ body.in-battle .arena-bar{z-index:11}
+}

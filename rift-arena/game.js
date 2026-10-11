@@ -2,13 +2,16 @@ import { WIDTH, GROUND, ROSTER, fighterDefinition, createFighter, stepFighter, r
 import { STAGES, renderStage } from './stages.js';
 import { DESIGNS, portraitSvg, renderCharacter } from './characters.js';
 import { movementFromDrag, strikeFromSwipe } from './gestures.js';
+import { createArena3D } from './arena3d.js';
 import { installZoomGuard } from './touch-safety.js';
 
 // Catch Safari double-tap zoom before it disrupts the two-thumb control layout.
 installZoomGuard(document);
 const $ = id => document.getElementById(id);
 const ui = Object.fromEntries(['app','selectScreen','gameScreen','roster','fighterInfo','portrait1','portrait2','name1','name2','enemyLabel','modeNote','startBtn','audioBtn','pauseBtn','exitBtn','resumeBtn','rematchBtn','changeBtn','pausePanel','resultPanel','winnerTitle','winnerDetails','hudName1','hudName2','hp1','hp2','mp1','mp2','score1','score2','roundNum','timer','announcement','announcementSmall','announcementText','battleTip','arena'].map(id => [id, $(id)]));
-const ctx = ui.arena.getContext('2d', { alpha: false });
+const arena3d = createArena3D(ui.arena);
+const ctx = arena3d ? null : ui.arena.getContext('2d', { alpha: false });
+ui.arena.dataset.renderer = arena3d ? 'webgl3d' : 'canvas2d';
 const HEIGHT = 648;
 const chosen = ['kira', 'volt'];
 let activeSide = 0;
@@ -92,13 +95,25 @@ ui.startBtn.before(stageChooser);
 stageChooser.querySelector('[data-stage="zenith"]').click();
 
 function setupCanvas() {
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
-  ui.arena.width = WIDTH * dpr;
-  ui.arena.height = HEIGHT * dpr;
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  if (arena3d) {
+    const fighting=document.body.classList.contains('in-battle');
+    const w=fighting?(ui.arena.clientWidth||window.innerWidth):WIDTH;
+    const h=fighting?(ui.arena.clientHeight||window.innerHeight):HEIGHT;
+    // Prevent huge backing textures on older iPhones while keeping high-resolution fighters.
+    const maxPixels=1600*900;
+    const ratio=Math.min(window.devicePixelRatio||1,1.6,Math.sqrt(maxPixels/(w*h)));
+    const pw=Math.max(2,Math.round(w*ratio)),ph=Math.max(2,Math.round(h*ratio));
+    if(ui.arena.width!==pw||ui.arena.height!==ph){ui.arena.width=pw;ui.arena.height=ph;}
+    arena3d.resize(pw,ph);
+    return;
+  }
+  const dpr=Math.min(window.devicePixelRatio||1,2);
+  ui.arena.width=WIDTH*dpr;ui.arena.height=HEIGHT*dpr;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
 }
 setupCanvas();
 window.addEventListener('resize', setupCanvas);
+window.addEventListener('orientationchange',()=>requestAnimationFrame(setupCanvas));
 ui.arena.addEventListener('contextmenu', event => event.preventDefault());
 
 const codes = new Set(['KeyA','KeyD','KeyW','KeyS','KeyF','KeyG','KeyH','KeyR','KeyT','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','KeyJ','KeyK','KeyL','KeyU','KeyI','Space','Escape']);
@@ -302,6 +317,7 @@ function startMatch() {
   battle = { fighters: [], round: 0, scores: [0,0], time: 60, phase: 'ready', phaseClock: 0, aiClock: .7, paused: false, matchWinner: null, stage:selectedStage };
   ui.selectScreen.hidden = true;
   document.body.classList.add('in-battle');
+  setupCanvas();
   resetSwipe();
   ui.gameScreen.hidden = false;
   ui.resultPanel.hidden = true;
@@ -320,6 +336,7 @@ function leaveMatch() {
   document.body.classList.remove('in-battle');
   resetSwipe();
   held.clear(); tapped.clear(); touchHeld.clear(); touchTapped.clear();
+  document.querySelectorAll('.hit-pop').forEach(node=>node.remove());
   ui.gameScreen.hidden = true;
   ui.selectScreen.hidden = false;
   ui.pausePanel.hidden = true;
@@ -372,6 +389,15 @@ function processHit(a, b) {
   const hit = resolveHit(a,b);
   if (!hit) return;
   const x = hit.x, y = GROUND - 132 - hit.y;
+  if(arena3d){
+    const impact=document.createElement('span');
+    impact.className='hit-pop'+(hit.guarding?' guarding':'');
+    impact.style.left=clamp((x/WIDTH)*100,8,92)+'%';
+    impact.style.top=clamp((y/HEIGHT)*100-8,20,75)+'%';
+    impact.textContent=hit.guarding?'GUARDIA':hit.combo>1?hit.combo+' HITS':'-'+hit.damage;
+    ui.arena.parentElement.append(impact);
+    impact.addEventListener('animationend',()=>impact.remove(),{once:true});
+  }
   shake = hit.guarding ? 3 : hit.type === 'special' ? 15 : 8;
   const count = hit.type === 'special' ? 22 : 13;
   for (let i = 0; i < count; i++) {
@@ -491,11 +517,15 @@ function frame(timestamp){
   previous=timestamp;now=timestamp/1000;
   if(battle) {
     if(!battle.paused) tick(dt);
-    ctx.save();ctx.translate((Math.random()-.5)*shake,(Math.random()-.5)*shake*.6);
-    renderStage(ctx,battle.stage,now);
-    for(const f of battle.fighters) fighterPaint(f,now);
-    if(!battle.paused) paintParticles(dt); else paintParticles(0);
-    ctx.restore();
+    if (arena3d) {
+      arena3d.render(battle.fighters,battle.stage,now,shake);
+    } else if(ctx) {
+      ctx.save();ctx.translate((Math.random()-.5)*shake,(Math.random()-.5)*shake*.6);
+      renderStage(ctx,battle.stage,now);
+      for(const f of battle.fighters) fighterPaint(f,now);
+      if(!battle.paused) paintParticles(dt);else paintParticles(0);
+      ctx.restore();
+    }
     shake=Math.max(0,shake-dt*50);
   }
   requestAnimationFrame(frame);

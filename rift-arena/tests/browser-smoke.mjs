@@ -28,7 +28,7 @@ for(const file of [process.env.CHROME_BIN,'/usr/bin/google-chrome','/usr/bin/goo
 if(!binary)throw Error('Chromium/Chrome necesario para el smoke test');
 const userData=await mkdtemp(join(tmpdir(),'rift-chrome-'));
 const port=19384;
-const browser=spawn(binary,['--headless=new','--no-sandbox','--disable-gpu','--disable-dev-shm-usage','--no-first-run','--remote-allow-origins=*','--remote-debugging-port='+port,'--user-data-dir='+userData,'about:blank'],{stdio:'ignore'});
+const browser=spawn(binary,['--headless=new','--no-sandbox','--enable-webgl','--enable-unsafe-swiftshader','--use-gl=angle','--use-angle=swiftshader','--disable-dev-shm-usage','--no-first-run','--remote-allow-origins=*','--remote-debugging-port='+port,'--user-data-dir='+userData,'about:blank'],{stdio:'ignore'});
 let ws;
 try {
   let targets;
@@ -106,13 +106,33 @@ try {
   assert.equal(zoomGuard.touchAction,'none','Active arena must not native zoom');
 
   assert.equal(start,true,'La partida debe arrancar con canvas');
+  // WebGL must draw actual opaque 3D pixels, not a flat 2D approximation.
+  const scene3d=await evaluate(`(async()=>{
+    const c=document.getElementById('arena');
+    await new Promise(resolve=>setTimeout(resolve,500));
+    const mode=c.dataset.renderer;
+    let sample=null,error=null;
+    if(mode==='webgl3d'){
+      const gl=c.getContext('webgl');
+      if(gl){
+        const px=new Uint8Array(4);
+        gl.readPixels(Math.floor(c.width*.5),Math.floor(c.height*.42),1,1,gl.RGBA,gl.UNSIGNED_BYTE,px);
+        sample=Array.from(px);error=gl.getError();
+      }
+    }
+    return {mode,width:c.width,height:c.height,sample,error};
+  })()`);
+  assert.equal(scene3d.mode,'webgl3d','Chromium SwiftShader should run real WebGL 3D');
+  assert.ok(scene3d.width>300&&scene3d.height>200);
+  assert.equal(scene3d.sample?.[3],255,'Opaque 3D arena pixels required');
+  assert.equal(scene3d.error,0,'WebGL context must not report an error');
   const touchSurfaces=await evaluate("Boolean(document.getElementById('swipeMove') && document.getElementById('swipeStrike'))");
   assert.equal(touchSurfaces,true,'Controles gestuales montados en escena');
   const paused=await evaluate("(()=>{document.getElementById('pauseBtn').click();return !document.getElementById('pausePanel').hidden})()");
   assert.equal(paused,true,'La pausa debe funcionar');
   const returned=await evaluate("(()=>{document.getElementById('resumeBtn').click();document.getElementById('exitBtn').click();return !document.getElementById('selectScreen').hidden})()");
   assert.equal(returned,true,'Debe poderse salir al selector');
-  console.log('Browser smoke OK: 8 luchadores, 4 escenarios, controles por gestos, VS local, inicio, pausa y menú');
+  console.log('Browser smoke OK: WebGL 3D pixels, 8 luchadores, 4 escenarios, gestos, VS local, pausa y menú');
 }finally{
   if(ws)ws.close();
   browser.kill('SIGKILL');

@@ -43,3 +43,13 @@ Desde la raíz del repositorio:
 - `python3 -m http.server 8000` — servidor local para abrir `/rift-arena/`.
 
 Se publica en GitHub Pages directamente desde `main/rift-arena/`. El navegador Safari de iOS puede impedir el bloqueo automático de orientación: en ese caso gira el teléfono manualmente. Retratos SVG originales y combatientes Canvas articulados con gradientes de volumen, texturas de ropa y pelaje, cuerpos y detalles individuales; animaciones por poses de esqueleto para caminar, respirar, saltar, bloquear, esquivar, puño, patada, barrido, gancho, especial, reacción a impactos y caída tras KO (sin assets externos): **ilustración 2.5D más detallada, no fotorrealista**, no modelos 3D reales, controles gamepad ni multijugador online.
+
+
+## Versión 3D — Arcade de consola clásica
+
+- Motor **WebGL 1 real** integrado en `arena3d.js`, con cámara de perspectiva, z-buffer, iluminación direccional y especular, materiales sombreados, niebla ambiental, profundidad y geometría original (sin Three.js ni CDN).
+- 8 luchadores creados mediante **mallas 3D articuladas**, con proporciones variadas, manos, pies, rostro y cabello o pelaje, ropa, extremidades, accesorios y animación continua a partir de las poses de combate existentes. Archivo `fighters3d.js`.
+- Cuatro escenarios 3D independientes en `stage3d.js`: azoteas de neón, templo de montaña, forja industrial y fortaleza glaciar. Suelo en perspectiva, arquitectura, estructuras y decorados tridimensionales.
+- Cámara lateral cinematográfica y HUD arcade; golpes con indicadores superpuestos. En móvil horizontal ocupa toda la pantalla y conserva controles por dos pulgares.
+- Sin recursos remotos, anuncios, servicios de pago ni datos personales. Los navegadores sin WebGL siguen usando el renderizador Canvas 2D anterior.
+- **Nota:** estética low-poly retro de consola PS2 inspirada en juegos clásicos; no es un port de Tekken, ni usa sus personajes o recursos. Los modelos son procedurales: no prometen realismo fotorrealista ni captura de movimiento.

@@ -12,11 +12,11 @@
 <div class="shell" id="app">
   <header class="topbar">
     <a class="brand" href="../" aria-label="Volver al catálogo"><span class="brand-mark">R</span><span>RIFT <b>ARENA</b><small>FIGHT NIGHT / 001</small></span></a>
-    <div class="top-actions"><span class="top-chip">VERSIÓN ALFA · 1V1</span><button id="audioBtn" class="icon-btn" type="button" aria-label="Activar sonido" title="Sonido">♪ OFF</button></div>
+    <div class="top-actions"><span class="top-chip">3D · 1V1</span><button id="audioBtn" class="icon-btn" type="button" aria-label="Activar sonido" title="Sonido">♪ OFF</button></div>
   </header>
   <main>
     <section id="selectScreen" class="select-screen">
-      <div class="intro"><p class="eyebrow">ELIGE TU DESTINO · ENTRA EN LA GRIETA</p><h1>QUE EMPIECE <em>EL COMBATE.</em></h1><p>Ocho estilos. Dos luchadores. Solo uno sale victorioso. Combate arcade original de inspiración noventera, con golpes, combos y escenarios de perspectiva.</p></div>
+      <div class="intro"><p class="eyebrow">ELIGE TU DESTINO · ENTRA EN LA GRIETA</p><h1>QUE EMPIECE <em>EL COMBATE.</em></h1><p>Ocho estilos. Dos luchadores. Solo uno sale victorioso. Combate arcade 3D real con luchadores humanos y animales, iluminación, escenarios y peleas al estilo de las consolas de principios de los 2000.</p></div>
       <div class="select-layout">
         <section class="roster-panel"><div class="section-top"><div><span class="overline">01 / SELECCIÓN</span><h2>ELIGE LUCHADOR</h2></div><span class="hint">8 DISPONIBLES</span></div>
           <div class="mode-tabs" role="group" aria-label="Modo de juego"><button data-mode="cpu" class="active" type="button">⚡ VS CPU</button><button data-mode="local" type="button">◈ 2 JUGADORES</button></div>
@@ -25,7 +25,7 @@
           <p id="fighterInfo" class="fighter-info"></p>
         </section>
         <aside class="versus-panel"><span class="overline">ENFRENTAMIENTO</span><div class="versus-display"><div class="versus-fighter left"><div id="portrait1" class="portrait"></div><span id="name1" class="versus-name"></span><small>JUGADOR 1</small></div><strong>VS</strong><div class="versus-fighter right"><div id="portrait2" class="portrait"></div><span id="name2" class="versus-name"></span><small id="enemyLabel">CPU</small></div></div>
-          <div class="match-settings"><span><b>FORMATO</b> · AL MEJOR DE 3 RONDAS</span><span><b>ESCENARIO</b> · CIUDAD DE LA GRIETA</span></div>
+          <div class="match-settings"><span><b>FORMATO</b> · AL MEJOR DE 3 RONDAS</span><span><b>ESCENARIO</b> · NEON ZENITH</span></div>
           <button id="startBtn" class="primary-btn" type="button">INICIAR COMBATE <span>↗</span></button>
           <p class="vs-note" id="modeNote">En móvil horizontal, desliza con los dos pulgares para combatir contra la CPU. En ordenador también hay VS local.</p>
         </aside>
@@ -33,9 +33,9 @@
       <div class="controls-guide"><span>⌨ <b>J1:</b> A/D mover · W saltar · S cubrir · F puño · G patada · R gancho · T barrido · H especial</span><span><b>J2:</b> ←/→ mover · ↑ saltar · ↓ cubrir · J puño · K patada · U gancho · I barrido · L especial</span></div>
     </section>
     <section id="gameScreen" class="game-screen" hidden>
-      <div class="arena-bar"><span class="overline">RIFT ARENA / EL DUELO</span><div><button id="pauseBtn" class="mini-btn" type="button">PAUSA</button><button id="exitBtn" class="mini-btn" type="button">SALIR</button></div></div>
+      <div class="arena-bar"><span class="overline">RIFT ARENA 3D / EL DUELO</span><div><button id="pauseBtn" class="mini-btn" type="button">PAUSA</button><button id="exitBtn" class="mini-btn" type="button">SALIR</button></div></div>
       <div class="stage-wrap">
-        <canvas id="arena" width="1152" height="648" aria-label="Arena de combate entre dos luchadores"></canvas>
+        <canvas id="arena" width="1152" height="648" aria-label="Combate tridimensional WebGL entre dos luchadores"></canvas>
         <div class="hud"><div class="hud-side"><div class="hud-label"><strong id="hudName1">KIRA</strong><span id="score1" class="score"></span></div><div class="health-track"><div id="hp1" class="health-fill"></div></div><div class="meter-track"><div id="mp1" class="meter-fill"></div></div></div>
           <div class="hud-center"><span>ROUND <b id="roundNum">1</b></span><strong id="timer">75</strong></div>
           <div class="hud-side opposite"><div class="hud-label"><span id="score2" class="score"></span><strong id="hudName2">VOLT</strong></div><div class="health-track"><div id="hp2" class="health-fill"></div></div><div class="meter-track"><div id="mp2" class="meter-fill"></div></div></div></div>
