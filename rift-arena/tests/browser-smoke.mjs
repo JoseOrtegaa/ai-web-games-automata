@@ -119,21 +119,31 @@ try {
     const c=document.getElementById('arena');
     await new Promise(resolve=>setTimeout(resolve,500));
     const mode=c.dataset.renderer;
-    let sample=null,error=null;
+    let sample=null,error=null,uniqueColors=0,brightnessRange=0;
     if(mode==='webgl3d'){
       const gl=c.getContext('webgl');
       if(gl){
-        const px=new Uint8Array(4);
+        const px=new Uint8Array(4),seen=new Set(),brightness=[];
+        for(let y=1;y<=6;y++)for(let x=1;x<=9;x++){
+          gl.readPixels(Math.floor(c.width*x/10),Math.floor(c.height*y/7),1,1,gl.RGBA,gl.UNSIGNED_BYTE,px);
+          seen.add(Array.from(px).slice(0,3).join(','));
+          brightness.push(px[0]+px[1]+px[2]);
+        }
+        uniqueColors=seen.size;
+        brightnessRange=Math.max(...brightness)-Math.min(...brightness);
         gl.readPixels(Math.floor(c.width*.5),Math.floor(c.height*.42),1,1,gl.RGBA,gl.UNSIGNED_BYTE,px);
         sample=Array.from(px);error=gl.getError();
       }
     }
-    return {mode,width:c.width,height:c.height,sample,error};
+    return {mode,width:c.width,height:c.height,sample,error,uniqueColors,brightnessRange};
   })()`);
   assert.equal(scene3d.mode,'webgl3d','Chromium SwiftShader should run real WebGL 3D');
   assert.ok(scene3d.width>300&&scene3d.height>200);
   assert.equal(scene3d.sample?.[3],255,'Opaque 3D arena pixels required');
   assert.equal(scene3d.error,0,'WebGL context must not report an error');
+  assert.ok(scene3d.uniqueColors>=4,'3D scene must show different surfaces and lighting');
+  assert.ok(scene3d.brightnessRange>=40,'3D arena should have lighting contrast');
+  console.log('WebGL visual sample:',scene3d.uniqueColors,'colors, brightness span',scene3d.brightnessRange);
   const touchSurfaces=await evaluate("Boolean(document.getElementById('swipeMove') && document.getElementById('swipeStrike'))");
   assert.equal(touchSurfaces,true,'Controles gestuales montados en escena');
   const paused=await evaluate("(()=>{document.getElementById('pauseBtn').click();return !document.getElementById('pausePanel').hidden})()");
