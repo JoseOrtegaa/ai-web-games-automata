@@ -78,8 +78,8 @@ for(const s of STAGES){
   const b=document.createElement('button');
   b.type='button';b.className='stage-tile';b.dataset.stage=s.id;
   b.style.setProperty('--stage-color',s.color);
-  b.innerHTML='<span class="stage-tile-art"></span><b>'+s.name+'</b>';
-  b.setAttribute('aria-label','Escenario '+s.name);
+  b.innerHTML='<span class="stage-tile-art" aria-hidden="true"></span><b>'+s.name+'</b><small>'+s.tag+'</small>';
+  b.setAttribute('aria-label','Escenario '+s.name+': '+s.tag);
   b.addEventListener('click',()=>{
     selectedStage=s.id;
     document.querySelectorAll('[data-stage]').forEach(btn=>{

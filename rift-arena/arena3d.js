@@ -1,6 +1,7 @@
 // Rift Arena WebGL 3D. No external libraries, assets, accounts, servers or network requests.
 import { buildStage3D } from './stage3d.js';
 import { drawFighter3D } from './fighters3d.js';
+import {stageAtmosphere} from './stage-scenes.js';
 
 export const color=h=>{
  const s=(h||'#ffffff').replace('#','');
@@ -162,6 +163,7 @@ export class ArenaRenderer{
   gl.uniformMatrix4fv(l.vp,false,vp);gl.uniform3fv(l.camera,camera);gl.uniform3fv(l.fog,pal.fog);
   gl.uniform3fv(l.lamp,pal.light);gl.uniform1f(l.density,.018);
   this.draw(scene,this.neutral);
+  stageAtmosphere(this,stage,time);
   for(const fighter of fighters)drawFighter3D(this,fighter,time);
  }
 }

@@ -3,7 +3,11 @@ export const STAGES=[
 {id:'zenith',name:'NEON ZENITH',tag:'DISTRITO NOCTURNO',color:'#f462b7',sky:['#081128','#26214c','#702d60'],floor:['#28364a','#0d1429']},
 {id:'temple',name:'TEMPLO SOLAR',tag:'ALTAR DEL OCASO',color:'#ffce7d',sky:['#24152e','#80363e','#e58859'],floor:['#6b4950','#211629']},
 {id:'forge',name:'FORJA ABISAL',tag:'ACERO Y MAGMA',color:'#ff703b',sky:['#120f19','#47212c','#9c402d'],floor:['#47353a','#141a23']},
-{id:'glacier',name:'BASTIÓN ÁRTICO',tag:'CIUDADELA DE HIELO',color:'#8bf4ef',sky:['#061d33','#1d526b','#498f9b'],floor:['#577a90','#152e42']}
+{id:'glacier',name:'BASTIÓN ÁRTICO',tag:'CIUDADELA DE HIELO',color:'#8bf4ef',sky:['#061d33','#1d526b','#498f9b'],floor:['#577a90','#152e42']},
+{id:'forest',name:'BOSQUE ANCESTRAL',tag:'ÁRBOLES Y RUINAS',color:'#91cf88',sky:['#122a33','#42624f','#a0b481'],floor:['#52664b','#293f36']},
+{id:'volcano',name:'CRÁTER INFERNAL',tag:'LAVA Y OBSIDIANA',color:'#ff9256',sky:['#27131a','#87392d','#ee8346'],floor:['#514049','#221b29']},
+{id:'lake',name:'LAGO DE CRISTAL',tag:'HIELO Y NIEVE',color:'#c9fbff',sky:['#1c4760','#719aa6','#c2eaf0'],floor:['#8cb7c8','#366b85']},
+{id:'alpine',name:'CUMBRES SAGRADAS',tag:'MONTAÑAS Y TEMPLOS',color:'#e8d9b0',sky:['#49627d','#8ba5b2','#e9c7a5'],floor:['#84878b','#414f60']}
 ];
 const pseudo=(x,y,w,h,color,ctx)=>{ctx.fillStyle=color;ctx.fillRect(x,y,w,h);};
 const poly=(ctx,pts,color)=>{ctx.fillStyle=color;ctx.beginPath();ctx.moveTo(...pts[0]);for(let i=1;i<pts.length;i++)ctx.lineTo(...pts[i]);ctx.closePath();ctx.fill();};
@@ -118,6 +122,45 @@ function glacier(ctx,t){
  }
  ctx.globalAlpha=1;
 }
+function natureFallback(ctx,id,t){
+ if(id==='forest'){
+  // Three wooded layers: distant pines, mid canopies and foreground ferns.
+  for(let row=0;row<3;row++)for(let i=0;i<19;i++){
+    const x=-35+i*66+row*28,y=382+row*25,h=110+((i*43+row*29)%90);
+    pseudo(x-5,y-h,10,h, row===2?'#493c30':'#2a4941',ctx);
+    poly(ctx,[[x-38,y-25],[x,y-h-36],[x+39,y-25]],row===0?'#26483e':row===1?'#305746':'#447453');
+    poly(ctx,[[x-28,y-65],[x,y-h-45],[x+28,y-65]],row===2?'#619363':'#3a6851');
+  }
+  pseudo(80,433,995,30,'#647365',ctx);
+  for(let i=0;i<16;i++)pseudo(110+i*58,432,28,3,i%2?'#c3a178':'#8caa73',ctx);
+ }else if(id==='volcano'){
+  for(let i=0;i<8;i++){
+   const x=i*169-110,h=140+(i*89)%180;
+   poly(ctx,[[x-80,447],[x+60,447-h],[x+200,447]],i%2?'#4b3037':'#30232d');
+   poly(ctx,[[x+42,447-h*.84],[x+60,447-h],[x+76,447-h*.84]],'#fa793b');
+  }
+  for(let i=0;i<19;i++){
+   pseudo(i*69,425+(i%2)*9,55,5,i%2?'#eb6531':'#ffa049',ctx);
+   glow(ctx,i*69,434,31,'#f97d3b50');
+  }
+ }else if(id==='lake'){
+  for(let i=0;i<12;i++){
+   const x=i*111-90,h=155+(i*37)%120;
+   poly(ctx,[[x-100,435],[x+10,435-h],[x+152,435]],i%2?'#5f8ba2':'#84b4bb');
+   poly(ctx,[[x-32,435-h*.56],[x+10,435-h],[x+57,435-h*.56]],'#e0f5f6');
+  }
+  pseudo(0,427,WIDTH,40,'#92c8da',ctx);
+  for(let i=0;i<35;i++)pseudo(i*47,434+(i%4)*7,26,2,'#d4f7fc',ctx);
+ }else if(id==='alpine'){
+  for(let row=0;row<3;row++)for(let i=0;i<10;i++){
+   const x=i*141-100+row*31,h=145+(i*57+row*29)%170;
+   poly(ctx,[[x-145,448],[x,448-h],[x+145,448]],row===0?'#647888':row===1?'#778d9a':'#8998a3');
+   poly(ctx,[[x-47,448-h*.68],[x,448-h],[x+46,448-h*.68]],'#f5f2e9');
+  }
+  for(let i=0;i<12;i++)pseudo(200+i*63,421,43,11,'#b5a48f',ctx);
+ }
+}
+
 function floor(ctx,s){
  const g=ctx.createLinearGradient(0,GROUND,0,HEIGHT);g.addColorStop(0,s.floor[0]);g.addColorStop(1,s.floor[1]);
  ctx.fillStyle=g;ctx.fillRect(0,GROUND,WIDTH,HEIGHT-GROUND);
@@ -139,7 +182,8 @@ export function renderStage(ctx,id,t=0){
  if(s.id==='zenith')zenith(ctx,t);
  else if(s.id==='temple')temple(ctx,t);
  else if(s.id==='forge')forge(ctx,t);
- else glacier(ctx,t);
+ else if(s.id==='glacier')glacier(ctx,t);
+ else natureFallback(ctx,s.id,t);
  floor(ctx,s);
  // Vignette: enhances central fight contrast.
  const v=ctx.createRadialGradient(WIDTH/2,GROUND*.75,170,WIDTH/2,GROUND*.7,820);

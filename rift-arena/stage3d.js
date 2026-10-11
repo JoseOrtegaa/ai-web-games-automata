@@ -1,21 +1,46 @@
 // Four fully procedural 3D arenas. All geometry and colors are original.
-import {MeshBuilder,color} from './arena3d.js';
+import {MeshBuilder} from './arena3d.js';
+import {enhanceStage,EXTRA_STAGE_IDS} from './stage-scenes.js';
 
 const palettes={
  zenith:{sky:[.075,.115,.24],fog:[.16,.20,.34],light:[1.13,1.04,1.18],floor:['#26374a','#102034','#385267'],accent:'#58dff4'},
  temple:{sky:[.63,.43,.39],fog:[.61,.40,.38],light:[1.17,1.05,.91],floor:['#6d5044','#382d34','#9b6b53'],accent:'#ffd3a0'},
  forge:{sky:[.31,.19,.19],fog:[.42,.22,.17],light:[1.19,.88,.73],floor:['#3a3439','#1b242f','#785451'],accent:'#fb9b4c'},
- glacier:{sky:[.22,.45,.58],fog:[.27,.52,.60],light:[.93,1.12,1.24],floor:['#64899d','#3b617a','#8bbdcb'],accent:'#b9e9f3'}
+ glacier:{sky:[.22,.45,.58],fog:[.27,.52,.60],light:[.93,1.12,1.24],floor:['#64899d','#3b617a','#8bbdcb'],accent:'#b9e9f3'},
+ forest:{sky:[.12,.28,.24],fog:[.17,.31,.27],light:[.91,1.11,.93],floor:['#536149','#384f3f','#657056','#716958'],accent:'#9bbb76'},
+ volcano:{sky:[.40,.16,.13],fog:[.49,.19,.14],light:[1.30,.88,.70],floor:['#40363b','#272630','#534142','#392a2d'],accent:'#f2773c'},
+ lake:{sky:[.39,.62,.71],fog:[.47,.69,.74],light:[.96,1.13,1.23],floor:['#96c6d2','#71a5b7','#b0d8dc','#83b6c6'],accent:'#e6fcf7'},
+ alpine:{sky:[.53,.64,.70],fog:[.59,.67,.71],light:[1.12,1.09,1.04],floor:['#8f9591','#777d83','#9b9b94','#686f75'],accent:'#e6e0c7'}
 };
 const p=(b,x,y,z,sx,sy,sz,c)=>b.box(x,y,z,sx,sy,sz,c);
-function floor(b,scene){
+function floor(b,scene,id){
  const {floor,accent}=scene,cols=30,rows=18;
  for(let i=0;i<cols;i++)for(let j=0;j<rows;j++){
   const x=(i-cols/2+.5)*1.2,z=(j-rows/2+.5)*1.18;
   const shade=floor[(i*17+j*3+(i*j)%3)%floor.length];
-  p(b,x,-.11,z,.594,.10,.585,shade);
-  if((i+j)%5===0)p(b,x,-.001,z,.52,.012,.014,accent);
-  if((i*3+j)%17===0)p(b,x,-.008,z,.014,.009,.50,'#c0bcab');
+  const rustic=id==='forest'||id==='alpine'||id==='volcano';
+  const tileOffset=rustic ? ((i*13+j*7)%5)*.004 : 0;
+  p(b,x,-.11+tileOffset,z,.594,.10,.585,shade);
+  // Each field has a visually different floor, but the physics plane stays flat.
+  if(id==='forest'){
+   if((i*5+j*3)%7===0)p(b,x+.17,-.002,z-.13,.20,.008,.18,'#7c9064');
+   if((i+j*4)%13===0)p(b,x,.008,z,.31,.008,.026,'#a69c67');
+  }else if(id==='volcano'){
+   if((i*2+j*5)%9===0){
+    p(b,x,-.002,z,.40,.008,.055,'#c75a35');
+    p(b,x+.18,.005,z+.15,.055,.008,.25,'#ef8b46');
+   }
+  }else if(id==='lake'){
+   if((i+j*7)%7===0){
+    p(b,x,.004,z,.48,.006,.027,'#e0f4f1');
+    p(b,x+.12,.005,z+.16,.024,.006,.24,'#c8eaf0');
+   }
+  }else if(id==='alpine'){
+   if((i+j*4)%6===0)p(b,x,.002,z,.39,.007,.034,'#d0d1c7');
+  }else{
+   if((i+j)%5===0)p(b,x,-.001,z,.52,.012,.014,accent);
+   if((i*3+j)%17===0)p(b,x,-.008,z,.014,.009,.50,'#c0bcab');
+  }
  }
  // Decorated near and far rail edges.
  p(b,0,-.045,-10.72,18,.06,.13,'#101c26');
@@ -35,12 +60,12 @@ function mountains(b,primary,secondary,scene){
  }
 }
 function skyBackdrop(b,scene){
- const sky={zenith:'#12233f',temple:'#aa6b67',forge:'#4e2c2d',glacier:'#5493a9'}[scene];
+ const sky={zenith:'#12233f',temple:'#aa6b67',forge:'#4e2c2d',glacier:'#5493a9',forest:'#28504d',volcano:'#722d29',lake:'#80bdca',alpine:'#a2bbc7'}[scene];
  // Large vertical far background, never camera-facing 2D fighters.
  p(b,0,11,-72,78,15,.2,sky);
- const colorTop={zenith:'#2a3b61',temple:'#dc8e75',forge:'#854134',glacier:'#89bece'}[scene];
+ const colorTop={zenith:'#2a3b61',temple:'#dc8e75',forge:'#854134',glacier:'#89bece',forest:'#83a48b',volcano:'#bd5a3e',lake:'#d2f0f1',alpine:'#d5e0df'}[scene];
  p(b,0,3.5,-71.7,78,1.8,.13,colorTop);
- const sun={zenith:'#c8c6ef',temple:'#ffdeb5',forge:'#fa8f5a',glacier:'#f4fcfa'}[scene];
+ const sun={zenith:'#c8c6ef',temple:'#ffdeb5',forge:'#fa8f5a',glacier:'#f4fcfa',forest:'#f7dc9c',volcano:'#ffad61',lake:'#fffefd',alpine:'#f6f1e4'}[scene];
  b.ball(16,14,-63,2.8,2.8,.32,sun);
  b.ball(16,14,-62.55,2.25,2.25,.29,sun);
  if(scene==='zenith'){
@@ -188,11 +213,14 @@ export function buildStage3D(name){
  const scene=palettes[name]||palettes.zenith;
  const batch=new MeshBuilder();
  skyBackdrop(batch,name);
- floor(batch,scene);
+ floor(batch,scene,name);
  if(name==='temple')temple(batch);
  else if(name==='forge')forge(batch);
  else if(name==='glacier')glacier(batch);
- else city(batch);
+ else if(name==='zenith')city(batch);
+ // Existing and new fields receive their own scenery layers and safe foreground edges.
+ enhanceStage(batch,name);
  return {batch,palette:scene};
 }
 export const STAGE_IDS=Object.freeze(Object.keys(palettes));
+export const NEW_STAGE_IDS=EXTRA_STAGE_IDS;

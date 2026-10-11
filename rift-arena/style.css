@@ -131,3 +131,38 @@ body.in-battle .swipe-label{color:#eef6ff9c}
 .versus-display.has-webgl .versus-fighter small{color:#ffdbb5;text-shadow:1px 2px #000}
 .versus-display.has-webgl>strong{position:relative;z-index:2;align-self:flex-end;margin-bottom:27px;color:#ffe0a9;text-shadow:3px 3px 2px #491c29,0 0 15px #111}
 @media(max-width:600px){.versus-display{min-height:230px!important}.versus-display.has-webgl .versus-name{font-size:27px!important}}
+
+/* Eight distinctive field cards: visual previews match terrain and scenery. */
+.stage-chooser{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.stage-tile{display:flex;flex-direction:column;gap:2px;min-height:93px;border:1px solid #647688!important;
+ text-align:left;background:#101b2c;padding:4px 4px 8px;transition:border-color .15s ease,transform .15s ease}
+.stage-tile:hover{transform:translateY(-2px);border-color:var(--stage-color)!important}
+.stage-tile.chosen{border:2px solid #fce1ad!important;background:#1c2937;box-shadow:0 0 16px color-mix(in srgb,var(--stage-color) 40%, transparent)}
+.stage-tile .stage-tile-art{position:relative;flex-shrink:0;width:100%;height:56px;overflow:hidden;border-radius:1px;
+ background:radial-gradient(ellipse at 71% 24%,var(--stage-color),transparent 41%),linear-gradient(#28394f,#172438)}
+.stage-tile .stage-tile-art::before,.stage-tile .stage-tile-art::after{content:'';position:absolute;display:block;width:100%;left:0}
+.stage-tile .stage-tile-art::after{top:auto;bottom:0;height:32%;background:repeating-linear-gradient(100deg,#b6bab666 0 1px,#13212baa 2px 11px)}
+.stage-tile b{font:900 10px/1.18 Impact,'Arial Narrow',sans-serif;letter-spacing:.5px;color:#fff5df;padding:2px 2px 0}
+.stage-tile small{font:700 8px/1.25 Arial,sans-serif;color:#a8b7ca;padding:0 2px;letter-spacing:.15px}
+.stage-tile[data-stage="zenith"] .stage-tile-art{background:radial-gradient(ellipse at 74% 29%,#f35bb6,transparent 35%),linear-gradient(#141e46,#322641 68%,#141c2f)}
+.stage-tile[data-stage="zenith"] .stage-tile-art::before{height:67%;bottom:22%;background:repeating-linear-gradient(90deg,#101e36 0 11px,#ec6fbb6b 12px 14px,#101e36 15px 24px);clip-path:polygon(0 50%,10% 50%,10% 20%,25% 20%,25% 40%,44% 40%,44% 4%,66% 4%,66% 33%,78% 33%,78% 11%,93% 11%,93% 58%,100% 58%,100% 100%,0 100%)}
+.stage-tile[data-stage="temple"] .stage-tile-art{background:radial-gradient(circle at 73% 35%,#ffe0a0 0 9%,transparent 10%),linear-gradient(#b97568,#603853)}
+.stage-tile[data-stage="temple"] .stage-tile-art::before{height:66%;bottom:20%;background:#342c42;clip-path:polygon(8% 48%,50% 5%,91% 48%,82% 48%,82% 100%,17% 100%,17% 48%)}
+.stage-tile[data-stage="forge"] .stage-tile-art{background:radial-gradient(ellipse at center,#ff8746,transparent 48%),linear-gradient(#4c2a35,#1e2229)}
+.stage-tile[data-stage="forge"] .stage-tile-art::before{height:64%;bottom:16%;background:repeating-linear-gradient(90deg,#242632 0 14px,#9b4a3c 16px 18px);clip-path:polygon(0 57%,12% 57%,12% 12%,25% 12%,25% 38%,43% 38%,43% 0,60% 0,60% 48%,82% 48%,82% 18%,100% 18%,100% 100%,0 100%)}
+.stage-tile[data-stage="glacier"] .stage-tile-art{background:linear-gradient(#357d9a,#88c6d1)}
+.stage-tile[data-stage="glacier"] .stage-tile-art::before{height:75%;bottom:11%;background:#d0ecf2;clip-path:polygon(0 90%,12% 34%,20% 75%,33% 0,45% 76%,57% 25%,70% 81%,83% 5%,100% 89%,100% 100%,0 100%)}
+.stage-tile[data-stage="forest"] .stage-tile-art{background:radial-gradient(circle at 70% 21%,#e2dca0,transparent 27%),linear-gradient(#87a991,#234c3e)}
+.stage-tile[data-stage="forest"] .stage-tile-art::before{height:90%;bottom:7%;background:repeating-linear-gradient(93deg,#214235 0 9px,#54754c 11px 25px);clip-path:polygon(0 74%,7% 28%,13% 62%,21% 0,31% 70%,43% 10%,52% 69%,61% 0,74% 73%,83% 18%,94% 74%,100% 48%,100% 100%,0 100%)}
+.stage-tile[data-stage="forest"] .stage-tile-art::after{height:23%;background:repeating-linear-gradient(92deg,#45664b 0 14px,#5c7050 15px 27px)}
+.stage-tile[data-stage="volcano"] .stage-tile-art{background:radial-gradient(circle at 53% 60%,#ffa454,#b74330 44%,#392334)}
+.stage-tile[data-stage="volcano"] .stage-tile-art::before{height:92%;bottom:9%;background:#332630;clip-path:polygon(0 90%,16% 54%,28% 75%,42% 25%,49% 5%,55% 25%,63% 62%,78% 33%,95% 80%,100% 90%,100% 100%,0 100%)}
+.stage-tile[data-stage="volcano"] .stage-tile-art::after{height:20%;background:linear-gradient(#fe8940,#d54e2c)}
+.stage-tile[data-stage="lake"] .stage-tile-art{background:radial-gradient(circle at 75% 24%,#fff,transparent 26%),linear-gradient(#8dbac7,#4b8498)}
+.stage-tile[data-stage="lake"] .stage-tile-art::before{height:68%;bottom:25%;background:#d5f2f3;clip-path:polygon(0 94%,15% 33%,28% 80%,38% 13%,50% 86%,63% 33%,74% 86%,89% 0,100% 88%,100% 100%,0 100%)}
+.stage-tile[data-stage="lake"] .stage-tile-art::after{height:35%;background:repeating-linear-gradient(170deg,#d3f7fd 0 2px,#8bbfcc 3px 13px,#c3e9ee 14px 17px)}
+.stage-tile[data-stage="alpine"] .stage-tile-art{background:linear-gradient(#adc8d2,#e3d1b2)}
+.stage-tile[data-stage="alpine"] .stage-tile-art::before{height:80%;bottom:17%;background:#667d89;clip-path:polygon(0 92%,23% 28%,33% 58%,52% 0,67% 57%,80% 19%,100% 94%,100% 100%,0 100%)}
+.stage-tile[data-stage="alpine"] .stage-tile-art::after{height:18%;background:#89938b}
+@media(max-width:520px){.stage-chooser{grid-template-columns:repeat(2,minmax(0,1fr))}.stage-tile{min-height:100px}.stage-tile .stage-tile-art{height:59px}.stage-tile b{font-size:12px}.stage-tile small{font-size:9px}}
+@media(orientation:landscape) and (max-height:500px){.stage-chooser{grid-template-columns:repeat(4,minmax(0,1fr))}}

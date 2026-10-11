@@ -90,6 +90,18 @@ try {
   assert.equal(local,'JUGADOR 2');
   const stage=await evaluate(`(()=>{document.querySelector('[data-stage="temple"]').click();return document.querySelector('.stage-tile.chosen')?.dataset.stage})()`);
   assert.equal(stage,'temple','Seleccionar escenario debe funcionar');
+
+  const eight=await evaluate("Array.from(document.querySelectorAll('[data-stage]')).map(node=>node.dataset.stage)");
+  assert.deepEqual(eight,['zenith','temple','forge','glacier','forest','volcano','lake','alpine']);
+  const stageCards=await evaluate("Array.from(document.querySelectorAll('.stage-tile')).every(node=>node.querySelector('.stage-tile-art')&&node.querySelector('small')?.textContent)");
+  assert.equal(stageCards,true,'Each field must have distinct stage art and subtitle');
+  const volcano=await evaluate('(()=>{document.querySelector("[data-stage=volcano]").click();return document.querySelector(".stage-tile.chosen")?.dataset.stage})()');
+  assert.equal(volcano,'volcano','The volcanic battleground must be selectable');
+  const forest=await evaluate('(()=>{document.querySelector("[data-stage=forest]").click();return document.querySelector(".stage-tile.chosen")?.dataset.stage})()');
+  assert.equal(forest,'forest','The forest must be selectable');
+  const lake=await evaluate('(()=>{document.querySelector("[data-stage=lake]").click();return document.querySelector(".stage-tile.chosen")?.dataset.stage})()');
+  assert.equal(lake,'lake','The frozen lake must be selectable');
+
   const livePreview=await evaluate(`(async()=>{
     await new Promise(done=>setTimeout(done,320));
     const preview=document.getElementById('versus3d');
@@ -151,7 +163,7 @@ try {
   assert.equal(paused,true,'La pausa debe funcionar');
   const returned=await evaluate("(()=>{document.getElementById('resumeBtn').click();document.getElementById('exitBtn').click();return !document.getElementById('selectScreen').hidden})()");
   assert.equal(returned,true,'Debe poderse salir al selector');
-  console.log('Browser smoke OK: WebGL 3D pixels, 8 luchadores, 4 escenarios, gestos, VS local, pausa y menú');
+  console.log('Browser smoke OK: WebGL 3D pixels, 8 luchadores, 8 escenarios, gestos, VS local, pausa y menú');
 }finally{
   if(ws)ws.close();
   browser.kill('SIGKILL');
