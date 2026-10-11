@@ -38,7 +38,7 @@ try {
       // Chromium chooses its own free DevTools port: parallel CI runs cannot collide.
       if(!port){
         const chromePortFile=await readFile(join(userData,'DevToolsActivePort'),'utf8');
-        port=Number(chromePortFile.split('\\n')[0].trim());
+        port=Number(chromePortFile.trim().split(/\s+/)[0]);
       }
       if(port){
         const resp=await fetch('http://127.0.0.1:'+port+'/json');
