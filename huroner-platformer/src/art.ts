@@ -233,6 +233,10 @@ export function createArt(scene: Phaser.Scene): void {
         {key:'ferret',fur:P.fur,cream:P.cream,dark:P.dark},
         {key:'ferret-snow',fur:'#9bc9d3',cream:'#f7faf2',dark:'#647e89'},
         {key:'ferret-violet',fur:'#a278c6',cream:'#e7c7f2',dark:'#624a79'},
+        {key:'ferret-mint',fur:'#72bfa0',cream:'#e1f3d8',dark:'#3b766d'},
+        {key:'ferret-coral',fur:'#db8d87',cream:'#ffe3cc',dark:'#905d6b'},
+        {key:'ferret-gold',fur:'#dbb260',cream:'#fff1bf',dark:'#926d40'},
+        {key:'ferret-midnight',fur:'#657aaf',cream:'#cfd9f2',dark:'#394567'},
     ];
     for(const coat of coats) if (!scene.textures.exists(coat.key)) {
         const lo = canvas(24 * 12, 32), c = lo.getContext('2d')!;
@@ -274,6 +278,21 @@ export function createArt(scene: Phaser.Scene): void {
             } else ['rabbit','armored','quail','spitter'].includes(kind) ? animal(c, kind) : undergroundAnimal(c, kind);
         });
     texture(scene,'relic-ice',18,22,c=>{poly(c,'#2b6382',[9,0,18,11,9,22,0,11]);poly(c,'#b9f5f1',[9,2,16,11,9,19,2,11]);rect(c,'#fff8e2',8,5,2,10);});
+    for(const [key,color] of [['balloon-red','#d76b7c'],['balloon-mint','#70bda6'],['balloon-gold','#e1b75f']]) {
+        texture(scene,key,24,34,c=>{
+            ellipse(c,'#344957',12,14,11,14);ellipse(c,color,12,13,9,12);
+            ellipse(c,'#fff1d4',8,8,2,4);poly(c,color,[12,24,9,29,15,29]);
+        });
+    }
+    texture(scene,'frozen-wall',64,128,c=>{
+        rect(c,'#719ba7',0,0,64,128);
+        for(let y=0;y<128;y+=32){
+            rect(c,'#85acb4',0,y+2,64,2);
+            rect(c,'#608c9c',0,y+30,64,2);
+            rect(c,'#648f9e',(y/32)%2?18:46,y+4,2,26);
+        }
+        rect(c,'#a3c4c9',8,13,20,2);rect(c,'#a3c4c9',34,79,18,2);
+    });
     texture(scene,'hat-beret',20,10,c=>{ellipse(c,'#306276',10,6,9,3);rect(c,'#163f56',2,8,17,2);rect(c,'#e7d29c',10,1,2,3);});
     texture(scene,'hat-crown',18,11,c=>{
         poly(c,'#493d43',[1,10,0,1,5,5,9,0,13,5,18,1,17,10]);

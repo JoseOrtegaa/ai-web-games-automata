@@ -23,3 +23,14 @@ test('three frozen secret routes have reachable rewards and distinct relics',()=
   for(let n=1;n<3;n++)assert(level.enemies[n].minX-level.enemies[n-1].maxX>300);
  }
 });
+
+test('frozen concealment is grounded, clear of platforms, and access lids are flush',()=>{
+ for(const level of FROZEN_LEVELS){
+  for(const panel of level.secrets){
+   assert(level.solids.some(s=>!s.oneWay&&s.x<=panel.x&&s.x+s.width>=panel.x+panel.width&&s.y===panel.y+panel.height));
+   assert(!level.solids.some(s=>s.oneWay&&s.x<panel.x+panel.width&&s.x+s.width>panel.x&&s.y<panel.y+panel.height&&s.y+s.height>panel.y));
+  }
+  assert(level.solids.some(s=>s.surface==='snow'&&!s.oneWay&&level.tunnel.x>s.x&&level.tunnel.x<s.x+s.width&&s.y===level.tunnel.y));
+  assert(!level.solids.some(s=>s.surface==='stone'));
+ }
+});

@@ -1,6 +1,6 @@
 import type { LevelDef, SolidDef, EnemyDef } from './types';
 const ice=(x:number,width:number,y=430):SolidDef=>({x,y,width,height:540-y,surface:'ice'});
-const stone=(x:number,width:number,y=430):SolidDef=>({x,y,width,height:540-y,surface:'stone'});
+const stone=(x:number,width:number,y=430):SolidDef=>({x,y,width,height:540-y,surface:'snow'});
 const platform=(x:number,y:number,width:number,surface:'ice'|'glass'|'snow'='ice'):SolidDef=>({x,y,width,height:22,surface,oneWay:true});
 const layouts:SolidDef[][]=[
     [stone(0,630),ice(710,600),stone(1390,560),ice(2030,530),stone(2640,610),ice(3330,410),stone(3740,300),platform(820,335,170),platform(1040,280,150),platform(1520,340,170),platform(2250,330,190),platform(2800,335,180),platform(3500,315,170)],
@@ -14,13 +14,14 @@ const enemySets:EnemyDef[][]=[
     [{id:'bug-1',kind:'frostbug',x:930,y:370,minX:820,maxX:1080},{id:'owl-1',kind:'owl',x:1590,y:260,minX:1460,maxX:1730},{id:'snow-1',kind:'snowhare',x:2170,y:300,minX:2060,maxX:2300},{id:'bug-2',kind:'frostbug',x:2800,y:350,minX:2710,maxX:2890},{id:'owl-2',kind:'owl',x:3370,y:275,minX:3250,maxX:3500}],
 ];
 export const FROZEN_LEVELS:LevelDef[]=layouts.map((solids,i)=>{
-    const tunnel={x: i===0?2910:i===1?3090:2630,y:i===1?385:390};
+    const conceal=[{x:1740,y:326,width:150,height:104},{x:2120,y:326,width:140,height:104},{x:2750,y:286,width:150,height:104}][i];
+    const tunnel={x: i===0?2910:i===1?3090:2630,y:i===2?390:430};
     solids.push({x:tunnel.x-46,y:tunnel.y,width:92,height:540-tunnel.y,surface:'ice'});
     return {width:4040,height:540,spawn:{x:140,y:385},checkpoint:{x:i===2?3120:1810,y:385},goal:{x:3970,y:365},tunnel,
         sections:[{x:0,name:`2-${i+1} · ${names[i]}`,palette:'castle'}],solids,
         collectibles:solids.flatMap((s,n)=>Array.from({length:Math.max(1,Math.floor((s.width-100)/92))},(_,j)=>({id:`f${i}-${n}-${j}`,x:s.x+50+j*92,y:s.y-40}))).filter(p=>p.x>250 && !solids.some(s=>!s.oneWay&&p.x>s.x&&p.x<s.x+s.width&&p.y>s.y&&p.y<s.y+s.height)),
         enemies:enemySets[i],powerUps:[{id:'f-puff',kind:'puff',x:420,y:380},{id:'f-meat',kind:'meat',x:1840,y:320}],
-        secrets:[{id:`f-secret-${i}`,label:'¡Un rincón bajo el hielo!',x:1450,y:315,width:170,height:105,surface:'ice'}],scenery:[],
+        secrets:[{id:`f-secret-${i}`,label:'¡Un rincón bajo el hielo!',...conceal,surface:'snow'}],scenery:[],
         ...(i===2?{boss:{name:'Reina Ventisca',x:3750,minX:3620,maxX:3880,color:0x9fe9ef}}:{}),
     };
 });

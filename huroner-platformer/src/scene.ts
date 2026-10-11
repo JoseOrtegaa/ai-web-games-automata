@@ -65,6 +65,8 @@ export class GameScene extends Phaser.Scene {
     private autoPaused = false;
     private particleCount = 0;
     private hat?: Phaser.GameObjects.Image;
+    private balloon?: Phaser.GameObjects.Image;
+    private balloonString?: Phaser.GameObjects.Graphics;
     private boss?: Phaser.Physics.Arcade.Sprite;
     private bossHP = 0;
     private bossNext = 0;
@@ -88,6 +90,7 @@ export class GameScene extends Phaser.Scene {
         this.now = 0; this.count = 0; this.deathAt = 0; this.checkpoint = false;
         this.secrets.clear(); this.collected.clear(); this.panels = []; this.bob = [];
         this.section = -1; this.hudAt = 0; this.autoPaused = false; this.particleCount = 0;
+        this.balloon=undefined;this.balloonString=undefined;
         this.hat=undefined;this.boss=undefined;this.bossHP=0;this.wave=undefined;
         this.safe = { ...this.level.spawn };
     }
@@ -100,6 +103,8 @@ export class GameScene extends Phaser.Scene {
         this.player = new Player(this, this.level.spawn.x, this.level.spawn.y, (left, top, right, bottom) =>
             hasHeadroom(this.level.solids, left, top, right, bottom));
         this.player.setCoat(readWardrobe().coat);
+        this.balloon=this.add.image(0,0,'balloon-red').setDepth(19).setDisplaySize(24,34).setVisible(false);
+        this.balloonString=this.add.graphics().setDepth(19);
         this.hat=this.add.image(0,0,'hat-beret').setDepth(21).setOrigin(.5,1).setVisible(false);
         this.setupBoss();
         this.enemies = new Enemies(this, this.level.enemies);
@@ -156,19 +161,31 @@ export class GameScene extends Phaser.Scene {
         });
         this.level.secrets.forEach(s => {
             const panel = this.add.container(s.x, s.y).setDepth(25);
-            const tex = this.add.tileSprite(0, 0, s.width, s.height, `surface-${s.surface}`).setOrigin(0);
+            const tex = this.add.tileSprite(0, 0, s.width, s.height, this.levelIndex>=3?'frozen-wall':`surface-${s.surface}`).setOrigin(0);
             panel.add(tex);
-            for (let x = 18; x < s.width; x += 38)
-                panel.add(this.add.rectangle(x, 10, 4, s.height - 20, 0x172e3d, .4).setOrigin(0));
-            panel.add(this.add.rectangle(s.width - 8, s.height - 20, 3, 13, 0xf5d9aa, .65));
+            if(this.levelIndex>=3){
+                // Frosted masonry sits flush on the ground, with only a faint seam.
+                panel.add(this.add.rectangle(0,0,s.width,5,0xe0f2eb,.7).setOrigin(0));
+                panel.add(this.add.rectangle(s.width-3,8,2,s.height-8,0x406f80,.22).setOrigin(0));
+            }else{
+                for (let x = 18; x < s.width; x += 38)
+                    panel.add(this.add.rectangle(x, 10, 4, s.height - 20, 0x172e3d, .4).setOrigin(0));
+                panel.add(this.add.rectangle(s.width - 8, s.height - 20, 3, 13, 0xf5d9aa, .65));
+            }
             this.panels.push({ id: s.id, rect: panel });
         });
         const tunnel = this.level.tunnel;
         if (tunnel) {
+            if(this.levelIndex>=3){
+                this.add.rectangle(tunnel.x,tunnel.y+5,92,10,0x9bcbd3).setStrokeStyle(1,0x6b99aa).setDepth(8);
+                this.add.ellipse(tunnel.x,tunnel.y+2,58,5,0x426e80,.6).setDepth(9);
+                this.add.text(tunnel.x,tunnel.y-18,'⌄',{fontFamily:'Trebuchet MS',fontSize:'16px',color:'#c8e4df'}).setOrigin(.5).setDepth(11);
+            }else{
             this.add.rectangle(tunnel.x,tunnel.y+25,78,50,0x3c5758).setStrokeStyle(3,0x92a18c).setDepth(7);
             this.add.rectangle(tunnel.x,tunnel.y+5,104,14,0xa99a69).setStrokeStyle(2,0xd8c38a).setDepth(8);
             this.add.ellipse(tunnel.x,tunnel.y+2,70,9,0x14242c).setDepth(9);
             this.add.text(tunnel.x,tunnel.y-52,'↓ AGÁCHATE', {fontFamily:'Trebuchet MS',fontSize:'12px',color:'#fff3c0'}).setOrigin(.5).setDepth(11);
+            }
         }
         this.checkpointSprite = this.add.image(this.level.checkpoint.x, 430, 'checkpoint').setOrigin(.5, 1).setDepth(10).setVisible(!this.inSecret);
         this.add.image(this.level.goal.x, 430, 'goal').setOrigin(.5, 1).setDepth(10);
@@ -367,7 +384,7 @@ export class GameScene extends Phaser.Scene {
         document.getElementById('map-content')!.scrollTop = 0;
     }
     private cosmeticPreview(id: string, type: string): HTMLImageElement {
-        const key = type === 'coat' ? (id === 'classic' ? 'ferret' : `ferret-${id}`) : (id === 'none' ? 'ferret' : `hat-${id}`);
+        const key = type === 'coat' ? (id === 'classic' ? 'ferret' : `ferret-${id}`) : (type === 'accessory' ? (id === 'no-balloon' ? 'ferret' : id) : (id === 'none' ? 'ferret' : `hat-${id}`));
         const frame = this.textures.getFrame(key, key.startsWith('ferret') ? 0 : '__BASE');
         const canvas = document.createElement('canvas');
         canvas.width = frame.cutWidth; canvas.height = frame.cutHeight;
@@ -426,9 +443,9 @@ export class GameScene extends Phaser.Scene {
         const list=document.getElementById('shop-list')!;list.replaceChildren();
         const wardrobe=readWardrobe();
         COSMETICS.forEach((item, index)=>{
-            if(index === 0 || index === 3) {
+            if(index === 0 || COSMETICS[index-1].type !== item.type) {
                 const heading = document.createElement('h4'); heading.className = 'shop-category';
-                heading.textContent = index === 0 ? 'Sombreros' : 'Pelajes'; list.append(heading);
+                heading.textContent = ({hat:'Sombreros',coat:'Pelajes',accessory:'Globos · Solo decoración'})[item.type]; list.append(heading);
             }
             const owned=wardrobe.owned.includes(item.id),selected=wardrobe[item.type]===item.id;
             const card=document.createElement('article');card.className=`shop-card ${selected?'equipped':''}`;
@@ -584,6 +601,15 @@ export class GameScene extends Phaser.Scene {
             .setDisplaySize(wardrobe.hat==='crown'?28:30,wardrobe.hat==='crown'?17:15)
             .setPosition(this.player.sprite.x+(this.player.facing<0?-6:6),this.player.sprite.y-21+(this.player.sprite.frame.name==='1'?2:0))
             .setFlipX(this.player.facing<0).setAlpha(this.player.sprite.alpha);
+        const showBalloon=wardrobe.accessory!=='no-balloon';
+        const balloonX=this.player.sprite.x-this.player.facing*22+Math.sin(this.now/350)*5;
+        const balloonY=this.player.sprite.y-68+Math.sin(this.now/440)*4;
+        this.balloon?.setVisible(showBalloon).setTexture(showBalloon?wardrobe.accessory:'balloon-red')
+            .setPosition(balloonX,balloonY).setAlpha(this.player.sprite.alpha);
+        this.balloonString?.clear();
+        if(showBalloon)this.balloonString?.lineStyle(1,0xe4e8da,this.player.sprite.alpha*.75)
+            .beginPath().moveTo(this.player.sprite.x,this.player.sprite.y-8)
+            .lineTo(balloonX,balloonY+12).strokePath();
         if (this.status.shield)
             this.player.sprite.setTint(0xf5ffd2);
         else this.player.sprite.clearTint();
@@ -692,6 +718,7 @@ export class GameScene extends Phaser.Scene {
         this.controls.clear();
         this.player.sprite.play(this.player.animation('dead'));
         this.hat?.setVisible(false);
+        this.balloon?.setVisible(false);this.balloonString?.clear();
         this.player.body.enable = false;
         this.sounds.play('dead');
         this.tweens.add({ targets: this.player.sprite, y: this.player.sprite.y - 35, angle: 15, alpha: 0, duration: 650 });

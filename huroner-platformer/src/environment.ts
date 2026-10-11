@@ -402,10 +402,10 @@ export function createSurfaceArt(scene: Phaser.Scene): void {
                 line(c,'#cceee8',[6,44,25,29,39,42],2);
             }
             if(material==='snow') {
-                rect(c,'#617989',0,0,64,64);rect(c,'#eff8ed',0,0,64,8);
+                rect(c,'#64929f',0,0,64,64);rect(c,'#eff8ed',0,0,64,8);
                 poly(c,'#c6e3e5',[0,8,9,13,25,7,41,11,57,6,64,9,64,36,0,36]);
-                for(const x of [5,22,45])poly(c,'#a5c6cf',[x,36,x+11,28,x+20,41]);
-                rect(c,'#546b80',0,46,64,18);
+                for(const x of [5,22,45])poly(c,'#a2cbd2',[x,36,x+11,28,x+20,41]);
+                rect(c,'#537f91',0,46,64,18);
             }
             if (material === 'metal') {
                 rect(c, '#4c5b60', 0, 0, 64, 64);

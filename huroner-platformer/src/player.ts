@@ -10,7 +10,7 @@ export class Player {
     facing = 1;
     hurtUntil = 0;
     invulnerableUntil = 0;
-    coat: 'classic' | 'snow' | 'violet' = 'classic';
+    coat: string = 'classic';
     constructor(scene: Phaser.Scene, x: number, y: number, private canStand: (left: number, top: number, right: number, bottom: number) => boolean) {
         this.sprite = scene.physics.add.sprite(x, y, 'ferret', 0);
         this.sprite.setSize(24, 42).setOffset(12, 20).setMaxVelocity(310, B.maxFall);
@@ -20,7 +20,7 @@ export class Player {
         return this.sprite.body as Phaser.Physics.Arcade.Body;
     }
     animation(name:string) { return `${this.coat==='classic'?'ferret':`ferret-${this.coat}`}-${name}`; }
-    setCoat(coat:string) { this.coat=coat==='snow'||coat==='violet'?coat:'classic'; }
+    setCoat(coat:string) { this.coat=['snow','violet','mint','coral','gold','midnight'].includes(coat)?coat:'classic'; }
     update(input: Input, now: number, oil: boolean, onJump: () => void, icy = false) {
         const body = this.body;
         const grounded = body.blocked.down || body.touching.down;

@@ -24,3 +24,14 @@ test('level records preserve old completed sequence and best croquettes per leve
  assert.equal(readProgress().best['2-1'],27);
  assert.equal(readProgress().completed.at(-1),'2-1');
 });
+
+test('old wardrobes acquire a free accessory slot and new purchases retain all slots',()=>{
+ data.set('ferret-jump-cosmetics-v1',JSON.stringify({owned:['none','classic','beret'],hat:'beret',coat:'classic'}));
+ data.set('ferret-jump-v1',JSON.stringify({version:1,total:1000,best:60}));
+ assert.equal(readWardrobe().accessory,'no-balloon');
+ assert(selectCosmetic('balloon-red'));assert(selectCosmetic('mint'));
+ assert.equal(readWardrobe().hat,'beret');assert.equal(readWardrobe().coat,'mint');
+ assert.equal(readWardrobe().accessory,'balloon-red');assert.equal(balance(),760);
+ assert(selectCosmetic('no-balloon'));assert(selectCosmetic('balloon-red'));
+ assert.equal(balance(),760);
+});

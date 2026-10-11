@@ -43,7 +43,7 @@ npm run build
 npm run dev
 ```
 
-`npm run test:e2e` compila, sirve el juego en un puerto local temporal y ejecuta los 14 recorridos E2E: seis niveles y seis ocultos con movimiento y salto reales, enemigos, jefes, recompensas, compras, mapa, desplazamiento táctil sobre tarjetas y botones, pestañas, guardado, controles táctiles emulados y pruebas visuales de pelajes, corona y panoramas. Instala Chromium (`npx playwright install chromium`) antes de ejecutarlo. `BASE_URL` y `CHROMIUM_PATH` permiten usar otro servidor o navegador. El resultado de cada caso queda en `test-results/summary.json`. La emulación Chromium no equivale a probar Safari físico.
+`npm run test:e2e` compila, sirve el juego en un puerto local temporal y ejecuta los 15 recorridos E2E: seis niveles y seis ocultos con movimiento y salto reales, enemigos, jefes, recompensas, compras, mapa, desplazamiento táctil sobre tarjetas y botones, pestañas, guardado, controles táctiles emulados y pruebas visuales de pelajes, corona y panoramas. Instala Chromium (`npx playwright install chromium`) antes de ejecutarlo. `BASE_URL` y `CHROMIUM_PATH` permiten usar otro servidor o navegador. El resultado de cada caso queda en `test-results/summary.json`. La emulación Chromium no equivale a probar Safari físico.
 
 ## Mantenimiento y publicación
 
@@ -54,3 +54,5 @@ npm run dev
 - GitHub Pages sirve `main` desde raíz. **Versionar `dist/`** tras el build; no modificar otros juegos ni el catálogo.
 
 Avisos de terceros en `public/LICENSES.txt` y `dist/LICENSES.txt`.
+
+El mundo 2 usa piedra nevada azulada para los tramos con agarre, con paredes ocultas apoyadas al suelo y tapas de acceso enrasadas. La tienda incluye pelajes menta, coral, dorado y medianoche, y globos cereza, menta y dorado (100/130/170 croquetas). Los globos se equipan en un tercer espacio independiente y no modifican física, salto ni colisiones; los guardados anteriores reciben ese espacio vacío.
