@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { ROSTER, createFighter, fighterDefinition, tryAttack, stepFighter, resolveHit, keepApart, winnerByTimeout, MOVES } from '../core.js';
-test('cuatro luchadores únicos y configurados', () => {
-  assert.equal(ROSTER.length, 4);
+test('ocho luchadores únicos y configurados', () => {
+  assert.equal(ROSTER.length, 8);
   assert.equal(new Set(ROSTER.map(f => f.id)).size, 4);
   assert.ok(ROSTER.every(f => f.speed > 0 && f.power > 0));
 });
@@ -81,4 +81,30 @@ test('salud y barra tienen límites', () => {
   }
   assert.equal(b.health, 0);
   assert.ok(a.meter >= 0 && a.meter <= 100);
+});
+
+test('gancho eleva al rival y habilita combos',()=>{
+  const a=createFighter('kira',300),b=createFighter('volt',370,-1);
+  assert.equal(tryAttack(a,'uppercut'),true);
+  for(let i=0;i<5;i++)stepFighter(a,{},b,.04);
+  const hit=resolveHit(a,b);
+  assert.equal(hit.launch,true);
+  assert.ok(b.vy>0);
+});
+test('barrido golpea al rival que bloquea alto',()=>{
+  const a=createFighter('ember',300),b=createFighter('volt',375,-1);
+  b.block=true;
+  assert.equal(tryAttack(a,'sweep'),true);
+  for(let i=0;i<5;i++)stepFighter(a,{},b,.04);
+  const hit=resolveHit(a,b);
+  assert.ok(hit);
+  assert.equal(hit.guarding,false);
+});
+test('golpes rápidos admiten encadenamiento y cambian a nuevo ataque',()=>{
+  const a=createFighter('sable',300),b=createFighter('onyx',500,-1);
+  tryAttack(a,'punch');
+  for(let i=0;i<4;i++)stepFighter(a,{},b,.04);
+  assert.equal(tryAttack(a,'kick'),true);
+  for(let i=0;i<12;i++)stepFighter(a,{},b,.04);
+  assert.equal(a.action?.type,'kick');
 });

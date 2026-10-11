@@ -1,27 +1,45 @@
 # Rift Arena
 
-Prototipo gratuito y original de lucha arcade **1 contra 1**. Se publica directamente desde esta carpeta en GitHub Pages, sin backend, dependencias ni coste.
+Arcade original de lucha 1 contra 1, inspirado en la intensidad de los juegos de lucha de consola de finales de los 90. **No utiliza personajes, gráficos, música, logotipos ni escenarios de ninguna franquicia existente.** Sin backend, cookies, compras, IA externa ni dependencias: 0 €.
 
-## Jugar
+## Versión actual
 
-1. Elige entre Kira, Volt, Onyx y Ember; selecciona jugador 1 y rival.
-2. Escoge **VS CPU** o **2 jugadores** (mismo teclado, en ordenador).
-3. El primero en ganar dos rondas se lleva el combate. Cada ronda dura 75 segundos.
-4. Puñetazos, patadas, salto, cobertura y especial que consume 40 puntos de energía. La energía se recupera peleando.
+- **8 personajes originales:** Kira, Volt, Onyx, Ember, Vex, Rook, Sable y Atlas, con velocidades, potencia y especiales diferenciados.
+- **4 escenarios originales** con fondo animado y suelo de perspectiva: Neon Zenith, Templo Solar, Forja Abisal y Bastión Ártico.
+- **1v1** contra CPU en cualquier dispositivo o dos jugadores en el mismo teclado en ordenador.
+- Rondas de 60 s; primer jugador en ganar 2 rondas vence. Salud, energía, bloqueo, esquiva agachada, salto, gancho elevador, barrido bajo, especiales, combos encadenados, sonido opcional.
+- Diseño **mobile landscape** a pantalla completa con controles mediante gestos de dos pulgares, HUD superpuesto y aviso para girar el móvil en vertical.
+
+## Gestos en móvil (contra CPU)
+
+**Pulgar izquierdo (lado izquierdo de la pantalla):** arrastra horizontalmente para moverte, hacia arriba para saltar, hacia abajo para cubrirte/agacharte.
+
+**Pulgar derecho (lado derecho):** toque corto = puño, deslizamiento horizontal = patada, hacia arriba = gancho, hacia abajo = barrido, diagonal = especial (consume 40 puntos de energía), mantener = bloquear. Para encadenar combos, realiza golpes consecutivos mientras termina la animación anterior.
+
+Los controles gestuales funcionan con dos dedos simultáneamente. Los controles táctiles originales permanecen en el DOM para compatibilidad; la arena inmersiva se controla por zonas de deslizamiento.
+
+## Controles de teclado
 
 | Acción | Jugador 1 | Jugador 2 |
-| --- | --- | --- |
+|---|---|---|
 | Mover | A / D | ← / → |
 | Saltar | W | ↑ |
-| Cubrir | S | ↓ |
+| Cubrir/agacharse | S | ↓ |
 | Puño | F | J |
 | Patada | G | K |
+| Gancho | R | U |
+| Barrido | T | I |
 | Especial | H | L |
+| Pausar | Esc o Espacio | Esc o Espacio |
 
-En móvil hay controles táctiles para el jugador 1, pensados para jugar **contra la CPU**. Se recomienda orientación horizontal.
+## Desarrollo
 
-## Tecnología y QA
+HTML, CSS, JavaScript nativo y Canvas 2D. No requiere instalación de paquetes.
 
-Canvas 2D, HTML, CSS y módulos de JavaScript nativos. Sin frameworks, servicios externos ni compras. Los luchadores y fondos son arte vectorial original dibujado en tiempo real. Para ejecutar en local desde la raíz del repositorio: python3 -m http.server 8000. Para lógica de combate: node --test rift-arena/tests/*.test.mjs.
+Desde la raíz del repositorio:
 
-**Estado:** primera versión jugable 2D. No incluye todavía combos direccionales complejos, mando físico, modo en línea ni personajes 3D.
+- `node --test rift-arena/tests/*.test.mjs` — lógica y gestos.
+- `node rift-arena/tests/browser-smoke.mjs` — prueba real de navegador con Chrome/Chromium.
+- `python3 -m http.server 8000` — servidor local para abrir `/rift-arena/`.
+
+Se publica en GitHub Pages directamente desde `main/rift-arena/`. El navegador Safari de iOS puede impedir el bloqueo automático de orientación: en ese caso gira el teléfono manualmente. Arte y animaciones dibujados por Canvas: **estética arcade 2.5D**, no modelos 3D reales, controles gamepad ni multijugador online.

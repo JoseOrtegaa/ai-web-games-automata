@@ -1,4 +1,6 @@
 import { WIDTH, GROUND, ROSTER, fighterDefinition, createFighter, stepFighter, resolveHit, keepApart, winnerByTimeout, moveInfo, clamp } from './core.js';
+import { STAGES, renderStage } from './stages.js';
+import { movementFromDrag, strikeFromSwipe } from './gestures.js';
 
 const $ = id => document.getElementById(id);
 const ui = Object.fromEntries(['app','selectScreen','gameScreen','roster','fighterInfo','portrait1','portrait2','name1','name2','enemyLabel','modeNote','startBtn','audioBtn','pauseBtn','exitBtn','resumeBtn','rematchBtn','changeBtn','pausePanel','resultPanel','winnerTitle','winnerDetails','hudName1','hudName2','hp1','hp2','mp1','mp2','score1','score2','roundNum','timer','announcement','announcementSmall','announcementText','battleTip','arena'].map(id => [id, $(id)]));
@@ -6,6 +8,7 @@ const ctx = ui.arena.getContext('2d', { alpha: false });
 const HEIGHT = 648;
 const chosen = ['kira', 'volt'];
 let activeSide = 0;
+let selectedStage = 'zenith';
 let mode = 'cpu';
 let soundEnabled = false;
 let audioContext = null;
@@ -21,7 +24,11 @@ const glyphs = {
   kira: "<path d='M62 63 34 10 84 43 108 0 126 48 158 16 143 82' fill='#33264a' stroke='#b98bff' stroke-width='6'/>",
   volt: "<path d='M60 49 80 18 132 18 151 50 140 82 65 82Z' fill='#125a72' stroke='#6ee8ff' stroke-width='6'/><path d='m136 8-18 28h17l-18 24' fill='none' stroke='#fff29d' stroke-width='6'/>",
   onyx: "<path d='M60 53 38 12 77 36 122 36 158 12 141 63' fill='#70431b' stroke='#ffbd6c' stroke-width='6'/>",
-  ember: "<path d='M57 72q-25-48 14-73-4 32 19 15 17-23 13-38 43 44 34 73 20-20 21-35 24 43-9 76Z' fill='#ff6f8b' stroke='#ffc478' stroke-width='5'/>"
+  ember: "<path d='M57 72q-25-48 14-73-4 32 19 15 17-23 13-38 43 44 34 73 20-20 21-35 24 43-9 76Z' fill='#ff6f8b' stroke='#ffc478' stroke-width='5'/>",
+  vex: "<path d='M60 86Q38 39 78 21L110 37 143 13 133 71 151 81' fill='#164b46' stroke='#86ea94' stroke-width='5'/><path d='M68 80 54 110 87 88' fill='#86ea94'/>",
+  rook: "<path d='M54 89 53 44 72 18 137 18 157 44 150 89' fill='#29416d' stroke='#92b8ff' stroke-width='7'/><path d='M64 63h84' stroke='#d7e6ff' stroke-width='7'/>",
+  sable: "<path d='M55 87q-34-46 13-81L83 37 104 5 140 34 160 1Q166 67 144 91' fill='#512a64' stroke='#fc96d8' stroke-width='5'/><path d='M51 99Q28 126 34 148' fill='none' stroke='#fc96d8' stroke-width='8'/>",
+  atlas: "<path d='M51 91Q35 30 102 6Q168 30 153 91L143 72Q103 45 65 72Z' fill='#625a44' stroke='#ded3a5' stroke-width='7'/><path d='M57 104 26 173 71 141' fill='#eee0bc'/>"
 };
 function avatarMarkup(f) {
   return "<svg viewBox='0 0 200 230' aria-hidden='true' focusable='false'><ellipse cx='103' cy='224' rx='77' ry='12' fill='#040912' opacity='.55'/><path d='M60 146Q40 130 22 168L0 230H200L177 169Q160 132 137 146Z' fill='"+f.shade+"' stroke='"+f.color+"' stroke-width='7'/><path d='M74 142Q101 165 128 142L146 230H57Z' fill='#101a30' stroke='"+f.color+"' stroke-width='4'/><path d='M78 138h49v34H78Z' fill='#cd997b'/><ellipse cx='102' cy='89' rx='43' ry='55' fill='#bb866d'/><path d='M61 79Q53 25 91 24h38q31 14 18 58' fill='"+f.shade+"'/>"+glyphs[f.id]+"<path d='M75 94h20m17 0h20' stroke='#eef6fa' stroke-width='6' stroke-linecap='round'/><path d='M85 94h5m32 0h5' stroke='"+f.color+"' stroke-width='5'/><path d='M91 119q11 7 23 0' fill='none' stroke='#482d3c' stroke-width='3' stroke-linecap='round'/><path d='M72 169h61' stroke='"+f.color+"' stroke-width='7' opacity='.65'/></svg>";
@@ -51,13 +58,14 @@ function drawRoster() {
     $('name' + (side + 1)).textContent = selected.name;
   }
   ui.enemyLabel.textContent = mode === 'cpu' ? 'CPU' : 'JUGADOR 2';
+  document.querySelectorAll('[data-side]').forEach(b=>b.textContent=b.dataset.side==='0'?'JUGADOR 1':mode==='cpu'?'CPU':'JUGADOR 2');
 }
 document.querySelectorAll('[data-mode]').forEach(button => button.addEventListener('click', () => {
   mode = button.dataset.mode;
   document.querySelectorAll('[data-mode]').forEach(b => b.classList.toggle('active', b === button));
   ui.modeNote.textContent = mode === 'cpu'
-    ? 'La CPU lucha sola. En móvil usa los botones táctiles; en ordenador también puedes usar el teclado.'
-    : 'Dos jugadores en el mismo teclado (solo ordenador). J1 usa A/D/W/S/F/G/H; J2 usa flechas/J/K/L.';
+    ? 'MÓVIL: desliza con el pulgar izquierdo para moverte y el derecho para atacar. Gira el teléfono en horizontal.'
+    : 'VERSUS LOCAL: dos jugadores en el mismo teclado. El control con gestos del móvil se reserva para jugar contra la CPU.';
   drawRoster();
 }));
 document.querySelectorAll('[data-side]').forEach(button => button.addEventListener('click', () => {
@@ -66,6 +74,31 @@ document.querySelectorAll('[data-side]').forEach(button => button.addEventListen
   drawRoster();
 }));
 drawRoster();
+// Escenarios originales, accesibles antes de cada duelo.
+const stageChooser=document.createElement('div');
+stageChooser.id='stageChoices';
+stageChooser.className='stage-chooser';
+stageChooser.setAttribute('role','group');
+stageChooser.setAttribute('aria-label','Seleccionar escenario');
+for(const s of STAGES){
+  const b=document.createElement('button');
+  b.type='button';b.className='stage-tile';b.dataset.stage=s.id;
+  b.style.setProperty('--stage-color',s.color);
+  b.innerHTML='<span class="stage-tile-art"></span><b>'+s.name+'</b>';
+  b.setAttribute('aria-label','Escenario '+s.name);
+  b.addEventListener('click',()=>{
+    selectedStage=s.id;
+    document.querySelectorAll('[data-stage]').forEach(btn=>{
+      btn.classList.toggle('chosen',btn.dataset.stage===selectedStage);
+      btn.setAttribute('aria-pressed',String(btn.dataset.stage===selectedStage));
+    });
+    const field=document.querySelector('.match-settings span:last-child');
+    if(field)field.innerHTML='<b>ESCENARIO</b> · '+s.name;
+  });
+  stageChooser.append(b);
+}
+ui.startBtn.before(stageChooser);
+stageChooser.querySelector('[data-stage="zenith"]').click();
 
 function setupCanvas() {
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -77,8 +110,8 @@ setupCanvas();
 window.addEventListener('resize', setupCanvas);
 ui.arena.addEventListener('contextmenu', event => event.preventDefault());
 
-const codes = new Set(['KeyA','KeyD','KeyW','KeyS','KeyF','KeyG','KeyH','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','KeyJ','KeyK','KeyL','Space','Escape']);
-const singles = new Set(['KeyW','KeyF','KeyG','KeyH','ArrowUp','KeyJ','KeyK','KeyL']);
+const codes = new Set(['KeyA','KeyD','KeyW','KeyS','KeyF','KeyG','KeyH','KeyR','KeyT','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','KeyJ','KeyK','KeyL','KeyU','KeyI','Space','Escape']);
+const singles = new Set(['KeyW','KeyF','KeyG','KeyH','KeyR','KeyT','ArrowUp','KeyJ','KeyK','KeyL','KeyU','KeyI']);
 window.addEventListener('keydown', e => {
   if (e.code === 'Escape' && battle && battle.phase !== 'finished') { e.preventDefault(); setPause(!battle.paused); return; }
   if (!battle || !codes.has(e.code)) return;
@@ -108,6 +141,89 @@ document.querySelectorAll('[data-control]').forEach(button => {
   button.addEventListener('pointercancel', release);
   button.addEventListener('lostpointercapture', release);
 });
+// Controles de dos pulgares: funcionan con Pointer Events y multitáctil.
+// La izquierda es un joystick de arrastre; la derecha reconoce gestos de golpes.
+const leftSurface=document.createElement('div');
+const rightSurface=document.createElement('div');
+leftSurface.id='swipeMove';rightSurface.id='swipeStrike';
+leftSurface.className='swipe-surface swipe-move';
+rightSurface.className='swipe-surface swipe-strike';
+leftSurface.setAttribute('aria-label','Zona izquierda: deslizar para caminar, saltar o cubrir');
+rightSurface.setAttribute('aria-label','Zona derecha: tocar para puño, deslizar para ataques');
+leftSurface.innerHTML='<div class="swipe-label"><b>◯</b><span>MOVER / CUBRIR</span></div><div class="swipe-knob"></div>';
+rightSurface.innerHTML='<div class="swipe-label"><b>✦</b><span>TOCAR / GOLPEAR</span></div><div class="swipe-knob"></div>';
+ui.arena.parentElement.append(leftSurface,rightSurface);
+let movePointer=null;
+let strikePointer=null;
+function resetSwipe(){
+  movePointer=null;strikePointer=null;
+  for(const k of ['left','right','jump','crouch','block'])touchHeld.delete(k);
+  for(const el of [leftSurface,rightSurface]){el.classList.remove('active');el.style.setProperty('--dx','0px');el.style.setProperty('--dy','0px');}
+}
+leftSurface.addEventListener('pointerdown',e=>{
+  if(!battle||battle.paused||battle.phase!=='fight'||mode!=='cpu'||movePointer)return;
+  e.preventDefault();
+  movePointer={id:e.pointerId,x:e.clientX,y:e.clientY,jumped:false};
+  if(e.isPrimary||e.pointerType==='touch')leftSurface.setPointerCapture(e.pointerId);
+  leftSurface.classList.add('active');
+});
+leftSurface.addEventListener('pointermove',e=>{
+  if(!movePointer||movePointer.id!==e.pointerId)return;
+  e.preventDefault();
+  const dx=e.clientX-movePointer.x,dy=e.clientY-movePointer.y;
+  const direction=movementFromDrag(dx,dy);
+  for(const key of ['left','right','crouch','block']){
+    if(direction[key])touchHeld.add(key);else touchHeld.delete(key);
+  }
+  if(direction.jump&&!movePointer.jumped){touchTapped.add('jump');movePointer.jumped=true;}
+  leftSurface.style.setProperty('--dx',clamp(dx,-45,45)+'px');
+  leftSurface.style.setProperty('--dy',clamp(dy,-35,35)+'px');
+});
+function releaseMove(e){
+  if(!movePointer||movePointer.id!==e.pointerId)return;
+  e.preventDefault();
+  movePointer=null;
+  for(const key of ['left','right','crouch','block'])touchHeld.delete(key);
+  leftSurface.classList.remove('active');
+  leftSurface.style.setProperty('--dx','0px');leftSurface.style.setProperty('--dy','0px');
+}
+leftSurface.addEventListener('pointerup',releaseMove);
+leftSurface.addEventListener('pointercancel',releaseMove);
+leftSurface.addEventListener('lostpointercapture',releaseMove);
+rightSurface.addEventListener('pointerdown',e=>{
+  if(!battle||battle.paused||battle.phase!=='fight'||mode!=='cpu'||strikePointer)return;
+  e.preventDefault();
+  strikePointer={id:e.pointerId,x:e.clientX,y:e.clientY,start:performance.now(),fired:false};
+  if(e.isPrimary||e.pointerType==='touch')rightSurface.setPointerCapture(e.pointerId);
+  rightSurface.classList.add('active');
+});
+rightSurface.addEventListener('pointermove',e=>{
+  if(!strikePointer||strikePointer.id!==e.pointerId)return;
+  e.preventDefault();
+  const dx=e.clientX-strikePointer.x,dy=e.clientY-strikePointer.y;
+  if(!strikePointer.fired&&Math.hypot(dx,dy)>75){
+    touchTapped.add(strikeFromSwipe(dx,dy,performance.now()-strikePointer.start));
+    strikePointer.fired=true;
+  }
+  rightSurface.style.setProperty('--dx',clamp(dx,-35,35)+'px');
+  rightSurface.style.setProperty('--dy',clamp(dy,-35,35)+'px');
+});
+function releaseStrike(e){
+  if(!strikePointer||strikePointer.id!==e.pointerId)return;
+  e.preventDefault();
+  const dx=e.clientX-strikePointer.x,dy=e.clientY-strikePointer.y;
+  if(!strikePointer.fired && battle?.phase==='fight'&&!battle.paused){
+    const move=strikeFromSwipe(dx,dy,performance.now()-strikePointer.start);
+    if(move!=='block')touchTapped.add(move);
+  }
+  strikePointer=null;touchHeld.delete('block');
+  rightSurface.classList.remove('active');
+  rightSurface.style.setProperty('--dx','0px');rightSurface.style.setProperty('--dy','0px');
+}
+rightSurface.addEventListener('pointerup',releaseStrike);
+rightSurface.addEventListener('pointercancel',releaseStrike);
+rightSurface.addEventListener('lostpointercapture',releaseStrike);
+
 function playerIntent(side) {
   const keys = side === 0
     ? ['KeyA','KeyD','KeyW','KeyS','KeyF','KeyG','KeyH']
@@ -118,36 +234,39 @@ function playerIntent(side) {
     right: held.has(keys[1]) || (touch && touchHeld.has('right')),
     jump: tapped.has(keys[2]) || (touch && touchTapped.has('jump')),
     block: held.has(keys[3]) || (touch && touchHeld.has('block')),
+    crouch: held.has(keys[3]) || (touch && touchHeld.has('crouch')),
     punch: tapped.has(keys[4]) || (touch && touchTapped.has('punch')),
     kick: tapped.has(keys[5]) || (touch && touchTapped.has('kick')),
-    special: tapped.has(keys[6]) || (touch && touchTapped.has('special'))
+    special: tapped.has(keys[6]) || (touch && touchTapped.has('special')),
+    uppercut: tapped.has(side===0?'KeyR':'KeyU') || (touch && touchTapped.has('uppercut')),
+    sweep: tapped.has(side===0?'KeyT':'KeyI') || (touch && touchTapped.has('sweep'))
   };
   return v;
 }
 function cpuIntent(ai, player, dt) {
-  battle.aiClock = Math.max(0, battle.aiClock - dt);
-  const gap = Math.abs(ai.x - player.x);
-  const enemyAction = player.action && player.action.elapsed < .26;
-  const act = {};
-  if (gap > 115) {
-    if (ai.x > player.x) act.left = true;
-    else act.right = true;
-  } else if (gap < 65 && Math.random() < .03) {
-    if (ai.x > player.x) act.right = true;
-    else act.left = true;
+  battle.aiClock=Math.max(0,battle.aiClock-dt);
+  const gap=Math.abs(ai.x-player.x);
+  const threat=player.action && player.action.elapsed < .28;
+  const act={};
+  if(gap>114){
+    if(ai.x>player.x)act.left=true;else act.right=true;
+  }else if(gap<72&&Math.random()<.07){
+    if(ai.x>player.x)act.right=true;else act.left=true;
   }
-  if (enemyAction && gap < 155 && !ai.action && Math.random() < .22) act.block = true;
-  if (gap < 148 && battle.aiClock === 0 && !ai.action && !act.block) {
-    if (ai.meter >= 40 && Math.random() < .31) act.special = true;
-    else if (Math.random() < .53) act.punch = true;
-    else act.kick = true;
-    battle.aiClock = .34 + Math.random() * .32;
+  if(threat&&gap<150&&!ai.action&&Math.random()<.42)act.block=true;
+  if(gap<153&&battle.aiClock===0&&!ai.action&&!act.block){
+    const r=Math.random();
+    if(ai.meter>=40&&r<.19)act.special=true;
+    else if(r<.43)act.punch=true;
+    else if(r<.69)act.kick=true;
+    else if(r<.84)act.sweep=true;
+    else act.uppercut=true;
+    battle.aiClock=.31+Math.random()*.34;
   }
-  if (ai.id === 'volt' && ai.meter >= 40 && gap < 300 && gap > 160 && battle.aiClock === 0) {
-    act.special = true;
-    battle.aiClock = .65;
+  if((ai.id==='volt'||ai.id==='vex')&&ai.meter>=40&&gap<288&&gap>155&&battle.aiClock===0){
+    act.special=true;battle.aiClock=.65;
   }
-  if (gap > 185 && gap < 290 && Math.random() < .005) act.jump = true;
+  if(gap>176&&gap<280&&Math.random()<.003)act.jump=true;
   return act;
 }
 
@@ -179,7 +298,7 @@ ui.audioBtn.addEventListener('click', () => {
 function resetRound() {
   battle.round++;
   battle.fighters = [createFighter(chosen[0], 300, 1), createFighter(chosen[1], 850, -1)];
-  battle.time = 75;
+  battle.time = 60;
   battle.aiClock = .8;
   battle.phase = 'ready';
   battle.phaseClock = 1.5;
@@ -189,21 +308,26 @@ function resetRound() {
 }
 function startMatch() {
   held.clear(); tapped.clear(); touchHeld.clear(); touchTapped.clear(); particles.length = 0;
-  battle = { fighters: [], round: 0, scores: [0,0], time: 75, phase: 'ready', phaseClock: 0, aiClock: .7, paused: false, matchWinner: null };
+  battle = { fighters: [], round: 0, scores: [0,0], time: 60, phase: 'ready', phaseClock: 0, aiClock: .7, paused: false, matchWinner: null, stage:selectedStage };
   ui.selectScreen.hidden = true;
+  document.body.classList.add('in-battle');
+  resetSwipe();
   ui.gameScreen.hidden = false;
   ui.resultPanel.hidden = true;
   ui.pausePanel.hidden = true;
   ui.hudName1.textContent = fighterDefinition(chosen[0]).name;
   ui.hudName2.textContent = fighterDefinition(chosen[1]).name;
   ui.battleTip.textContent = mode === 'cpu'
-    ? 'PUÑO · PATADA · ESPECIAL (CON BARRA DE ENERGÍA)'
+    ? 'IZQUIERDA: MOVER / CUBRIR · DERECHA: TOCAR, DESLIZAR, COMBO'
     : 'J1: A/D/W/S/F/G/H   ·   J2: FLECHAS/J/K/L';
   resetRound();
   window.scrollTo(0, 0);
+  if(window.matchMedia('(pointer:coarse)').matches && screen.orientation?.lock){screen.orientation.lock('landscape').catch(()=>{});}
 }
 function leaveMatch() {
   battle = null;
+  document.body.classList.remove('in-battle');
+  resetSwipe();
   held.clear(); tapped.clear(); touchHeld.clear(); touchTapped.clear();
   ui.gameScreen.hidden = true;
   ui.selectScreen.hidden = false;
@@ -217,11 +341,13 @@ function setPause(paused) {
   ui.pausePanel.hidden = !paused;
   ui.pauseBtn.textContent = paused ? 'SEGUIR' : 'PAUSA';
   held.clear(); tapped.clear(); touchHeld.clear(); touchTapped.clear();
+  resetSwipe();
 }
 ui.startBtn.addEventListener('click', startMatch);
 ui.rematchBtn.addEventListener('click', startMatch);
 ui.changeBtn.addEventListener('click', leaveMatch);
 ui.exitBtn.addEventListener('click', leaveMatch);
+$('rotateExit').addEventListener('click', leaveMatch);
 ui.pauseBtn.addEventListener('click', () => battle && setPause(!battle.paused));
 ui.resumeBtn.addEventListener('click', () => setPause(false));
 
@@ -263,6 +389,7 @@ function processHit(a, b) {
     particles.push({ x, y, vx: Math.cos(rad)*force, vy: Math.sin(rad)*force, life: .35 + Math.random()*.2, max: .55, color: hit.guarding ? '#d8e8ff' : hit.color, size: 2+Math.random()*5 });
   }
   particles.push({ x, y:y-30, vx:5, vy:-47, life:.75, max:.75, text:hit.guarding ? 'BLOQUEO' : String(hit.damage), color:hit.guarding?'#dee9ff':'#fff7e1', size:hit.guarding?17:29 });
+  if(hit.combo>=2&&!hit.guarding)particles.push({x:WIDTH/2,y:185,vx:0,vy:-30,life:.85,max:.85,text:hit.combo+' HITS COMBO',color:'#ffcc78',size:46});
   playTone(hit.guarding ? 330 : hit.type === 'special' ? 160 : 210, hit.type === 'special' ? .2 : .085, 'triangle', .045);
 }
 
@@ -282,6 +409,7 @@ function tick(dt) {
     return;
   }
   if (battle.phase !== 'fight') return;
+  if(strikePointer&&!strikePointer.fired && performance.now()-strikePointer.start>350)touchHeld.add('block');
   const [a,b] = battle.fighters;
   const p1 = playerIntent(0);
   const p2 = mode === 'cpu' ? cpuIntent(b,a,dt) : playerIntent(1);
@@ -363,15 +491,17 @@ function fighterPaint(f,t) {
   ctx.save();ctx.translate(f.x,GROUND+4);
   ctx.fillStyle='#070a16a0';ctx.beginPath();ctx.ellipse(0,0,49+f.y*.1,11,0,0,Math.PI*2);ctx.fill();
   ctx.restore();
-  ctx.save();ctx.translate(f.x,GROUND-f.y);
-  ctx.scale(f.face,1);
+  ctx.save();ctx.translate(f.x,GROUND-f.y+(f.crouch?22:0));
+  ctx.scale(f.face*1.28,(f.crouch||f.action?.type==='sweep') ? 1.02 : 1.28);
   const idle=Math.sin(t*3+f.walk)*2;
   const stride=f.y>0 ? 11 : Math.sin(f.walk)*14;
   const attack=f.action;
   const phase=attack ? attack.elapsed : 0;
   const isActive=attack && phase > .07;
   const punching=isActive && attack.type==='punch';
-  const kicking=isActive && (attack.type==='kick'||(attack.type==='special'&&f.id==='ember'));
+  const kicking=isActive && (['kick','sweep'].includes(attack.type)||(attack.type==='special'&&['ember','sable'].includes(f.id)));
+  const uppercut=isActive&&attack.type==='uppercut';
+  const sweeping=isActive&&attack.type==='sweep';
   const aura=attack?.type==='special' ? .4+.2*Math.sin(t*18):.08;
   ctx.globalAlpha=aura;ctx.fillStyle=def.color;ctx.beginPath();ctx.ellipse(0,-94,65,117,0,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
   if(attack?.type==='special'){
@@ -392,8 +522,8 @@ function fighterPaint(f,t) {
   // front leg, with kick extension
   if(kicking){
     segment(12,-78,34,-56,24,armor);
-    segment(34,-56,109,-76,22,armor);
-    segment(109,-76,131,-74,20,bright);
+    segment(34,-56,109,sweeping?-32:-76,22,armor);
+    segment(109,sweeping?-32:-76,131,sweeping?-28:-74,20,bright);
     ctx.fillStyle=bright;ctx.globalAlpha=.45;ctx.fillRect(116,-81,65,8);ctx.globalAlpha=1;
   } else {
     segment(14,-75,23+stride*.45,-37,24,armor);
@@ -411,10 +541,10 @@ function fighterPaint(f,t) {
   if(f.block){
     segment(28,-121,40,-155,19,armor);segment(40,-155,16,-165,18,'#bc8b74');
     segment(-27,-125,-7,-155,18,armor);
-  } else if(punching || (attack?.type==='special' && f.id!=='ember')){
+  } else if(punching || uppercut || (attack?.type==='special' && f.id!=='ember')){
     segment(27,-121,61,-111,21,armor);
-    segment(61,-111,111+(attack.type==='special'?28:0),-122,18,'#bf9183');
-    ctx.fillStyle=bright;ctx.beginPath();ctx.arc(117+(attack.type==='special'?28:0),-120,13,0,Math.PI*2);ctx.fill();
+    segment(61,-111,uppercut?85:111+(attack.type==='special'?28:0),uppercut?-197:-122,18,'#bf9183');
+    ctx.fillStyle=bright;ctx.beginPath();ctx.arc(uppercut?85:117+(attack.type==='special'?28:0),uppercut?-199:-120,13,0,Math.PI*2);ctx.fill();
     if(attack.type==='special'){ctx.globalAlpha=.5;ctx.fillRect(121,-132,80,20);ctx.globalAlpha=1;}
   } else {
     segment(29,-123,40,-92,20,armor);
@@ -444,6 +574,23 @@ function fighterPaint(f,t) {
   ctx.strokeStyle='#101527';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(3,-181);ctx.lineTo(20,-183);ctx.stroke();
   ctx.fillStyle=bright;ctx.fillRect(12,-183,7,3);
   ctx.strokeStyle='#583746';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(10,-167);ctx.lineTo(18,-168);ctx.stroke();
+  // Accesorios únicos de cada estilo: siluetas diferenciadas sin recursos ajenos.
+  if(f.id==='rook'){
+    ctx.fillStyle='#243d70';ctx.fillRect(-41,-147,16,30);ctx.fillRect(26,-148,16,30);
+    ctx.strokeStyle=bright;ctx.lineWidth=5;ctx.strokeRect(-39,-143,12,27);ctx.strokeRect(28,-144,12,27);
+    ctx.fillStyle='#e8efff';ctx.fillRect(-26,-169,50,8);
+  }else if(f.id==='vex'){
+    ctx.strokeStyle=bright;ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(-26,-186);ctx.lineTo(-35,-216);ctx.lineTo(-12,-205);ctx.stroke();
+    ctx.fillStyle='#2b7451';ctx.fillRect(-24,-106,51,6);
+  }else if(f.id==='sable'){
+    ctx.strokeStyle=bright;ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(-20,-195);ctx.quadraticCurveTo(-65,-218,-84,-179);ctx.stroke();
+    ctx.fillStyle='#221737';ctx.fillRect(-27,-104,58,21);
+  }else if(f.id==='atlas'){
+    ctx.fillStyle='#e0d9bb';ctx.beginPath();ctx.moveTo(-26,-194);ctx.lineTo(-33,-221);ctx.lineTo(0,-241);ctx.lineTo(31,-217);ctx.lineTo(27,-191);ctx.closePath();ctx.fill();
+    ctx.strokeStyle='#625a44';ctx.lineWidth=5;ctx.stroke();
+    ctx.fillStyle='#988a59';ctx.fillRect(-28,-91,58,12);
+  }
+  if(f.impact>0){ctx.globalAlpha=.24;ctx.fillStyle='#ffefdd';ctx.fillRect(-39,-207,80,205);ctx.globalAlpha=1;}
   // special move's colored arc
   if(attack?.type==='special'&&phase>.11&&phase<.55){
     ctx.strokeStyle=bright;ctx.lineWidth=8;ctx.globalAlpha=.6;
@@ -473,7 +620,7 @@ function frame(timestamp){
   if(battle) {
     if(!battle.paused) tick(dt);
     ctx.save();ctx.translate((Math.random()-.5)*shake,(Math.random()-.5)*shake*.6);
-    renderBackground(now);
+    renderStage(ctx,battle.stage,now);
     for(const f of battle.fighters) fighterPaint(f,now);
     if(!battle.paused) paintParticles(dt); else paintParticles(0);
     ctx.restore();

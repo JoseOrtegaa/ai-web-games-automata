@@ -16,9 +16,9 @@
   </header>
   <main>
     <section id="selectScreen" class="select-screen">
-      <div class="intro"><p class="eyebrow">ELIGE TU DESTINO · ENTRA EN LA GRIETA</p><h1>QUE EMPIECE <em>EL COMBATE.</em></h1><p>Cuatro estilos. Dos luchadores. Solo uno sale victorioso. Combate arcade original, inspirado en los clásicos de lucha.</p></div>
+      <div class="intro"><p class="eyebrow">ELIGE TU DESTINO · ENTRA EN LA GRIETA</p><h1>QUE EMPIECE <em>EL COMBATE.</em></h1><p>Ocho estilos. Dos luchadores. Solo uno sale victorioso. Combate arcade original de inspiración noventera, con golpes, combos y escenarios de perspectiva.</p></div>
       <div class="select-layout">
-        <section class="roster-panel"><div class="section-top"><div><span class="overline">01 / SELECCIÓN</span><h2>ELIGE LUCHADOR</h2></div><span class="hint">4 DISPONIBLES</span></div>
+        <section class="roster-panel"><div class="section-top"><div><span class="overline">01 / SELECCIÓN</span><h2>ELIGE LUCHADOR</h2></div><span class="hint">8 DISPONIBLES</span></div>
           <div class="mode-tabs" role="group" aria-label="Modo de juego"><button data-mode="cpu" class="active" type="button">⚡ VS CPU</button><button data-mode="local" type="button">◈ 2 JUGADORES</button></div>
           <div class="side-tabs" role="group" aria-label="Seleccionar lado"><button data-side="0" class="active" type="button">JUGADOR 1</button><button data-side="1" type="button">RIVAL / J2</button></div>
           <div id="roster" class="roster"></div>
@@ -27,10 +27,10 @@
         <aside class="versus-panel"><span class="overline">ENFRENTAMIENTO</span><div class="versus-display"><div class="versus-fighter left"><div id="portrait1" class="portrait"></div><span id="name1" class="versus-name"></span><small>JUGADOR 1</small></div><strong>VS</strong><div class="versus-fighter right"><div id="portrait2" class="portrait"></div><span id="name2" class="versus-name"></span><small id="enemyLabel">CPU</small></div></div>
           <div class="match-settings"><span><b>FORMATO</b> · AL MEJOR DE 3 RONDAS</span><span><b>ESCENARIO</b> · CIUDAD DE LA GRIETA</span></div>
           <button id="startBtn" class="primary-btn" type="button">INICIAR COMBATE <span>↗</span></button>
-          <p class="vs-note" id="modeNote">En móvil, juega contra la CPU con controles táctiles. En ordenador puedes jugar contra la CPU o con otra persona.</p>
+          <p class="vs-note" id="modeNote">En móvil horizontal, desliza con los dos pulgares para combatir contra la CPU. En ordenador también hay VS local.</p>
         </aside>
       </div>
-      <div class="controls-guide"><span>⌨ <b>J1:</b> A/D mover · W saltar · S cubrir · F puño · G patada · H especial</span><span><b>J2:</b> ←/→ mover · ↑ saltar · ↓ cubrir · J puño · K patada · L especial</span></div>
+      <div class="controls-guide"><span>⌨ <b>J1:</b> A/D mover · W saltar · S cubrir · F puño · G patada · R gancho · T barrido · H especial</span><span><b>J2:</b> ←/→ mover · ↑ saltar · ↓ cubrir · J puño · K patada · U gancho · I barrido · L especial</span></div>
     </section>
     <section id="gameScreen" class="game-screen" hidden>
       <div class="arena-bar"><span class="overline">RIFT ARENA / EL DUELO</span><div><button id="pauseBtn" class="mini-btn" type="button">PAUSA</button><button id="exitBtn" class="mini-btn" type="button">SALIR</button></div></div>
@@ -49,6 +49,7 @@
         <div class="touch-group attacks"><button type="button" class="hit punch" data-control="punch" aria-label="Puñetazo">PUÑO</button><button type="button" class="hit kick" data-control="kick" aria-label="Patada">PATADA</button><button type="button" class="hit special" data-control="special" aria-label="Especial">ESPECIAL</button></div>
       </div>
       <p class="mobile-note">Gira el móvil en horizontal para disponer de más espacio.</p>
+      <div class="rotate-warning" role="status"><span class="rotate-icon" aria-hidden="true">▣</span><strong>GIRA EL MÓVIL</strong><small>Juega en horizontal con dos pulgares.</small><button type="button" id="rotateExit">VOLVER AL MENÚ</button></div>
     </section>
   </main>
   <footer>RIFT ARENA © 2026 · PROTOTIPO ORIGINAL · SIN COMPRAS NI CUENTAS <a href="../">← VOLVER A AUTOMATA</a></footer>
