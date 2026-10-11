@@ -27,24 +27,17 @@ for(const file of [process.env.CHROME_BIN,'/usr/bin/google-chrome','/usr/bin/goo
 }
 if(!binary)throw Error('Chromium/Chrome necesario para el smoke test');
 const userData=await mkdtemp(join(tmpdir(),'rift-chrome-'));
-let port=null;
-const browser=spawn(binary,['--headless=new','--no-sandbox','--enable-webgl','--enable-unsafe-swiftshader','--use-gl=angle','--use-angle=swiftshader','--disable-dev-shm-usage','--no-first-run','--remote-allow-origins=*','--remote-debugging-port=0','--user-data-dir='+userData,'about:blank'],{stdio:'ignore'});
+const port=21000+Math.floor(Math.random()*28000);
+const browser=spawn(binary,['--headless=new','--no-sandbox','--enable-webgl','--enable-unsafe-swiftshader','--use-gl=angle','--use-angle=swiftshader','--disable-dev-shm-usage','--no-first-run','--remote-allow-origins=*','--remote-debugging-port='+port,'--user-data-dir='+userData,'about:blank'],{stdio:'ignore'});
 let ws;
 try {
   let targets;
   for(let n=0;n<120;n++){
     if(browser.exitCode!==null)throw Error('El navegador se cerró inesperadamente');
     try{
-      // Chromium chooses its own free DevTools port: parallel CI runs cannot collide.
-      if(!port){
-        const chromePortFile=await readFile(join(userData,'DevToolsActivePort'),'utf8');
-        port=Number(chromePortFile.trim().split(/\s+/)[0]);
-      }
-      if(port){
-        const resp=await fetch('http://127.0.0.1:'+port+'/json');
-        targets=await resp.json();
-        if(targets.some(t=>t.type==='page'&&t.webSocketDebuggerUrl))break;
-      }
+      const resp=await fetch('http://127.0.0.1:'+port+'/json');
+      targets=await resp.json();
+      if(targets.some(t=>t.type==='page'&&t.webSocketDebuggerUrl))break;
     }catch{}
     await new Promise(r=>setTimeout(r,120));
   }
