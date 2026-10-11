@@ -95,7 +95,7 @@ try {
   const zoomGuard=await evaluate(`(async()=>{
     const ev=(type,detail)=>{const e=new Event(type,{cancelable:true,bubbles:true});if(detail){Object.defineProperty(e,'touches',{value:[]});Object.defineProperty(e,'changedTouches',{value:[{clientX:150,clientY:190}]});}document.dispatchEvent(e);return e.defaultPrevented;};
     const single=ev('touchend',true);
-    await new Promise(done=>setTimeout(done,25));
+    // Dispatch consecutively: busy software WebGL may delay timers beyond 340ms.
     const double=ev('touchend',true);
     const dbl=ev('dblclick',false);
     return {single,double,dbl,touchAction:getComputedStyle(document.querySelector('#arena')).touchAction};
