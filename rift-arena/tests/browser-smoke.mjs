@@ -141,6 +141,7 @@ try {
   assert.ok(scene3d.width>300&&scene3d.height>200);
   assert.equal(scene3d.sample?.[3],255,'Opaque 3D arena pixels required');
   assert.equal(scene3d.error,0,'WebGL context must not report an error');
+  console.log('WebGL sample metrics:',JSON.stringify(scene3d));
   assert.ok(scene3d.uniqueColors>=4,'3D scene must show different surfaces and lighting');
   assert.ok(scene3d.brightnessRange>=40,'3D arena should have lighting contrast');
   console.log('WebGL visual sample:',scene3d.uniqueColors,'colors, brightness span',scene3d.brightnessRange);
