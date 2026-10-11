@@ -18,8 +18,8 @@ test('pulgar derecho reconoce puño, patada, gancho, barrido y especial',()=>{
   assert.equal(strikeFromSwipe(0,80,150),'sweep');
   assert.equal(strikeFromSwipe(80,-63,150),'special');
 });
-test('escenarios tienen identidad y colores propios',()=>{
-  assert.equal(STAGES.length,4);
+test('ocho escenarios tienen identidad y colores propios',()=>{
+  assert.equal(STAGES.length,8);
   assert.equal(new Set(STAGES.map(x=>x.id)).size,4);
   assert.ok(STAGES.every(s=>s.name&&s.sky.length>=3&&s.color));
 });
