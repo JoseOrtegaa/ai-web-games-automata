@@ -94,6 +94,30 @@ for(const s of STAGES){
 ui.startBtn.before(stageChooser);
 stageChooser.querySelector('[data-stage="zenith"]').click();
 
+const previewCanvas=$('versus3d');
+const preview3d=createArena3D(previewCanvas);
+let lastPreview=0;
+if(preview3d){
+  previewCanvas.dataset.renderer='webgl3d';
+  previewCanvas.parentElement.classList.add('has-webgl');
+}else{
+  previewCanvas.hidden=true;
+}
+function drawSelectionPreview(timestamp){
+  if(!preview3d||ui.selectScreen.hidden||timestamp-lastPreview<95)return;
+  lastPreview=timestamp;
+  const rect=previewCanvas.getBoundingClientRect();
+  const ratio=Math.min(devicePixelRatio||1,1.25);
+  const w=Math.max(2,Math.min(980,Math.round(rect.width*ratio)));
+  const h=Math.max(2,Math.min(540,Math.round(rect.height*ratio)));
+  if(previewCanvas.width!==w||previewCanvas.height!==h){previewCanvas.width=w;previewCanvas.height=h;}
+  preview3d.resize(w,h);
+  const f1=createFighter(chosen[0],328,1),f2=createFighter(chosen[1],826,-1);
+  f1.walk=timestamp*.001*1.7;f2.walk=timestamp*.001*1.6;
+  f1.motion=.09;f2.motion=.08;
+  preview3d.render([f1,f2],selectedStage,timestamp*.001,0);
+}
+
 function setupCanvas() {
   if (arena3d) {
     const fighting=document.body.classList.contains('in-battle');
@@ -515,6 +539,7 @@ let previous = performance.now();
 function frame(timestamp){
   const dt=Math.min(.035,Math.max(0,(timestamp-previous)/1000));
   previous=timestamp;now=timestamp/1000;
+  if(!battle)drawSelectionPreview(timestamp);
   if(battle) {
     if(!battle.paused) tick(dt);
     if (arena3d) {

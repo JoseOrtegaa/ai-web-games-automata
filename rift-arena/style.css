@@ -119,3 +119,15 @@ body.in-battle .swipe-label{color:#eef6ff9c}
  body.in-battle .hud{padding-top:max(4px,env(safe-area-inset-top));height:72px}
  body.in-battle .arena-bar{z-index:11}
 }
+
+/* Live 3D fighter-versus preview in character selection. The original SVG
+   portraits remain the graceful fallback on WebGL-incompatible devices. */
+.versus-display{position:relative;isolation:isolate;overflow:hidden;border:1px solid #6d829066;border-radius:5px;background:#101a30}
+#versus3d{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;z-index:0;pointer-events:none}
+.versus-display.has-webgl:after{content:'';position:absolute;z-index:0;inset:40% 0 0;background:linear-gradient(transparent,#070a17ba);pointer-events:none}
+.versus-display.has-webgl .portrait{visibility:hidden}
+.versus-display.has-webgl .versus-fighter{position:relative;z-index:1;align-self:stretch;display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:16px}
+.versus-display.has-webgl .versus-name{text-shadow:2px 4px 3px #030710,0 0 16px #000}
+.versus-display.has-webgl .versus-fighter small{color:#ffdbb5;text-shadow:1px 2px #000}
+.versus-display.has-webgl>strong{position:relative;z-index:2;align-self:flex-end;margin-bottom:27px;color:#ffe0a9;text-shadow:3px 3px 2px #491c29,0 0 15px #111}
+@media(max-width:600px){.versus-display{min-height:230px!important}.versus-display.has-webgl .versus-name{font-size:27px!important}}

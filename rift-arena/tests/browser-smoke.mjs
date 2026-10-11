@@ -90,6 +90,14 @@ try {
   assert.equal(local,'JUGADOR 2');
   const stage=await evaluate(`(()=>{document.querySelector('[data-stage="temple"]').click();return document.querySelector('.stage-tile.chosen')?.dataset.stage})()`);
   assert.equal(stage,'temple','Seleccionar escenario debe funcionar');
+  const livePreview=await evaluate(`(async()=>{
+    await new Promise(done=>setTimeout(done,320));
+    const preview=document.getElementById('versus3d');
+    const gl=preview?.getContext('webgl');
+    return {renderer:preview?.dataset.renderer,hasWebgl:!!gl,width:preview?.width||0,visible:preview?.getBoundingClientRect().width>0};
+  })()`);
+  assert.equal(livePreview.renderer,'webgl3d','Character selector should have real 3D preview');
+  assert.ok(livePreview.hasWebgl&&livePreview.width>100&&livePreview.visible);
   await evaluate(`document.querySelector('[data-mode="cpu"]').click()`);
   const start=await evaluate("(()=>{document.getElementById('startBtn').click();return !document.getElementById('gameScreen').hidden&&document.getElementById('arena').width>0})()");
   const zoomGuard=await evaluate(`(async()=>{
