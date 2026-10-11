@@ -8,7 +8,9 @@ import assert from 'node:assert/strict';
 const root=resolve(process.cwd());
 const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.svg':'image/svg+xml'};
 const server=createServer(async (req,res)=>{
-  const file=resolve(root,'.'+decodeURIComponent(new URL(req.url,'http://localhost').pathname));
+  let pathname=decodeURIComponent(new URL(req.url,'http://localhost').pathname);
+  if(pathname.endsWith('/')) pathname += 'index.html';
+  const file=resolve(root,'.'+pathname);
   if(!file.startsWith(root+'/')){res.writeHead(403).end();return;}
   try{
     const data=await readFile(file);
