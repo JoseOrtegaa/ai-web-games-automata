@@ -28,7 +28,7 @@ for(const file of [process.env.CHROME_BIN,'/usr/bin/google-chrome','/usr/bin/goo
 if(!binary)throw Error('Chromium/Chrome necesario para el smoke test');
 const userData=await mkdtemp(join(tmpdir(),'rift-chrome-'));
 let port=null;
-const browser=spawn(binary,['--headless=new','--no-sandbox','--enable-webgl','--enable-unsafe-swiftshader','--use-gl=angle','--use-angle=swiftshader','--disable-dev-shm-usage','--no-first-run','--remote-allow-origins=*','--remote-debugging-port=0,'--user-data-dir='+userData,'about:blank'],{stdio:'ignore'});
+const browser=spawn(binary,['--headless=new','--no-sandbox','--enable-webgl','--enable-unsafe-swiftshader','--use-gl=angle','--use-angle=swiftshader','--disable-dev-shm-usage','--no-first-run','--remote-allow-origins=*','--remote-debugging-port=0','--user-data-dir='+userData,'about:blank'],{stdio:'ignore'});
 let ws;
 try {
   let targets;
