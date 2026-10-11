@@ -16,7 +16,7 @@ test('un puñetazo alcanza y causa daño solo durante ventana activa', () => {
   const b = createFighter('volt', 370, -1);
   assert.equal(tryAttack(a, 'punch'), true);
   assert.equal(resolveHit(a, b), null);
-  stepFighter(a, {}, b, MOVES.punch.start + .01);
+  for (let i = 0; i < 3; i++) stepFighter(a, {}, b, .04);
   const hit = resolveHit(a, b);
   assert.ok(hit && hit.damage > 0);
   assert.equal(resolveHit(a, b), null);

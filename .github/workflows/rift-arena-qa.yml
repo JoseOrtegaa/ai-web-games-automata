@@ -1,0 +1,31 @@
+name: Rift Arena QA
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'rift-arena/**'
+      - '.github/workflows/rift-arena-qa.yml'
+  pull_request:
+    paths:
+      - 'rift-arena/**'
+      - '.github/workflows/rift-arena-qa.yml'
+jobs:
+  combat-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check JavaScript syntax
+        run: |
+          node --check rift-arena/core.js
+          node --check rift-arena/game.js
+      - name: Test combat engine
+        run: node --test rift-arena/tests/*.test.mjs
+      - name: Verify deployment assets
+        run: |
+          test -f rift-arena/index.html
+          test -f rift-arena/style.css
+          grep -q 'game.js' rift-arena/index.html
+          grep -q 'rift-arena/' index.html

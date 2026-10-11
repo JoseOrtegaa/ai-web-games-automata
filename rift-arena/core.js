@@ -73,7 +73,7 @@ export function resolveHit(attacker, defender) {
   if (Math.abs(dx) > m.range || Math.abs(defender.y - attacker.y) > 86 || dx * attacker.face < -28) return null;
   action.hit = true;
   const guarding = defender.block && defender.y === 0 && defender.face === -attacker.face;
-  const raw = Math.round(m.damage * fighterDefinition(attacker.id).power / fighterDefinition(defender.id).defense);
+  const raw = Math.round(m.damage * fighterDefinition(attacker.id).power * fighterDefinition(defender.id).defense);
   const damage = guarding ? Math.max(1, Math.round(raw * .17)) : raw;
   defender.health = clamp(defender.health - damage, 0, 100);
   defender.stun = guarding ? .11 : .25;
