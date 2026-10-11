@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { ROSTER, createFighter, fighterDefinition, tryAttack, stepFighter, resolveHit, keepApart, winnerByTimeout, MOVES } from '../core.js';
 test('ocho luchadores únicos y configurados', () => {
   assert.equal(ROSTER.length, 8);
-  assert.equal(new Set(ROSTER.map(f => f.id)).size, 4);
+  assert.equal(new Set(ROSTER.map(f => f.id)).size, 8);
   assert.ok(ROSTER.every(f => f.speed > 0 && f.power > 0));
 });
 test('la selección conserva el personaje solicitado', () => {
@@ -53,7 +53,7 @@ test('saltos aterrizan y los combatientes no salen de la arena', () => {
   assert.ok(a.y > 0);
   for (let i = 0; i < 50; i++) stepFighter(a, { left: true }, b, .04);
   assert.equal(a.y, 0);
-  assert.equal(a.x, 75);
+  assert.equal(a.x, 65);
 });
 test('colisión separa luchadores', () => {
   const a = createFighter('kira', 500);
