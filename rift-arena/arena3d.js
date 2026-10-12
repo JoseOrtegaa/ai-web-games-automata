@@ -1,7 +1,7 @@
 // Rift Arena WebGL 3D. No external libraries, assets, accounts, servers or network requests.
 import { buildStage3D } from './stage3d.js';
-import { drawFighter3D } from './fighters3d.js';
 import {stageAtmosphere} from './stage-scenes.js';
+import {FighterSprites} from './fighter-sprites.js';
 
 export const color=h=>{
  const s=(h||'#ffffff').replace('#','');
@@ -135,7 +135,7 @@ export class ArenaRenderer{
   gl.useProgram(this.program);this.loc={};
   for(const [key,name] of Object.entries({pos:'aPos',normal:'aNormal',col:'aColor'}))this.loc[key]=gl.getAttribLocation(this.program,name);
   for(const [key,name] of Object.entries({model:'uModel',vp:'uVP',tint:'uTint',camera:'uCamera',fog:'uFog',lamp:'uLamp',density:'uFogDensity'}))this.loc[key]=gl.getUniformLocation(this.program,name);
-  this.dynamic={};this.stageMeshes=new Map();
+  this.dynamic={};this.stageMeshes=new Map();this.fighterSprites=new FighterSprites(gl);
   for(const [name,data] of Object.entries(GEOMS)){
    const buf=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buf);gl.bufferData(gl.ARRAY_BUFFER,data,gl.STATIC_DRAW);
    this.dynamic[name]={buffer:buf,count:data.length/9};
@@ -174,8 +174,9 @@ export class ArenaRenderer{
   const gl=this.gl,l=this.loc,scene=this.prepareStage(stage),pal=scene.palette;
   const targetX=(fighters[0].x+fighters[1].x-1152)*.014*.24;
   const gap=Math.abs(fighters[0].x-fighters[1].x)*.014;
-  const distance=(preview?9.1:15.0)+Math.min(.9,gap*.15)+(this.width<this.height*1.2?5:0);
-  const dest=[targetX,preview?3.7:5.15,distance],focus=[targetX,preview?1.9:1.45,0];
+  const aspect=this.width/Math.max(1,this.height);
+  const distance=preview?9.1:Math.max(9.4,(gap+3.6)/(2*Math.tan(Math.PI/8.2)*aspect));
+  const dest=[targetX,preview?3.7:3.85,distance],focus=[targetX,1.85,0];
   for(let i=0;i<3;i++){this.camera[i]+=(dest[i]-this.camera[i])*.075;this.target[i]+=(focus[i]-this.target[i])*.075;}
   const camera=this.camera.map((v,i)=>v+(shake?Math.sin(time*95+i*4)*shake*.009:0));
   const vp=multiply(perspective(Math.PI/4.1,this.width/Math.max(1,this.height),.2,160),viewMatrix(camera,this.target));
@@ -184,6 +185,10 @@ export class ArenaRenderer{
   gl.uniform3fv(l.lamp,pal.light);gl.uniform1f(l.density,.018);
   this.draw(scene,this.neutral);
   stageAtmosphere(this,stage,time);
-  for(const fighter of fighters)drawFighter3D(this,fighter,time);
+  for(const fighter of fighters){
+   // Ground contact shadows; all visible character detail comes from the approved art.
+   this.primitive('sphere',(fighter.x-576)*.014,.016,0,.66,.009,.30,'#15181c');
+  }
+  this.fighterSprites.render(fighters,vp,time);
  }
 }

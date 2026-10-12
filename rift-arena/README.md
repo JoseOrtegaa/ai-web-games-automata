@@ -2,60 +2,36 @@
 
 Arcade original de lucha 1 contra 1, inspirado en la intensidad de los juegos de lucha de consola de finales de los 90. **No utiliza personajes, gráficos, música, logotipos ni escenarios de ninguna franquicia existente.** Sin backend, cookies, compras, IA externa ni dependencias: 0 €.
 
-## Versión actual
+## Personajes aprobados — 12 de octubre de 2026
 
-- **Roster rehecho desde cero**: Ryuzo, Drake, Selene y Titan (humanos); Razor (pantera), Fang (lobo), Brute (gorila) y Ursus (oso). Mallas facetadas de anatomía definida, materiales mate, ropa/correas y mechones low-poly. Retratos angulosos nuevos y preview 3D con los mismos modelos del combate.
-- **8 campos de pelea originales**, con geometría 3D, fondos de varias capas y suelos diferenciados: Neon Zenith, Templo Solar, Forja Abisal y Bastión Ártico.
-- **1v1** contra CPU en cualquier dispositivo o dos jugadores en el mismo teclado en ordenador.
-- Rondas de 60 s; primer jugador en ganar 2 rondas vence. Salud, energía, bloqueo, esquiva agachada, salto, gancho elevador, barrido bajo, especiales, combos encadenados, sonido opcional.
-- Diseño **mobile landscape** a pantalla completa con controles mediante gestos de dos pulgares, HUD superpuesto y aviso para girar el móvil en vertical.
+Se integran las ocho referencias visuales originales: sensei, monje, toro, dos luchadoras, gato, panda y lobo. Se mantienen los identificadores/nombres del juego (Ryuzo, Drake, Brute, Titan, Selene, Razor, Ursus y Fang) y sus perfiles de combate. El selector muestra las imágenes originales; el combate usa recortes transparentes derivados de ellas. Recursos locales WebP, sin CDN ni peticiones a IA durante el juego.
 
-## Gestos en móvil (contra CPU)
+El renderizado de personajes es **2.5D**: una malla 2D con textura se anima dentro de escenarios WebGL 3D. Hay respiración, desplazamiento, salto, guardia, agachado, golpes, retroceso y KO. Conserva detalles visuales mucho mejor que los modelos geométricos anteriores, que se han eliminado. **No son modelos 3D volumétricos ni animaciones de producción**: la extracción de fondo y la deformación de una única pose pueden introducir diferencias respecto a la referencia. No se garantiza identidad exacta en todas las poses.
 
-**Pulgar izquierdo (lado izquierdo de la pantalla):** arrastra horizontalmente para moverte, hacia arriba para saltar, hacia abajo para cubrirte/agacharte.
+Ocho escenarios: Neon Zenith, Templo Solar, Forja Abisal, Bastión Ártico, Bosque Ancestral, Cráter Infernal, Lago de Cristal y Cumbres Sagradas. 1v1 contra CPU o versus local con dos jugadores en teclado. Rondas de 60 segundos, primero en ganar dos; salud, energía, combos, bloqueo, saltos, gancho, barrido y especiales. Móvil horizontal, dos pulgares, prevención de zoom y pausa. El inicio espera a que estén cargados los ocho personajes; si falla la descarga, muestra un mensaje para recargar.
 
-**Pulgar derecho (lado derecho):** toque corto = puño, deslizamiento horizontal = patada, hacia arriba = gancho, hacia abajo = barrido, diagonal = especial (consume 40 puntos de energía), mantener = bloquear. Para encadenar combos, realiza golpes consecutivos mientras termina la animación anterior.
+## Controles
 
-El doble toque no provoca zoom en navegadores compatibles (CSS touch-action y protección complementaria para Safari). Los controles gestuales funcionan con dos dedos simultáneamente. Los controles táctiles originales permanecen en el DOM para compatibilidad; la arena inmersiva se controla por zonas de deslizamiento.
-
-## Controles de teclado
+En móvil, arrastra con el pulgar izquierdo para moverte; arriba salta, abajo cubre. Con el derecho: toque = puño, horizontal = patada, arriba = gancho, abajo = barrido, diagonal = especial, mantener = bloquear.
 
 | Acción | Jugador 1 | Jugador 2 |
 |---|---|---|
 | Mover | A / D | ← / → |
 | Saltar | W | ↑ |
-| Cubrir/agacharse | S | ↓ |
-| Puño | F | J |
-| Patada | G | K |
-| Gancho | R | U |
-| Barrido | T | I |
+| Cubrir | S | ↓ |
+| Puño / patada | F / G | J / K |
+| Gancho / barrido | R / T | U / I |
 | Especial | H | L |
-| Pausar | Esc o Espacio | Esc o Espacio |
+| Pausa | Esc / Espacio | Esc / Espacio |
 
-## Desarrollo
+## Desarrollo y publicación
 
-HTML, CSS y JavaScript nativo. WebGL 1 para la versión 3D; Canvas 2D solo como alternativa si no hay WebGL. No requiere instalación de paquetes.
+HTML/CSS/JavaScript nativo, WebGL 1 y alternativa Canvas 2D. Sin backend, cuentas, servicios de pago ni dependencias de ejecución.
 
-Desde la raíz del repositorio:
+Desde la raíz:
 
-- `node --test rift-arena/tests/*.test.mjs` — lógica y gestos.
-- `node rift-arena/tests/browser-smoke.mjs` — prueba real de navegador con Chrome/Chromium.
-- `python3 -m http.server 8000` — servidor local para abrir `/rift-arena/`.
+- `node --test rift-arena/tests/*.test.mjs`
+- `node rift-arena/tests/browser-smoke.mjs` (Chrome/Chromium, o `CHROME_BIN`)
+- `python3 -m http.server 8000`, abrir `/rift-arena/`.
 
-Se publica en GitHub Pages directamente desde `main/rift-arena/`. El navegador Safari de iOS puede impedir el bloqueo automático de orientación: gira el teléfono manualmente cuando ocurra. La versión principal tiene modelos y escenarios 3D originales con sombreado retro low-poly, sin recursos externos. Si WebGL no está disponible, se usan ilustraciones 2D de respaldo. No hay controles gamepad ni multijugador online.
-
-
-## Versión 3D — Arcade de consola clásica
-
-- Motor **WebGL 1 real** integrado en `arena3d.js`, con cámara de perspectiva, z-buffer, iluminación direccional y especular, materiales sombreados, niebla ambiental, profundidad y geometría original (sin Three.js ni CDN).
-- 8 luchadores creados mediante **mallas 3D articuladas**, con proporciones variadas, manos, pies, rostro y cabello o pelaje, ropa, extremidades, accesorios y animación continua a partir de las poses de combate existentes. Archivo `fighters3d.js`.
-- Ocho escenarios 3D independientes: Neon Zenith, Templo Solar, Forja Abisal, Bastión Ártico, Bosque Ancestral, Cráter Infernal, Lago de Cristal y Cumbres Sagradas. Nuevos entornos naturales: bosques con árboles y ruinas, volcán con río de lava fuera del campo de pelea, lago congelado con cristales y nieve, y montaña con cordillera, puentes y banderas. Arquitectura y suelos específicos, tres planos de profundidad, partículas climáticas ligeras sin afectar al combate.
-- **Vista previa WebGL 3D interactiva en el selector**, actualizada al elegir personaje y escenario; si no hay WebGL conserva los retratos SVG. Cámara lateral cinematográfica y HUD arcade; golpes con indicadores superpuestos. En móvil horizontal ocupa toda la pantalla y conserva controles por dos pulgares.
-- Sin recursos remotos, anuncios, servicios de pago ni datos personales. Los navegadores sin WebGL siguen usando el renderizador Canvas 2D anterior.
-- **Nota:** estética low-poly retro de consola PS2 inspirada en juegos clásicos; no es un port de Tekken, ni usa sus personajes o recursos. Los modelos son procedurales: no prometen realismo fotorrealista ni captura de movimiento.
-
-## Roster retro 3D
-
-Extremidades con cinemática inversa de dos huesos y longitudes fijas, guardia alta, anticipación/impacto/recuperación, movimiento de hombros y caída de todo el esqueleto en KO. Se conservan hitboxes, tiempos y controles; los perfiles de combate existentes se asignan al roster nuevo. El fallback Canvas usa arte angular coherente, con animación más sencilla. WebGL sigue sin librerías ni descargas externas.
-
-Los modelos son procedurales estilizados de baja resolución, no modelos de producción PS2 con texturas pintadas ni mocap. La revisión móvil se realiza con emulación de Chromium; falta comprobar Safari en un iPhone físico.
+GitHub Pages publica directamente `main/rift-arena/`. QA con navegador de escritorio y emulación móvil; no equivale a probar Safari en un iPhone físico.

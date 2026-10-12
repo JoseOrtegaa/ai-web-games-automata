@@ -2,13 +2,13 @@ export const WIDTH = 1152;
 export const GROUND = 508;
 export const LIMITS = [65, WIDTH - 65];
 export const ROSTER = [
-  { id:'ryuzo',name:'RYUZO',alias:'DISCIPLINA DE ACERO',color:'#bb8cff',shade:'#513078',speed:315,power:.98,defense:1,trait:'Corte espectral',bio:'Artista marcial disciplinado de golpes precisos.',style:'shinobi' },
-  { id:'drake',name:'DRAKE',alias:'FURIA CALLEJERA',color:'#61e9fb',shade:'#156178',speed:260,power:1.02,defense:1,trait:'Tormenta eléctrica',bio:'Kickboxer de presión agresiva y guardia compacta.',style:'tech' },
-  { id:'brute',name:'BRUTE',alias:'PUÑO DE GRANITO',color:'#ffbd71',shade:'#654224',speed:212,power:1.2,defense:.84,trait:'Golpe sísmico',bio:'Gorila colosal de agarres, fuerza y puñetazos brutales.',style:'armor' },
-  { id:'titan',name:'TITAN',alias:'PESO ABSOLUTO',color:'#ff6c80',shade:'#7c2644',speed:278,power:1.1,defense:.96,trait:'Impacto pesado',bio:'Grappler robusto de presión y golpes pesados.',style:'flame' },
-  { id:'razor',name:'RAZOR',alias:'COLMILLO NOCTURNO',color:'#86ea94',shade:'#205d4b',speed:308,power:.94,defense:1.04,trait:'Colmillo verde',bio:'Pantera antropomórfica de reflejos y contraataques.',style:'serpent' },
-  { id:'ursus',name:'URSUS',alias:'REY DE ACERO',color:'#92b8ff',shade:'#354b84',speed:230,power:1.16,defense:.87,trait:'Martillo de acero',bio:'Oso boxeador: enorme pegada y defensa implacable.',style:'boxer' },
-  { id:'selene',name:'SELENE',alias:'PRECISIÓN LETAL',color:'#fc96d8',shade:'#652c66',speed:290,power:1.04,defense:.99,trait:'Luna cortante',bio:'Luchadora técnica, rápida y precisa.',style:'dancer' },
+  { id:'ryuzo',name:'RYUZO',alias:'DISCIPLINA DE ACERO',color:'#bb8cff',shade:'#513078',speed:315,power:.98,defense:1,trait:'Corte espectral',bio:'Sensei veterano, cabello gris y túnica marfil bordada.',style:'shinobi' },
+  { id:'drake',name:'DRAKE',alias:'FURIA CALLEJERA',color:'#61e9fb',shade:'#156178',speed:260,power:1.02,defense:1,trait:'Tormenta eléctrica',bio:'Monje de cabeza rapada y collar de cuentas de madera.',style:'tech' },
+  { id:'brute',name:'BRUTE',alias:'PUÑO DE GRANITO',color:'#ffbd71',shade:'#654224',speed:212,power:1.2,defense:.84,trait:'Golpe sísmico',bio:'Toro de grandes cuernos, túnica bordada y fuerza brutal.',style:'armor' },
+  { id:'titan',name:'TITAN',alias:'PESO ABSOLUTO',color:'#ff6c80',shade:'#7c2644',speed:278,power:1.1,defense:.96,trait:'Impacto pesado',bio:'Luchadora de trenzas, chaleco marfil y golpes contundentes.',style:'flame' },
+  { id:'razor',name:'RAZOR',alias:'COLMILLO NOCTURNO',color:'#86ea94',shade:'#205d4b',speed:308,power:.94,defense:1.04,trait:'Colmillo verde',bio:'Gato atigrado, fajín azul petróleo y reflejos veloces.',style:'serpent' },
+  { id:'ursus',name:'URSUS',alias:'REY DE ACERO',color:'#92b8ff',shade:'#354b84',speed:230,power:1.16,defense:.87,trait:'Martillo de acero',bio:'Panda de artes marciales, vendas y fajín burdeos.',style:'boxer' },
+  { id:'selene',name:'SELENE',alias:'PRECISIÓN LETAL',color:'#fc96d8',shade:'#652c66',speed:290,power:1.04,defense:.99,trait:'Luna cortante',bio:'Luchadora de coleta alta, traje oscuro y bufanda burdeos.',style:'dancer' },
   { id:'fang',name:'FANG',alias:'EL ERRANTE',color:'#ded3a5',shade:'#625a44',speed:252,power:1.12,defense:.93,trait:'Impacto astral',bio:'Lobo veterano de artes marciales y golpes precisos.',style:'monk' }
 ];
 export const MOVES = {

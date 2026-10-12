@@ -4,6 +4,14 @@ import { DESIGNS, portraitSvg, renderCharacter } from './characters.js';
 import { movementFromDrag, strikeFromSwipe } from './gestures.js';
 import { createArena3D } from './arena3d.js';
 import { installZoomGuard } from './touch-safety.js';
+import {FIGHTER_ART,loadFighterArt} from './fighter-art.js';
+
+// Never start combat with missing/invisible artwork. An error stays reviewable in the menu.
+const startButton=document.getElementById('startBtn');
+startButton.disabled=true;
+loadFighterArt(ROSTER.map(f=>f.id)).then(()=>{startButton.disabled=false;}).catch(()=>{
+ document.getElementById('modeNote').textContent='No se pudieron cargar los personajes. Recarga la página para volver a intentarlo.';
+});
 
 // Catch Safari double-tap zoom before it disrupts the two-thumb control layout.
 installZoomGuard(document);
@@ -34,7 +42,7 @@ function drawRoster() {
     button.type = 'button';
     button.className = 'fighter-card' + (chosen[activeSide] === f.id ? ' selected' : '');
     button.setAttribute('aria-pressed', chosen[activeSide] === f.id ? 'true' : 'false');
-    button.setAttribute('aria-label', f.name + ', ' + DESIGNS[f.id].species + ', ' + f.alias + ', ' + f.bio);
+    button.setAttribute('aria-label', f.name + ', ' + FIGHTER_ART[f.id].species + ', ' + f.alias + ', ' + f.bio);
     button.innerHTML = "<span class='card-art' style='--fighter-color:"+f.color+"'>"+portraitSvg(f)+"</span><span class='card-meta'><b>"+f.name+"</b><small>"+f.alias+"</small></span>";
     button.addEventListener('click', () => {
       chosen[activeSide] = f.id;
@@ -44,7 +52,7 @@ function drawRoster() {
     ui.roster.append(button);
   }
   const f = fighterDefinition(chosen[activeSide]);
-  ui.fighterInfo.textContent = DESIGNS[f.id].species + ' · ' + f.trait + ' · ' + f.bio;
+  ui.fighterInfo.textContent = FIGHTER_ART[f.id].species + ' · ' + f.trait + ' · ' + f.bio;
   for (let side = 0; side < 2; side++) {
     const selected = fighterDefinition(chosen[side]);
     $('portrait' + (side + 1)).innerHTML = portraitSvg(selected);

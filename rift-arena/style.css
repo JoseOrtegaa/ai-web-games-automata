@@ -167,6 +167,11 @@ body.in-battle .swipe-label{color:#eef6ff9c}
 @media(max-width:520px){.stage-chooser{grid-template-columns:repeat(2,minmax(0,1fr))}.stage-tile{min-height:100px}.stage-tile .stage-tile-art{height:59px}.stage-tile b{font-size:12px}.stage-tile small{font-size:9px}}
 @media(orientation:landscape) and (max-height:500px){.stage-chooser{grid-template-columns:repeat(4,minmax(0,1fr))}}
 /* Rebuilt arcade roster: restrained materials, hard frames and readable names. */
+.fighter-card .card-art svg,.portrait svg{filter:none!important;transform:translateX(-50%)}
+.fighter-card .card-art svg{height:100%!important;width:100%!important;max-width:none;left:50%;bottom:0}
+.portrait svg{height:100%;width:100%;transform:none}
+.card-art:before{display:none}
+.primary-btn:disabled{opacity:.45;cursor:wait}
 .fighter-card .card-art{background:linear-gradient(120deg,#263333,#0b1117 75%);height:145px}
 .card-art:before{background:repeating-linear-gradient(0deg,transparent 0 3px,#0002 4px)}
 .fighter-card .card-art svg{height:168px;width:158px;filter:drop-shadow(3px 5px 3px #0008)}

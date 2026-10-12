@@ -5,7 +5,6 @@ import {color,geometryBox,geometrySphere,geometryCylinder,trs,multiply,transform
 import {buildStage3D,STAGE_IDS} from '../stage3d.js';
 import {STAGES} from '../stages.js';
 import {stageAtmosphere,EXTRA_STAGE_IDS} from '../stage-scenes.js';
-import {drawFighter3D} from '../fighters3d.js';
 
 test('WebGL primitives are genuine lit 3D triangles with normals',()=>{
  for(const geom of [geometryBox(),geometrySphere(),geometryCylinder()]){
@@ -46,31 +45,6 @@ test('eight 3D arenas contain substantial nonplanar geometry',()=>{
  }
  assert.ok(new Set(counts).size>=3,'arenas should have distinct architecture');
 });
-test('eight fighters emit articulated 3D anatomy in idle, punch and kick',()=>{
- const counts={};
- const fake={
-  primitive(...args){
-   assert.ok(['box','sphere','cone','cylinder','torso','pelvis','skull','muscle','calf','fist','fur'].includes(args[0]));
-   for(const n of args.slice(1,7))assert.ok(Number.isFinite(n));
-   counts.primitive++;
-  },
-  segment(a,b,r,c,root){
-   assert.ok(a.every(Number.isFinite)&&b.every(Number.isFinite));
-   assert.ok(r>0);assert.equal(root.length,16);counts.segment++;
-  }
- };
- for(const def of ROSTER){
-  counts.primitive=0;counts.segment=0;
-  const f=createFighter(def.id,300,1);
-  drawFighter3D(fake,f,2.1);
-  assert.ok(counts.primitive>=38,def.id+' needs modeled face and suit');
-  assert.ok(counts.segment>=7,def.id+' needs limbs');
-  for(const attack of ['punch','kick','uppercut','special']){
-   f.action={type:attack,elapsed:.3,hit:false};
-   drawFighter3D(fake,f,3.5);
-  }
- }
-});
 test('graceful 2D fallback when WebGL is not supported',()=>{
  assert.equal(createArena3D({getContext(){return null}}),null);
 });
@@ -108,16 +82,4 @@ test('stage atmosphere is animated, scene-specific and keeps a bounded mobile dr
  const moving=[];
  stageAtmosphere({primitive:(...args)=>moving.push(args)},'volcano',4);
  assert.notDeepEqual(moving[0],results.volcano[0],'Embers should move as time passes');
-});
-
-test('rigid anatomy keeps both bone lengths for near and unreachable targets',async()=>{
- const {solveLimb}=await import('../fighters3d.js');
- const start=[.3,2.5,.2];
- for(const target of [[.3,2.5,.2],[8,2,.2],[-2,5,.2],[.8,1.7,.2]]){
-  const [elbow,hand]=solveLimb(start,target,.76,.71,-1);
-  const distance=(a,b)=>Math.hypot(...a.map((v,i)=>v-b[i]));
-  assert.ok(Math.abs(distance(start,elbow)-.76)<1e-6);
-  assert.ok(Math.abs(distance(elbow,hand)-.71)<1e-6);
-  assert.ok(distance(start,hand)<=1.47);
- }
 });

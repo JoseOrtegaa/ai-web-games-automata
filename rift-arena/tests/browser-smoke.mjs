@@ -6,7 +6,7 @@ import { spawn } from 'node:child_process';
 import assert from 'node:assert/strict';
 
 const root=resolve(process.cwd());
-const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.svg':'image/svg+xml'};
+const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.svg':'image/svg+xml','.webp':'image/webp'};
 const server=createServer(async (req,res)=>{
   let pathname=decodeURIComponent(new URL(req.url,'http://localhost').pathname);
   if(pathname.endsWith('/')) pathname += 'index.html';
@@ -79,9 +79,9 @@ try {
   assert.equal(count,8,'Los ocho personajes deben renderizarse');
   const portraits=await evaluate("Array.from(document.querySelectorAll('.fighter-card svg')).map(svg=>svg.getAttribute('aria-label'))");
   assert.equal(portraits.length,8);
-  assert.ok(portraits.some(label=>label.includes('Gorila')),'Debe haber un gorila visible en el selector');
-  assert.ok(portraits.some(label=>label.includes('Pantera')),'Debe haber una pantera visible en el selector');
-  assert.ok(portraits.some(label=>label.includes('Oso')),'Debe haber un oso visible en el selector');
+  assert.ok(portraits.some(label=>label.includes('Toro')),'Debe haber un toro visible en el selector');
+  assert.ok(portraits.some(label=>label.includes('Gato')),'Debe haber una pantera visible en el selector');
+  assert.ok(portraits.some(label=>label.includes('Panda')),'Debe haber un oso visible en el selector');
   assert.ok(portraits.some(label=>label.includes('Lobo')),'Debe haber un lobo visible en el selector');
 
   const choice=await evaluate("(()=>{document.querySelector('[data-side=\"1\"]').click();document.querySelectorAll('.fighter-card')[3].click();return document.getElementById('name2').textContent})()");
@@ -111,11 +111,13 @@ try {
   assert.equal(livePreview.renderer,'webgl3d','Character selector should have real 3D preview');
   assert.ok(livePreview.hasWebgl&&livePreview.width>100&&livePreview.visible);
   await evaluate(`document.querySelector('[data-mode="cpu"]').click()`);
+  await evaluate(`(async()=>{while(document.getElementById('startBtn').disabled)await new Promise(r=>setTimeout(r,80));})()`);
   const start=await evaluate("(()=>{document.getElementById('startBtn').click();return !document.getElementById('gameScreen').hidden&&document.getElementById('arena').width>0})()");
   const zoomGuard=await evaluate(`(async()=>{
     const ev=(type,detail)=>{const e=new Event(type,{cancelable:true,bubbles:true});if(detail){Object.defineProperty(e,'touches',{value:[]});Object.defineProperty(e,'changedTouches',{value:[{clientX:150,clientY:190}]});}document.dispatchEvent(e);return e.defaultPrevented;};
     const single=ev('touchend',true);
-    // Dispatch consecutively: busy software WebGL may delay timers beyond 340ms.
+    // Synthetic events must be separated: privacy-rounded clocks can otherwise give dt=0.
+    await new Promise(done=>setTimeout(done,12));
     const double=ev('touchend',true);
     const dbl=ev('dblclick',false);
     return {single,double,dbl,touchAction:getComputedStyle(document.querySelector('#arena')).touchAction};
